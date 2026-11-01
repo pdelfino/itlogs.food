@@ -9,8 +9,11 @@ utterance (speech is transcribed server-side by Muse Voice Transcribe).
 from __future__ import annotations
 
 import asyncio
+import time
+from pathlib import Path
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel
 
 from itlogs.asr import Transcriber, make_transcriber
 from itlogs.config import settings
@@ -25,6 +28,24 @@ app = FastAPI(title="itlogs.food")
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok", "provider": settings.provider}
+
+
+class PhoneLine(BaseModel):
+    t: float
+    line: str
+
+
+@app.post("/log")
+async def phone_log(item: PhoneLine) -> dict[str, str]:
+    """Diagnostics from the phone (Diag.swift): printed here so the terminal shows what the
+    wearer sees, and appended to .sessions/phone.log. Never photos or audio."""
+    stamp = time.strftime("%H:%M:%S", time.localtime(item.t))
+    print(f"PHONE {stamp} {item.line}", flush=True)
+    path = Path(".sessions")
+    path.mkdir(exist_ok=True)
+    with (path / "phone.log").open("a") as f:
+        f.write(f"{stamp} {item.line}\n")
+    return {"ok": "1"}
 
 
 @app.websocket("/ws/session")

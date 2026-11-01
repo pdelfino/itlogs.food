@@ -32,10 +32,12 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
 
     func start(_ sink: @escaping @Sendable (Data, FrameMeta) -> Void) async throws {
         let wearables = Wearables.shared
+        Diag.send("glasses: creating session; devices=\(wearables.devices.count)")
         let session = try wearables.createSession(deviceSelector: AutoDeviceSelector(wearables: wearables))
         self.session = session
         try session.start()
         try await waitForStarted(session)
+        Diag.send("glasses: session started")
         if try await wearables.checkPermissionStatus(.camera) != .granted {
             guard try await wearables.requestPermission(.camera) == .granted else {
                 throw NSError(domain: "food.itlogs", code: 10, userInfo: [NSLocalizedDescriptionKey: "Glasses camera permission denied"])
@@ -57,10 +59,11 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
                                  width: Int(image.size.width * image.scale), height: Int(image.size.height * image.scale))
             sink(jpeg, meta)
         }.store(in: tokens)
-        camera.stream.errorPublisher.listen { [weak self] (error: StreamError) in
-            self?.log.error("stream error: \(String(describing: error), privacy: .public)")
+        camera.stream.errorPublisher.listen { (error: StreamError) in
+            Diag.send("glasses: stream error \(String(describing: error))")
         }.store(in: tokens)
         camera.stream.start()
+        Diag.send("glasses: stream start requested")
         log.info("glasses stream started at \(self.streamFps) fps, sending \(self.fps) fps")
     }
 

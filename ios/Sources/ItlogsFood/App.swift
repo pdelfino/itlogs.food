@@ -12,6 +12,8 @@ struct ItlogsFoodApp: App {
         WindowGroup {
             SessionView(session: session)
                 .task {
+                    Diag.send("app launched \(SessionView.versionLine)")
+                    Diag.watchRegistration()
                     // "Hey Meta, start itlogs" lands here (dev and beta channels only)
                     let v = VoiceInvocations { [session] in await session.startWeighingFromVoice() }
                     v.start()

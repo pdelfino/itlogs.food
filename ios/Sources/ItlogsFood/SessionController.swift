@@ -1,5 +1,6 @@
 import AudioToolbox
 import Foundation
+import MWDATCore
 import Observation
 import os
 
@@ -43,6 +44,7 @@ final class SessionController {
     func start() async {
         error = nil
         started = Date()
+        Diag.send("start tapped; glasses=\(useGlasses) server=\(serverURL.absoluteString)")
         await client.connect(url: serverURL) { [weak self] msg in
             Task { @MainActor in self?.handle(msg) }
         }
@@ -66,8 +68,8 @@ final class SessionController {
             }
             running = true
         } catch {
-            self.error = error.localizedDescription
-            log.error("start failed: \(error.localizedDescription, privacy: .public)")
+            self.error = "Start failed: \(String(describing: error))"
+            Diag.send("start failed: \(String(describing: error))")
         }
     }
 
@@ -85,7 +87,15 @@ final class SessionController {
 
     /// One-time pairing with the glasses (opens the Meta AI app and returns).
     func registerGlasses() async {
-        do { try await GlassesSource.register() } catch { self.error = error.localizedDescription }
+        Diag.send("pair tapped; registration state before: \(String(describing: Wearables.shared.registrationState))")
+        do {
+            try await GlassesSource.register()
+            Diag.send("startRegistration returned without error")
+        } catch {
+            let detail = String(describing: error)
+            self.error = "Pair failed: \(detail)"
+            Diag.send("startRegistration threw: \(detail) / \(error.localizedDescription)")
+        }
     }
 
     func stop() async {
