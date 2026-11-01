@@ -10,7 +10,7 @@ final class SessionController {
     /// The Mac on the LAN; edited in the UI and remembered between launches.
     var serverURL: URL = {
         if let saved = UserDefaults.standard.string(forKey: "serverURL"), let u = URL(string: saved) { return u }
-        return URL(string: "ws://192.168.2.171:8000/ws/session")!
+        return URL(string: "ws://Pedros-MacBook-Air.local:8000/ws/session")!
     }() {
         didSet { UserDefaults.standard.set(serverURL.absoluteString, forKey: "serverURL") }
     }
