@@ -1,0 +1,18 @@
+#+TITLE: Meta Global AI Developer Hackathon 2026 · event snapshot
+#+DATE: 2026-10-23
+Trampo #113.
+
+Pedro heard of it as "a hackathon related to Meta's sunglasses, about 10 days, remote". The only match found (web search 2026-10-23) is this one; its official pages never mention AI glasses, Ray-Ban or wearables. Meta's Wearables Device Access Toolkit 1.0 (launched at Connect 2026) is a separate developer program, no hackathon attached.
+
+- Hosts: Meta and Cerebral Valley. Remote, worldwide (Canada not excluded), free if selected, up to 20,000 accepted.
+- Pages: https://dev.meta.ai/events/global-hackathon · apply at https://cerebralvalley.ai/e/meta-ai-developer-hackathon/apply (form loads with JavaScript, sign-in needed).
+- *Applications close 2026-OCTOBER-25 23:59 ET*, or earlier if the 20,000 spots fill; rolling review, approvals by OCTOBER-26 09:00 ET.
+- Build window: OCTOBER-26 12:00 ET to NOVEMBER-04 21:00 ET (kickoff livestream, workshops OCT-27 to NOV-04, Discord office hours). Judging NOV-04 to NOV-08, finals NOVEMBER-09.
+- Tracks: Indie (individuals, students; creativity, ambition, it works) or Startup (teams, founders; execution, holds up in production).
+- Themes: Build for Your World (a problem you know firsthand) or Push the Frontier (software, robotics, manufacturing, energy, materials).
+- Tech: Meta Model API (Muse Spark series, Muse Wonder, Muse Image, SAM 3.1), Meta open-weights models, Muse Code. Partner credits for some: Baseten USD 100, Modal USD 100, Fireworks USD 25.
+- Prize pool: USD 1,000,000 cash across both tracks; split not published.
+- Selection: only the form answers, two equal halves: (1) project idea, clear, feasible, fits a theme; (2) technical skill, an AI project you describe. GitHub/LinkedIn optional. Questions 13 to 16 are not scored.
+
+* Applied
+2026-OCTOBER-23: Pedro applied (confirmed in session). Approval expected by 2026-OCTOBER-26 09:00 ET.

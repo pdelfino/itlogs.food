@@ -1,0 +1,68 @@
+# XcodeGen spec. `make ios-gen` turns this into ItlogsFood.xcodeproj (not committed).
+name: ItlogsFood
+options:
+  bundleIdPrefix: food.itlogs
+  deploymentTarget:
+    iOS: "18.0"
+  xcodeVersion: "26.0"
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    DEVELOPMENT_TEAM: "${DEVELOPMENT_TEAM}"   # your Apple team id: DEVELOPMENT_TEAM=XXXXXXXXXX make ios-run (empty = unsigned build)
+    CODE_SIGN_STYLE: Automatic
+targets:
+  ItlogsFood:
+    type: application
+    platform: iOS
+    sources: [Sources/ItlogsFood]
+    info:
+      path: Sources/ItlogsFood/Info.plist
+      properties:
+        CFBundleDisplayName: itlogs
+        UILaunchScreen: {}
+        NSCameraUsageDescription: The phone camera is the fallback frame source when the glasses are not connected.
+        NSMicrophoneUsageDescription: Voice replies like "yes" or "eighty-one", and "log it".
+        NSSpeechRecognitionUsageDescription: Voice replies are recognized on the phone and sent as text.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        UIBackgroundModes: [audio, processing, bluetooth-central, bluetooth-peripheral]
+        # Meta Wearables Device Access Toolkit (required keys, see the CameraAccess sample)
+        CFBundleURLTypes:
+          - CFBundleTypeRole: Editor
+            CFBundleURLName: $(PRODUCT_BUNDLE_IDENTIFIER)
+            CFBundleURLSchemes: [itlogsfood]
+        MWDAT:
+          AppLinkURLScheme: "itlogsfood://"
+          MetaAppID: $(META_APP_ID)        # empty in Developer Mode; set from the Wearables Developer Center for release channels
+          ClientToken: $(CLIENT_TOKEN)
+          TeamID: $(DEVELOPMENT_TEAM)
+          Analytics:
+            OptOut: true
+        NSBluetoothAlwaysUsageDescription: Needed to connect to the Meta glasses.
+        NSBluetoothPeripheralUsageDescription: Needed to connect to the Meta glasses.
+        NSLocalNetworkUsageDescription: Lets the phone find the glasses over Wi-Fi and reach the itlogs.food server on the LAN.
+        NSBonjourServices: [_bonjour._tcp]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: food.itlogs.app
+        META_APP_ID: ""
+        CLIENT_TOKEN: ""
+    dependencies:
+      - package: MWDAT
+        product: MWDATCore
+      - package: MWDAT
+        product: MWDATCamera
+  ItlogsFoodTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [Tests/ItlogsFoodTests]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: ItlogsFood
+packages:
+  MWDAT:
+    url: https://github.com/facebook/meta-wearables-dat-ios
+    exactVersion: 1.0.1

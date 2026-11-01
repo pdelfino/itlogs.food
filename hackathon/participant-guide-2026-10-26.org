@@ -1,0 +1,60 @@
+#+TITLE: Meta Global AI Developer Hackathon · Participant Guide
+#+DATE: 2026-10-26
+
+The login-walled details page (https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details), as pasted by Pedro on 2026-OCTOBER-26 night. Rule text verbatim; lists condensed. All times ET.
+
+* 1. Problem statements (the project must build towards one)
+- *Build for Your World*: "Bring Meta's models into your domain. Solve a problem you know firsthand, free up time and mental space, and make something possible that wasn't before."
+- *Push the Frontier*: "Use Meta's models to tackle challenges in software, robotics, manufacturing, energy, materials and beyond. Give a machine a new capability, accelerate a scientific experiment, or unlock a better way to understand and control a physical system."
+- "Your project must incorporate Meta's models. Use the Muse Spark series, Muse Wonder, Muse Image, Muse Voice Transcribe and SAM 3.1 through Meta Model API, run Meta open weights models Muse Glimmer and Muse Spark Open, and code faster with Muse Code coding agent."
+
+* 2. Community
+Discord (join link on the details page): #intros, #team-search (max team 4), #questions (Cerebral Valley), #office-hours (the Meta team, text only, 10:00 to 11:00 ET on weekdays).
+
+* 3. Schedule
+| When                     | What                                                                                    |
+|--------------------------+-----------------------------------------------------------------------------------------|
+| Mon OCT-26 12:00         | Kickoff: overview, rules, prizes, judging, Meta speaker                                  |
+| Tue OCT-27 12:00 to 13:00 | Agents 101: Build a Multimodal AI Agent (Suraj Subramanian)                            |
+| Wed OCT-28 12:00 to 13:00 | Agents 102: Best Practices for Verifiable Agents (Yash Khare)                          |
+| Fri OCT-30 12:00 to 13:00 | Building Specialized Intelligence on Fireworks: from inference to training with Muse open models (Sinan Ozdemir) |
+| weekdays 10:00 to 11:00  | Discord #office-hours, Meta team, text                                                  |
+| Tue NOV-03               | last full day for submission questions and troubleshooting                              |
+| Wed NOV-04 21:00         | submissions due on the CV platform; final office hours                                  |
+| Thu NOV-05 to Sun NOV-08 | judging                                                                                 |
+| Mon NOV-09 12:00         | closing ceremony: top 10 (5 per track), live final judging, winners, community vote opens |
+| Mon NOV-16               | community vote winner on Discord                                                        |
+"Building period: Oct 27 – Nov 4." Livestream: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/live
+
+* 4. Rules (verbatim)
+- "Open source: Repositories must be public."
+- "Team size: A maximum of four participants per team. Solo participants are allowed."
+- "Demo requirements: Your demo must only highlight the specific features, code, and functionality that you built during the Hackathon. Judges must be able to clearly identify what was created during the Hackathon. Failure to clearly identify your original contributions will result in immediate disqualification at Judges sole discretion."
+- "New work only: What you present at this Hackathon must have been built during the event. This should be clear in your submissions. Startups may build on existing products or codebases, but you must clearly identify what was newly developed during the Hackathon."
+- "Banned projects: Projects will be disqualified if they: violate legal, ethical, or platform policies, use code, data, or assets you do not have the rights to."
+** Sample anti-projects (generic or policy-violating; "not an exhaustive list")
+"Any project using AI to generate and give medical advice e.g. AI Mental Health Advisor, skin blemish detector, etc.; Basic RAG Applications; Simple Image Analyzers; simple 'AI for Education' Chatbots; AI Job Application Screener; AI Nutrition Coach; Personality Analyzers; Sports analyzers or coaches; Anything political or involving war"
+
+* 5. Meta resources
+- USD 150 Meta Model API credits per participant: Google Form (link in emails-2026-10-26.org), batches, card required (temporary pre-authorization), set a Spend Limit on Billing. Claim by NOV-04 21:00, individually.
+- Docs: Overview, Quickstart, Model list, Cookbook (API cookbook, API fundamentals, Muse Code recipes, OSS model cookbook). Links are on the details page.
+- On-demand sessions: the multimodal intelligence of Muse Spark; building with Muse Spark and Muse Code; the superintelligence blueprint.
+
+* 6. Inference partners ("credits are not guaranteed")
+- *Baseten*: USD 100 plus a 2M TPM rate limit for up to 2,000 participants, reviewed by use case, per individual. Chat completions, reasoning output, vision and audio with Muse Spark Open. For the hackathon use the model id =meta-models/muse-spark-open-1026= (the docs say =muse-spark-open=). Baseten channel on Discord.
+- *Modal*: USD 100 to the first 1,000 participants, for open-weight models through Endpoints, serverless GPUs, sandboxes, training tools.
+- *Fireworks*: USD 25 to a shortlist of teams, by email.
+
+* 7. Submission
+- One submission per team, on the CV platform, by NOV-04 21:00 ET. Late submissions are not considered. A Representative submits; everyone who worked on it listed.
+- "Please double-check that your repository is accessible publicly, your video link is accessible."
+- "Your submission will require a three minute demo video highlighting the specific features, code, and functionality you built during the Hackathon. This video will also be used as one of the primary artifacts Judges use to judge your project, along with your code and live product."
+
+* 8. Judging
+- Stage one, pass/fail: fits the theme and reasonably used the Meta Model API and/or Meta open-weight models during the hackathon.
+- Stage two, 0 to 10 per category: Impact 30% (real-world potential, who benefits, could become something people use, fits a problem statement); Use of Meta AI Tooling 25% (creative, beyond a basic integration, surprising capabilities); Technical Depth and Execution 20% (sound, refined, real craft); Demo 25% (working, impressive, holds up live, "genuinely cool to watch").
+- Stage three: top 5 per track, final judges watch the videos live and rank with the same rubric.
+
+* 9. Prizes (USD)
+Indie: 150k, 100k, 75k, 50k, 25k. Startups: 250k, 150k, 75k, 50k, 25k.
+Bonus 50k: Most Viral Project 20k (engagement on X until NOV-08, post link submitted on the platform); Best Build on Meta Open Weight Models 10k (Muse Glimmer or Muse Spark Open on own hardware or partner inference, verified by the partner); Community Vote 10k (platform gallery, one vote per account, announced NOV-16); Best Agentic Use-Case 5k; Best Creative Build 5k (Muse Image or Muse Wonder).

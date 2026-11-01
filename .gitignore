@@ -1,0 +1,27 @@
+.DS_Store
+node_modules/
+.env
+.env.*
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.claude/session-end-state.md
+
+# evals: photos and adapter weights never enter git (they live on the T7)
+evals/sets/*/*.jpg
+evals/sets/*/*.jpeg
+evals/sets/*/photos/
+train/
+*.safetensors
+
+# recorded sessions
+.sessions/
+
+# iOS: the project is generated from ios/project.yml
+ios/*.xcodeproj
+ios/build/
+ios/vendor/*
+!ios/vendor/README.org
+*.xcuserstate
+DerivedData/

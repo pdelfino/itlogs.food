@@ -1,0 +1,19 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --project server
+      - run: uv run --project server ruff check server evals
+      - run: uv run --project server ruff format --check server evals
+      - run: uv run pytest -q
+        working-directory: server
+      - run: uv run --project server python evals/run.py --from-reads
