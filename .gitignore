@@ -25,3 +25,6 @@ ios/vendor/*
 !ios/vendor/README.org
 *.xcuserstate
 DerivedData/
+
+# landing page: Muse Image candidates stay local; only the chosen hero is committed
+site/img/candidates/

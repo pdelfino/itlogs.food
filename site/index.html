@@ -9,6 +9,8 @@
   <meta property="og:description" content="Your food, weighed and logged, hands free.">
   <meta property="og:url" content="https://itlogs.food/">
   <meta property="og:type" content="website">
+  <meta property="og:image" content="https://itlogs.food/img/hero-og.jpg">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="brand/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
@@ -16,12 +18,26 @@
 </head>
 <body>
   <main>
-    <header>
-      <h1 class="wordmark" aria-label="itlogs.food">
+    <header class="top">
+      <a class="wordmark" href="/" aria-label="itlogs.food">
         <span class="ink">itlogs</span><span class="orange">.food</span><span class="cursor" aria-hidden="true"></span>
-      </h1>
-      <p class="tagline">Your food, weighed and logged, hands free.</p>
+      </a>
+      <a class="repo" href="https://github.com/pdelfino/itlogs.food">source</a>
     </header>
+
+    <section class="hero">
+      <figure>
+        <img src="img/hero.webp" width="1536" height="1024"
+             alt="Someone wearing Ray-Ban Meta glasses places a bowl on a kitchen scale; the display is lit."
+             fetchpriority="high">
+        <figcaption>Hero image generated with Muse Image, Meta's image model.</figcaption>
+      </figure>
+      <div class="lede">
+        <h1>You eat. It logs.</h1>
+        <p class="tagline">Your food, weighed and logged, hands free.</p>
+        <p>Ray-Ban Meta glasses look at the kitchen scale you already own, read the food and the grams off its display, and write the line. No app on the scale, no pairing, no hands.</p>
+      </div>
+    </section>
 
     <section class="log" aria-label="a log that writes itself">
       <ol>
@@ -33,28 +49,33 @@
       </ol>
     </section>
 
-    <section class="story">
-      <p>You eat. It logs.</p>
-      <p>Every other health stream fills itself: the ring, the watch, the body scale. Food was the one log still typed by hand, and the typing is what kills the habit.</p>
-      <p>itlogs.food is where that stops. Ray-Ban Meta glasses look at the kitchen scale you already own, read the food and the grams off its display, and write the line. No app on the scale, no pairing, no hands.</p>
-    </section>
-
     <section class="steps" aria-label="how it works">
       <ol>
         <li><span class="n">1</span><span>Put the food on the scale.</span></li>
-        <li><span class="n">2</span><span>Say <em>log it</em>, or press the button.</span></li>
+        <li><span class="n">2</span><span>Say <em>log it</em>, or press the button on the glasses.</span></li>
         <li><span class="n">3</span><span>Hear it back: <em>87 grams of cooked white rice, logged.</em></span></li>
       </ol>
       <p class="fine">Two reads that agree log the entry. Two reads that disagree become a question in your ear: <em>81 or 87 grams?</em> Your answer is the label.</p>
     </section>
 
-    <!-- VIDEO_URL: when the demo video exists (issue #5), replace the comment below with
+    <!-- VIDEO_URL: when the demo video exists (issue #5), replace this comment with
          <figure class="video"><iframe src="VIDEO_URL" title="itlogs.food demo" allowfullscreen loading="lazy"></iframe></figure> -->
+
+    <section class="built" aria-label="built on">
+      <h2>Built on</h2>
+      <dl>
+        <div><dt>Ray-Ban Meta</dt><dd>the glasses, through the Wearables Device Access Toolkit: camera stream, microphone, the button</dd></div>
+        <div><dt>Muse Spark</dt><dd>reads the frame: the food, the number on the display, how sure it is</dd></div>
+        <div><dt>Muse Voice Transcribe</dt><dd>hears your answer when the two reads disagree</dd></div>
+        <div><dt>Muse Image</dt><dd>made the picture at the top</dd></div>
+      </dl>
+      <p class="fine">An entry in the Meta Global AI Developer Hackathon, Indie track, built in Montréal in the ten days to 2026-NOVEMBER-04. Every entry stays on your phone.</p>
+    </section>
 
     <footer>
       <p><a href="https://github.com/pdelfino/itlogs.food">github.com/pdelfino/itlogs.food</a></p>
-      <p>Built in Montréal for the Meta Global AI Developer Hackathon, 2026.</p>
       <p class="family">itlogs<span class="orange">.food</span> is the first of a family. Only the suffix changes.</p>
+      <p class="legal">Ray-Ban Meta and Muse are trademarks of their owners. itlogs.food is an independent project, not affiliated with Meta.</p>
     </footer>
   </main>
 </body>

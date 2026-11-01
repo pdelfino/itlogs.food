@@ -35,22 +35,34 @@ body {
 }
 
 main {
-  max-width: 44rem;
+  max-width: 64rem;
   margin: 0 auto;
-  padding: 3rem 1.25rem 4rem;
+  padding: 1.25rem 1.25rem 4rem;
 }
 
-/* wordmark */
-.wordmark {
+/* top bar */
+.top {
   display: flex;
   align-items: baseline;
-  gap: 0;
-  margin: 0;
-  font-size: clamp(2.4rem, 11vw, 4.5rem);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.02em;
+  justify-content: space-between;
+  padding: 0.5rem 0 1.5rem;
 }
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  color: var(--ink);
+}
+.repo {
+  font-size: 0.85rem;
+  color: var(--mute);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+.repo:hover { border-bottom-color: var(--orange); color: var(--ink); }
 .ink { color: var(--ink); }
 .orange { color: var(--orange); }
 
@@ -75,19 +87,46 @@ main {
   .log li { animation: none; opacity: 1; }
 }
 
-.tagline {
-  margin: 1.25rem 0 0;
-  font-size: 1.1rem;
-  color: var(--ink);
+/* hero: one photograph, short lines */
+.hero { margin: 0 0 2.5rem; }
+.hero figure { margin: 0; }
+.hero img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 10px;
+  background: var(--ink);
 }
+.hero figcaption {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--mute);
+}
+.lede { margin-top: 1.75rem; }
+.lede h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(2rem, 8vw, 3.5rem);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+.lede .tagline {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+  color: var(--orange);
+  font-weight: 600;
+}
+.lede p { margin: 0; max-width: 34rem; }
 
 /* the log that writes itself */
 .log {
-  margin: 3rem 0;
+  margin: 0 0 2.5rem;
   padding: 1rem 1.1rem;
   background: var(--ink);
   color: var(--paper);
-  border-radius: 6px;
+  border-radius: 10px;
   overflow-x: auto;
 }
 .log ol {
@@ -115,16 +154,8 @@ main {
 .log .g { text-align: right; font-weight: 600; }
 .log .s { color: var(--orange); text-align: right; }
 
-/* story */
-.story p { margin: 0 0 1rem; }
-.story p:first-child {
-  font-weight: 600;
-  font-size: 1.35rem;
-  margin-bottom: 1.25rem;
-}
-
 /* steps */
-.steps { margin: 2.5rem 0; }
+.steps { margin: 0 0 2.5rem; max-width: 44rem; }
 .steps ol {
   list-style: none;
   margin: 0;
@@ -143,18 +174,44 @@ main {
 .fine { margin: 1.25rem 0 0; font-size: 0.9rem; color: var(--mute); }
 
 /* video, once it exists */
-.video { margin: 2.5rem 0; }
+.video { margin: 0 0 2.5rem; }
 .video iframe {
   width: 100%;
   aspect-ratio: 16 / 9;
   border: 0;
-  border-radius: 6px;
+  border-radius: 10px;
   background: var(--ink);
 }
 
+/* built on */
+.built { margin: 0 0 2.5rem; }
+.built h2 {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.built dl {
+  margin: 0;
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--rule);
+}
+.built dl > div {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.15rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+.built dt { font-weight: 600; }
+.built dd { margin: 0; color: var(--mute); font-size: 0.95rem; }
+
 /* footer */
 footer {
-  margin-top: 3.5rem;
+  margin-top: 3rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--rule);
   font-size: 0.9rem;
@@ -164,14 +221,30 @@ footer p { margin: 0 0 0.5rem; }
 footer a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
 footer a:hover { border-bottom-color: var(--orange); }
 .family { margin-top: 1rem; }
+.legal { font-size: 0.75rem; }
 
+/* narrow screens: the log drops its time column */
 @media (max-width: 40rem) {
   .log ol { font-size: 0.8rem; }
   .log li { grid-template-columns: 1fr 6ch 9ch; }
   .log li:nth-child(5) { grid-template-columns: 1fr auto; }
   .log .t { display: none; }
 }
-@media (min-width: 40rem) {
-  main { padding-top: 5rem; }
+
+/* wide screens: photograph left, words right; built-on in two columns */
+@media (min-width: 52rem) {
+  main { padding-top: 2rem; }
+  .hero {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 2.5rem;
+    align-items: end;
+  }
+  .hero img { aspect-ratio: 3 / 2; }
+  .lede { margin-top: 0; padding-bottom: 1.5rem; }
   .log ol { font-size: 1rem; }
+  .built dl > div {
+    grid-template-columns: 14rem 1fr;
+    gap: 1.5rem;
+  }
 }
