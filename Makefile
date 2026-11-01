@@ -56,5 +56,5 @@ ios-run: ios-gen  ## install and launch on the first connected iPhone (DEVELOPME
 	xcrun devicectl device install app --device $(DEVICE) ios/build/Build/Products/Debug-iphoneos/$(SCHEME).app
 	xcrun devicectl device process launch --device $(DEVICE) food.itlogs.app
 
-ios-logs:         ## stream the app's os_log lines from the device
-	xcrun devicectl device log stream --device $(DEVICE) --predicate 'subsystem == "food.itlogs"' 2>/dev/null || log stream --predicate 'subsystem == "food.itlogs"'
+ios-logs:         ## stream the app's log lines from the device (idevicesyslog from brew libimobiledevice)
+	idevicesyslog -u $(DEVICE) -p ItlogsFood
