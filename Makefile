@@ -25,10 +25,10 @@ format:           ## ruff format
 	$(SERVER) ruff check --fix server evals && $(SERVER) ruff format server evals
 
 run:              ## the server on :8000 with the fake provider
-	$(SERVER) uvicorn itlogs.app:app --app-dir server --host 0.0.0.0 --port 8000 --reload
+	$(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000 --reload
 
 run-live:         ## the server with the Meta models and the recorder (MODEL_API_KEY from the env)
-	ITLOGS_PROVIDER=meta ITLOGS_RECORD_DIR=$${ITLOGS_RECORD_DIR:-/Volumes/T7/itlogs-food-sessions} $(SERVER) uvicorn itlogs.app:app --app-dir server --host 0.0.0.0 --port 8000
+	ITLOGS_PROVIDER=meta ITLOGS_RECORD_DIR=$${ITLOGS_RECORD_DIR:-/Volumes/T7/itlogs-food-sessions} $(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000
 
 eval:             ## replay the recorded reads, no model calls (fast, offline)
 	$(SERVER) python evals/run.py --from-reads

@@ -85,6 +85,8 @@ async def ws_session(ws: WebSocket) -> None:
                 out = await session.on_voice(msg.voice.text, msg.voice.t_ms)
             elif msg.kind == "capture" and msg.capture:
                 out = await session.capture(msg.capture.t_ms)
+            elif msg.kind == "watch" and msg.watch:
+                out = session.set_watching(msg.watch.on, msg.watch.t_ms)
             else:
                 if transcriber is not None:
                     await transcriber.close()

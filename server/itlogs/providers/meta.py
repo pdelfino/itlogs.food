@@ -45,7 +45,10 @@ REPLY_SCHEMA = {
     "schema": {
         "type": "object",
         "properties": {
-            "action": {"type": "string", "enum": ["log", "confirm", "correct", "cancel", "none"]},
+            "action": {
+                "type": "string",
+                "enum": ["start", "stop", "log", "confirm", "correct", "cancel", "none"],
+            },
             "food": {"type": ["string", "null"]},
             "grams": {"type": ["number", "null"]},
         },
@@ -55,8 +58,10 @@ REPLY_SCHEMA = {
 
 REPLY_SYSTEM = (
     "You turn one spoken sentence from a person weighing food in their kitchen into a "
-    'structured reply for a hands-free food logger. Actions: "log" when they ask for a '
-    'reading ("log it", "weigh this"); "confirm" when they accept what was asked ("yes", '
+    'structured reply for a hands-free food logger. Actions: "start" when they begin a '
+    'weighing session ("I am weighing my food", "stay with me", "let\'s weigh"); "stop" when '
+    'they end it ("done", "that\'s it", "finished"); "log" when they ask for one reading '
+    '("log it", "weigh this"); "confirm" when they accept what was asked ("yes", '
     '"the first one", "correct"); "correct" when they give the food and/or the grams '
     '("81", "it is quinoa", "rice, 87"); "cancel" when they decline ("no", "skip", '
     '"forget it"); "none" when the sentence is not for the logger. Numbers spoken as words '

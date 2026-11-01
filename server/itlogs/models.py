@@ -35,12 +35,20 @@ class CaptureMeta(BaseModel):
     t_ms: int
 
 
+class WatchMeta(BaseModel):
+    """Weighing mode on or off: the server reads the scale on its own while it is on."""
+
+    on: bool
+    t_ms: int = 0
+
+
 class ClientMessage(BaseModel):
-    kind: Literal["frame", "audio", "voice", "capture", "end_session"]
+    kind: Literal["frame", "audio", "voice", "capture", "watch", "end_session"]
     frame: FrameMeta | None = None
     audio: AudioMeta | None = None
     voice: VoiceText | None = None  # text recognized on the phone (fallback path)
     capture: CaptureMeta | None = None
+    watch: WatchMeta | None = None
 
 
 class EntryRead(BaseModel):
@@ -69,12 +77,13 @@ class Nutrients(BaseModel):
 class Entry(BaseModel):
     """One logged food. ``status`` is the label the eval loop produced for free:
     agreed = both reads matched; confirmed = the wearer said yes to a read; corrected = the
-    wearer changed the food or the grams by voice."""
+    wearer changed the food or the grams by voice; spoken = no camera read at all, the wearer
+    said the food and the grams (the hands-free fallback when the display cannot be read)."""
 
     index: int
     food: str
     grams: float
-    status: Literal["agreed", "confirmed", "corrected"]
+    status: Literal["agreed", "confirmed", "corrected", "spoken"]
     reads: list[EntryRead] = Field(default_factory=list)
     nutrients: Nutrients | None = None
     t_ms: int
@@ -95,13 +104,15 @@ class ServerMessage(BaseModel):
     ask: Question | None = None
     say: str | None = Field(default=None, description="text for the phone to speak in the ear")
     entries: list[Entry] | None = None
+    watching: bool | None = None  # rides on "state": weighing mode on or off
 
 
 class Reply(BaseModel):
-    """A spoken sentence, parsed. ``log``: take a look at the scale now. ``confirm``: the first
-    read was right. ``correct``: the food and/or the grams given replace the read. ``cancel``:
-    forget it. ``none``: not addressed to the logger."""
+    """A spoken sentence, parsed. ``start``: weighing mode on ("I'm weighing my food").
+    ``stop``: weighing mode off ("done"). ``log``: take a look at the scale now. ``confirm``:
+    the read was right. ``correct``: the food and/or the grams given replace the read.
+    ``cancel``: forget it. ``none``: not addressed to the logger."""
 
-    action: Literal["log", "confirm", "correct", "cancel", "none"]
+    action: Literal["start", "stop", "log", "confirm", "correct", "cancel", "none"]
     food: str | None = None
     grams: float | None = None

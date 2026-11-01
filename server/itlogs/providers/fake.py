@@ -40,15 +40,20 @@ class FakeLLM:
 
     async def parse_reply(self, text: str, context: str) -> Reply:
         t = text.strip().lower()
+        if re.search(r"\b(done|that's it|that is it|finished|stop weighing)\b", t):
+            return Reply(action="stop")
+        if re.search(r"\b(weighing|start weighing|stay with me|hold on with me|let's weigh)\b", t):
+            return Reply(action="start")
         if re.search(r"\b(log it|log this|log|weigh it|read it)\b", t):
             return Reply(action="log")
         if re.search(r"\b(cancel|skip|forget it|never mind|no)\b", t):
             return Reply(action="cancel")
         if re.search(r"\b(yes|yeah|yep|correct|right|the first)\b", t):
             return Reply(action="confirm")
-        m = re.search(r"(\d+(?:\.\d+)?)", t)
+        m = re.search(r"(\d+(?:\.\d+)?)\s*(?:g|grams?|gram)?\b\s*(?:of\s+)?([a-z][a-z ]*)?", t)
         if m:
-            return Reply(action="correct", grams=float(m.group(1)))
+            food = (m.group(2) or "").strip() or None
+            return Reply(action="correct", food=food, grams=float(m.group(1)))
         if t in WORD_NUMBERS:
             return Reply(action="correct", grams=float(WORD_NUMBERS[t]))
         if t and context:

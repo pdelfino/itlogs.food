@@ -109,3 +109,72 @@ async def test_end_session_reports_the_entries():
     s, _ = await run([RICE_87, RICE_87])
     out = await s.end_session()
     assert kinds(out) == ["state"] and len(out[0].entries) == 1
+
+
+async def test_a_spoken_entry_logs_without_a_camera_read():
+    s = Session(FakeVision(), FakeLLM())
+    out = await s.on_voice("113 g of apple", 100)
+    assert kinds(out) == ["entry", "say"]
+    e = s.entries[0]
+    assert (e.food, e.grams, e.status) == ("apple", 113.0, "spoken")
+    assert said(out) == ["113 grams of apple, logged."]
+
+
+async def test_a_lone_number_with_no_question_is_ignored():
+    s = Session(FakeVision(), FakeLLM())
+    assert await s.on_voice("113", 100) == []
+
+
+APPLE_113 = EntryRead(food="apple", grams=113.0, confidence=0.8)
+EMPTY = EntryRead(food="none", grams=0.0, confidence=0.9)
+
+
+async def feed(s, t0, n, step=1500):
+    out = []
+    for i in range(n):
+        out += await s.on_frame(b"f", t0 + i * step)
+    return out
+
+
+async def test_weighing_mode_asks_after_the_display_settles_and_yes_confirms():
+    # changing, then settled on apple 113 twice, then still showing it
+    s = Session(FakeVision([UNREADABLE, RICE_87, APPLE_113, APPLE_113, APPLE_113]), FakeLLM())
+    out = await s.on_voice("I am weighing my food", 0)
+    assert s.watching and said(out) == ["Weighing. Put the first food on the scale."]
+    out = await feed(s, 0, 4)
+    assert said(out) == ["113 grams of apple, right?"]
+    assert s.entries == []
+    out = await s.on_voice("yes", 7000)
+    assert (s.entries[0].food, s.entries[0].status) == ("apple", "confirmed")
+    # the display still shows 113 apple: not asked again
+    assert await feed(s, 8000, 2) == [] or all(m.kind == "read" for m in await feed(s, 8000, 2))
+
+
+async def test_weighing_mode_same_value_again_after_the_scale_was_emptied():
+    s = Session(FakeVision([APPLE_113, APPLE_113, UNREADABLE, APPLE_113, APPLE_113]), FakeLLM())
+    s.set_watching(True)
+    out = await feed(s, 0, 2)
+    assert said(out) == ["113 grams of apple, right?"]
+    await s.on_voice("yes", 3000)
+    out = await feed(s, 4000, 3)
+    assert said(out) == ["113 grams of apple, right?"]  # a second apple
+
+
+async def test_weighing_mode_no_skips_and_done_speaks_the_totals():
+    s = Session(FakeVision([RICE_87, RICE_87, RICE_87]), FakeLLM())
+    s.set_watching(True)
+    out = await feed(s, 0, 2)
+    assert said(out) == ["87 grams of cooked white rice, right?"]
+    out = await s.on_voice("no", 3000)
+    assert said(out) == ["Skipped."] and s.entries == []
+    out = await s.on_voice("done", 4000)
+    assert not s.watching and said(out) == ["Done. Nothing logged."]
+
+
+async def test_done_totals_after_entries():
+    s = Session(FakeVision([RICE_87, RICE_87]), FakeLLM())
+    s.set_watching(True)
+    await feed(s, 0, 2)
+    await s.on_voice("yes", 3000)
+    out = await s.on_voice("that's it", 4000)
+    assert said(out) == ["Done. 1 food, 113 calories, 2 grams of protein."]
