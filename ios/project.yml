@@ -26,7 +26,8 @@ targets:
         NSSpeechRecognitionUsageDescription: Voice replies are recognized on the phone and sent as text.
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
-        UIBackgroundModes: [audio, processing, bluetooth-central, bluetooth-peripheral]
+        UIBackgroundModes: [audio, processing, bluetooth-central, bluetooth-peripheral, external-accessory]
+        UISupportedExternalAccessoryProtocols: [com.meta.ar.wearable]   # Bluetooth Classic, used by the camera stream
         # Meta Wearables Device Access Toolkit (required keys, see the CameraAccess sample)
         CFBundleURLTypes:
           - CFBundleTypeRole: Editor
