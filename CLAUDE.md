@@ -13,7 +13,7 @@ The food product of the itlogs family: Ray-Ban Meta glasses look at the kitchen 
 - `make test`, `make lint`, `make format`, `make run`, `make eval`. Run `make lint test eval` before every commit.
 - `make run-live` is the real thing (Meta models, the recorder). It needs `MODEL_API_KEY` in the environment, which lives in Pedro's `~/.secure_env_vars`: Pedro runs it in his own terminal; Claude never holds the key.
 - `make ci` runs the GitHub workflow locally with act before any push (drafts skip Actions).
-- iOS: `make ios-gen` regenerates the Xcode project from `ios/project.yml` (never edit a .xcodeproj by hand; it is not committed). `make ios-build`, `make ios-test` (simulator), `make ios-run` (device), `make ios-logs`.
+- iOS: `make ios-gen` regenerates the Xcode project from `ios/project.yml` (never edit a .xcodeproj by hand; it is not committed). `make ios-build`, `make ios-test` (simulator), `DEVELOPMENT_TEAM=6X8G2S2P89 make ios-run` (device; that is Pedro's personal team id, the certificate id SAZGZ8NBNB is not it; the phone must be unlocked), `make ios-logs`. From Claude Code the build and install need the sandbox off.
 - The glasses only work on a physical iPhone paired in the Meta AI app. The simulator covers UI and the WebSocket client with `PhoneCameraSource`.
 
 ## Meta facts (details in hackathon/meta-model-api-notes.org and hackathon/wearables-toolkit-notes.org)
