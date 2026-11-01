@@ -183,6 +183,10 @@ main {
   background: var(--ink);
 }
 
+/* the still life */
+.still { margin: 0 0 2.5rem; }
+.still img { display: block; width: 100%; height: auto; border-radius: 10px; }
+
 /* built on */
 .built { margin: 0 0 2.5rem; }
 .built h2 {
