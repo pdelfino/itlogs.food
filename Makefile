@@ -39,6 +39,9 @@ eval-live:        ## run the photos through the configured provider; prints late
 ci:               ## what GitHub Actions runs, locally (act) before any push
 	act -W .github/workflows/ci.yml
 
+site:             ## preview the landing page (site/) on http://localhost:8787
+	python3 -m http.server 8787 -d site
+
 docker-build:     ## the server image
 	docker build -t itlogs-food-server server
 

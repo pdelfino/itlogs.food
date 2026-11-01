@@ -21,7 +21,7 @@ targets:
     info:
       path: Sources/ItlogsFood/Info.plist
       properties:
-        CFBundleDisplayName: itlogs   # the spoken name: "Hey Meta, start itlogs"
+        CFBundleDisplayName: itlogs.food   # the spoken name for "Hey Meta, start ..." is set in the Wearables Developer Center (#6), not here
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         ItlogsGitSHA: "${GIT_SHA}"   # set by make ios-gen
