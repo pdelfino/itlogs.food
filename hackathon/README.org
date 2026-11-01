@@ -1,0 +1,66 @@
+#+TITLE: Meta Global AI Developer Hackathon · everything about the competition
+#+DATE: 2026-11-01
+
+Hosts: Meta and Cerebral Valley. Remote, worldwide, up to 20,000 participants. Pedro applied 2026-OCTOBER-23 with a gym-logging idea for the glasses, was approved 2026-OCTOBER-25 20:07 ET, Indie track, and switched the submission to food logging on 2026-NOVEMBER-01 (the rules judge the submitted project, not the application; see below). Tracker: trampo#113.
+
+* Files
+| File                              | What                                                                                   |
+|-----------------------------------+----------------------------------------------------------------------------------------|
+| official-rules-2026-10-25.org     | The contract accepted with the application: IP license, waiver, prizes, payout, taxes  |
+| participant-guide-2026-10-26.org  | The login-walled details page: problem statements, rules, anti-projects, schedule, judging stages, bonus prizes |
+| application-2026-10-23.org        | The exact answers submitted (the gym idea in field 7, skill in field 8)                |
+| event-snapshot-2026-10-23.org     | What was known before applying                                                         |
+| event-page-2026-10-26.org         | The public event page as served on 2026-OCTOBER-26                                     |
+| emails-2026-10-26.org             | Every Cerebral Valley email: approval, welcome, credits, kickoff                        |
+| meta-model-api-notes.org          | Endpoints, prices, structured output, the voice realtime protocol, Glimmer on the Mac  |
+| wearables-toolkit-notes.org       | Developer Mode (no registration for own glasses), the SDK lifecycle, plist keys        |
+| meta-food-logging.org             | What Meta has done and said about food logging on the glasses, prior art, the rules that shape the design |
+
+* Dates (ET)
+| What                         | When                            |
+|------------------------------+---------------------------------|
+| Build window                 | 2026-OCTOBER-26 12:00 to NOVEMBER-04 21:00 |
+| Credits claim deadline       | 2026-NOVEMBER-04 21:00          |
+| Submission deadline          | 2026-NOVEMBER-04 21:00          |
+| Judging                      | NOVEMBER-04 to 08               |
+| Closing ceremony, winners    | 2026-NOVEMBER-09                |
+| Bonus prizes announced       | about 2026-NOVEMBER-10; community vote NOVEMBER-16 |
+
+* Judging (Official Rules; the guide adds a pass/fail stage one: fits a theme, used Meta models)
+| Criterion                                                                 | Weight |
+|---------------------------------------------------------------------------+--------|
+| Impact: real-world potential, who benefits, fits one of the problem statements | 30% |
+| Use of Meta AI tooling: beyond a basic integration, unexpected capabilities | 25% |
+| Demo: works live, holds up, quality of the demo video                      | 25% |
+| Technical depth and execution                                             | 20% |
+
+Indie prizes (USD): 150,000 / 100,000 / 75,000 / 50,000 / 25,000. Bonus pool up to 50,000, including Best Build on Meta Open Weight Models (10,000: Muse Glimmer or Muse Spark Open on own hardware or partner inference).
+
+* Changing the idea after applying
+Allowed. The Official Rules: the judging criteria "apply only to projects submitted during the Hackathon, not to applications"; nothing ties the submission to the application's field 7. What stays fixed: one track (Indie, as applied), a theme (Build for Your World), original work owned by the participant, Meta models used, new work only.
+
+* Submission (participant guide, 2026-10-26)
+- Portal: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/hackathon/submit, by 2026-NOVEMBER-04 21:00 ET.
+- *The repository must be public* at submission.
+- A three-minute demo video showing only what was built during the hackathon; it is a primary judging artifact with the code and the live product.
+- New work only: every line here was written after kickoff (2026-OCTOBER-26 12:00 ET). The transport layer (the WebSocket server, the Meta model clients, the voice path, the iOS client with the glasses source) was first written for the gym idea between OCTOBER-26 and 27 in the itlogs.fit repository, during the hackathon, and carried here on NOVEMBER-01; the food logic is from NOVEMBER-01 on. The README states the timeline and the commit history is the proof.
+- One track, one project. Original work; open source allowed when licenses are followed; third-party and AI help allowed.
+
+* Positioning (the anti-project list)
+"AI Nutrition Coach" and "Simple Image Analyzers" are on the guide's anti-project list. itlogs.food is neither if it stays a *hands-free logger*: a wearable sensor that writes down what was weighed. Words to use: log, record, read, weigh, hands-free, check. Words never to use, in code, README, video or Discord: coach, advice, diet plan, what to eat, healthy.
+
+* Models named by the guide
+Meta Model API: Muse Spark series, Muse Wonder, Muse Image, Muse Voice Transcribe, SAM 3.1. Open weights: Muse Glimmer, Muse Spark Open (Baseten id =meta-models/muse-spark-open-1026=, Modal, Fireworks). Here: Muse Spark reads the photo and parses the replies; Muse Voice Transcribe hears the wearer; Muse Glimmer on the Mac is the open-weight reader (=ITLOGS_VISION=local=).
+
+* What the rules mean for itlogs
+- Pedro keeps the IP. Organizers and partners get a perpetual, irrevocable, non-exclusive, royalty-free license to the submission "for any purpose", and to anything shared during the event (Discord, pitches, feedback): nothing is confidential.
+- Publicity: name, likeness, voice and the submission usable in any media forever; email shared with sponsors.
+- Money: paid in USD via Tremendous within 30 days of verification, W-8BEN, taxes and fees on the winner.
+- Liability released, indemnity given, California law, San Francisco courts. Rules can change at any time.
+
+* Links
+- Event: https://cerebralvalley.ai/e/meta-ai-developer-hackathon
+- Details (login): https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details
+- Discord: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/discord
+- Waiver and rules: https://cerebralvalley.ai/e/meta-ai-developer-hackathon/waiver
+- Meta developer page: https://dev.meta.ai/events/global-hackathon

@@ -1,0 +1,40 @@
+[project]
+name = "itlogs-server"
+version = "0.1.0"
+description = "itlogs.food server: a glasses photo in, the food and the grams on the scale out, checked twice"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "websockets>=13",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.5",
+    "httpx>=0.27",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.6",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = ["live: calls a real model endpoint (costs money); run with -m live"]
+addopts = "-m 'not live'"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["itlogs"]

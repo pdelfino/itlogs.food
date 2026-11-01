@@ -1,0 +1,56 @@
+"""Deterministic providers for tests, the evals' replay mode and work without credits."""
+
+from __future__ import annotations
+
+import re
+
+from itlogs.models import EntryRead, Reply
+
+WORD_NUMBERS = {
+    "zero": 0,
+    "one": 1,
+    "two": 2,
+    "three": 3,
+    "four": 4,
+    "five": 5,
+    "six": 6,
+    "seven": 7,
+    "eight": 8,
+    "nine": 9,
+    "ten": 10,
+}
+
+
+class FakeVision:
+    """Returns the scripted reads in order, then repeats the last one forever."""
+
+    def __init__(self, reads: list[EntryRead] | None = None):
+        default = EntryRead(food="cooked white rice", grams=87.0, confidence=0.9)
+        self.reads = list(reads or [default])
+        self.calls = 0
+
+    async def read_entry(self, jpeg: bytes) -> EntryRead:
+        read = self.reads[min(self.calls, len(self.reads) - 1)]
+        self.calls += 1
+        return read
+
+
+class FakeLLM:
+    """A regex stand-in for the reply parser; enough for the loop's tests."""
+
+    async def parse_reply(self, text: str, context: str) -> Reply:
+        t = text.strip().lower()
+        if re.search(r"\b(log it|log this|log|weigh it|read it)\b", t):
+            return Reply(action="log")
+        if re.search(r"\b(cancel|skip|forget it|never mind|no)\b", t):
+            return Reply(action="cancel")
+        if re.search(r"\b(yes|yeah|yep|correct|right|the first)\b", t):
+            return Reply(action="confirm")
+        m = re.search(r"(\d+(?:\.\d+)?)", t)
+        if m:
+            return Reply(action="correct", grams=float(m.group(1)))
+        if t in WORD_NUMBERS:
+            return Reply(action="correct", grams=float(WORD_NUMBERS[t]))
+        if t and context:
+            return Reply(action="correct", food=t)
+        return Reply(action="none")

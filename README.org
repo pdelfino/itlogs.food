@@ -1,0 +1,42 @@
+#+TITLE: itlogs.food
+#+STARTUP: showall
+
+Hands-free food logging with Ray-Ban Meta glasses and any kitchen scale. Put the food on the scale, say "log it" (or press the button), and the glasses read the food and the grams off the display, look again a second later, and speak the entry back. When the two looks disagree, it asks and you answer by voice. The entry, with its nutrients, goes to Apple Health.
+
+Meta Global AI Developer Hackathon entry, Indie track, Build for Your World. Everything about the competition is in [[file:hackathon/README.org][hackathon/]].
+
+* Why
+- Photo apps guess the portion and underestimate a meal by about a third (NIH metabolic-kitchen test, NUTRITION 2026: 252 to 345 kcal low per meal). Smart scales weigh, then make you pick the food by hand on the phone.
+- Meta's glasses can log food from a photo since 2026 (US only, estimates, Meta AI app). They cannot weigh. Most kitchens already have a scale.
+- So: the glasses read the number on the scale. Any scale, no pairing, no app on the scale's side, hands free while cooking. See [[file:hackathon/meta-food-logging.org][what Meta has done and said]], with the prior art.
+
+* How it works
+1. The phone streams the glasses' camera to a server on the LAN. Nothing is kept.
+2. "Log it" (voice) or the button: the latest frame is read by Muse Spark (Meta Model API) as structured output: =food=, =display_value=, =unit=, =confidence=. Foods you log often are checked first.
+3. About 1.5 s later the next frame is read again. Two reads that agree (same food, grams within 1 g) log the entry as *agreed* and the ear hears "87 grams of cooked white rice, logged." Two reads also prove the scale had settled.
+4. Reads that disagree become a question in the ear: "cooked white rice: 81 or 87 grams?" The answer ("87", "yes", "quinoa", "no") is heard by Muse Voice Transcribe and parsed by Muse Spark into confirm, correct or cancel. The entry is logged as *confirmed* or *corrected*.
+5. Grams × a per-100 g table give kcal, protein, carbs, fat, fiber and sodium (the Canadian Nutrient File, issue #3; a placeholder table until then). Salt is weighed like everything else: 1 g of salt is about 390 mg of sodium, and no camera sees salt.
+6. Every entry carries the label the loop produced (agreed, confirmed, corrected). Those labels are the eval set and the recalibration data for the open-weight reader, Muse Glimmer on the Mac (issue #4).
+
+* Layout
+| =server/=   | FastAPI, the loop (=session.py=), nutrients, the provider seam, tests          |
+| =ios/=      | the phone client: glasses source (Wearables Device Access Toolkit), mic, speaker |
+| =evals/=    | eval sets and the scorer (=make eval=)                                          |
+| =hackathon/= | the rules, the guide, the application, Meta's model notes, Meta's food logging |
+
+* Run
+#+begin_src sh
+make setup        # uv env + xcodegen
+make lint test eval
+make run          # server on :8000 with the fake provider
+make run-live     # Meta models (MODEL_API_KEY in the env); photos recorded to the T7
+make ios-run      # install on the iPhone (Xcode, a signed-in Apple ID)
+#+end_src
+
+* Timeline (hackathon honesty)
+- 2026-OCTOBER-26 to 27: the transport layer (WebSocket server, Meta model clients, voice path, iOS client with the glasses source) written during the hackathon for a gym-logging idea in a sibling repo.
+- 2026-NOVEMBER-01: this repo; the food loop, the reader, nutrients, the evals.
+- The commit history is the proof. Nothing here predates kickoff.
+
+* Status
+Scaffold: server loop and tests green on the fake providers, no real photo read yet. The number that matters (food top-1 and grams within 1 g on real glasses photos) is issue #1.

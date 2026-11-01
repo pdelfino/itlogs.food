@@ -1,0 +1,79 @@
+"""The reader and the parser against canned HTTP responses (no key, no credits)."""
+
+import json
+
+import httpx
+
+from itlogs.providers.meta import MetaParser, MetaReader
+
+
+def canned(payload: dict, seen: list):
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(json.loads(request.content))
+        return httpx.Response(
+            200, json={"choices": [{"message": {"content": json.dumps(payload)}}]}
+        )
+
+    return httpx.MockTransport(handler)
+
+
+async def test_reader_converts_units_and_passes_the_usual_foods():
+    seen: list = []
+    r = MetaReader(
+        "https://x.test/v1",
+        "muse-spark-1.3",
+        "LLM_test",
+        usual_foods=["rice", "chicken"],
+        transport=canned(
+            {"food": "Chicken Breast", "display_value": 4.0, "unit": "oz", "confidence": 0.8},
+            seen,
+        ),
+    )
+    read = await r.read_entry(b"jpeg")
+    assert read.food == "chicken breast"
+    assert read.grams is not None and round(read.grams, 1) == 113.4
+    body = seen[0]
+    assert body["response_format"]["type"] == "json_schema"
+    assert body["messages"][1]["content"][1]["type"] == "image_url"
+    assert "rice, chicken" in body["messages"][1]["content"][0]["text"]
+
+
+async def test_reader_unreadable_display():
+    r = MetaReader(
+        "https://x.test/v1",
+        "m",
+        transport=canned(
+            {"food": "none", "display_value": None, "unit": "unknown", "confidence": 0}, []
+        ),
+    )
+    read = await r.read_entry(b"jpeg")
+    assert not read.readable
+
+
+async def test_reader_survives_empty_content():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200, json={"choices": [{"message": {"content": None}, "finish_reason": "length"}]}
+        )
+
+    r = MetaReader("https://x.test/v1", "m", transport=httpx.MockTransport(handler))
+    assert not (await r.read_entry(b"jpeg")).readable
+
+
+async def test_parser_structured_reply():
+    p = MetaParser(
+        "https://x.test/v1",
+        "m",
+        transport=canned({"action": "correct", "food": " Quinoa ", "grams": 81}, []),
+    )
+    reply = await p.parse_reply("it is quinoa, 81", "rice: 81 or 87 grams?")
+    assert (reply.action, reply.food, reply.grams) == ("correct", "quinoa", 81.0)
+
+
+async def test_parser_bad_action_becomes_none():
+    p = MetaParser(
+        "https://x.test/v1",
+        "m",
+        transport=canned({"action": "dance", "food": None, "grams": None}, []),
+    )
+    assert (await p.parse_reply("hi", "")).action == "none"

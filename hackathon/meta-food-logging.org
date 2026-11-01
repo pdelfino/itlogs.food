@@ -1,0 +1,45 @@
+#+TITLE: What Meta has done and said about food logging on its glasses, and where this project stands
+#+DATE: 2026-11-01
+
+Kept so the write-up, the video and any Discord answer rest on quotes, not memory. Everything below is public.
+
+* Meta's own feature (announced 2026-MARCH-31)
+Source: Meta's post "Introducing a New Line of Ray-Ban Meta Glasses Built for Prescriptions and All-Day Comfort, Plus More Colors, Lenses, and Software Updates Across Our Collection", https://www.meta.com/blog/ray-ban-meta-styles-prescription-lenses/ (2026-MARCH-31). Coverage: Road to VR (2026-APRIL-01) https://www.roadtovr.com/meta-health-food-logging-ray-ban-smart-glasses/ and 9to5Google (2026-APRIL-06) https://9to5google.com/2026/04/06/metas-smart-glasses-will-watch-what-you-eat-to-track-nutrition-data/.
+
+What Meta wrote, verbatim:
+- "First up, we're making nutrition tracking on our AI glasses easier."
+- "With a simple voice prompt or quick photo, you can log what you eat hands-free, and Meta AI will extract key nutrition details and add them to your food log in the Meta AI app."
+- "Over time, your food log powers increasingly personalized insights that get more useful, helping you make healthier, more informed choices."
+- "When you want guidance in the moment, you can ask Meta AI questions about what to eat next, like 'What should I eat to increase my energy?', with answers that take your food log and goals into account."
+- "This will be available to users aged 18+ in the U.S. on Ray-Ban Meta and Oakley Meta glasses soon, and Meta Ray-Ban Display glasses later this summer."
+- "As we shared this past Connect, with ongoing software updates, Meta AI on glasses will transition from something you have to prompt with a question each time, to a more continuous, in-the-moment assistant that can help throughout the day. For example, in the future, we'll get to a point where your AI glasses can understand what you're eating and automatically log your food."
+
+What that means in practice (press coverage, not Meta):
+- Portions are estimated from the photo; nothing is weighed. Tom's Guide tried it for a month and reported estimates, not weights: https://www.tomsguide.com/ai/i-stopped-weighing-my-food-and-used-ray-ban-meta-glasses-to-track-calories-instead
+- The log lives in the Meta AI app. Road to VR notes the glasses do not tie into Apple Health or Samsung Health (Garmin is linked for other data).
+- US only, so not available in Canada as of 2026-NOVEMBER-01.
+
+* The gap this project fills
+Meta's feature answers "what did I eat"; it cannot answer "how much". Photo apps underestimate a meal's energy by about 33 % (NIH metabolic-kitchen test, NUTRITION 2026: Appediet, Cal AI, Lose It! and MyFitnessPal, 102 meals, 252 to 345 kcal low per meal; every app about 30 g low on fat). A scale removes the portion problem, and most kitchens already have one.
+
+itlogs.food: the glasses read the food *and the number on the scale's display*, from the same photo, then look again before logging, and ask by voice when the two looks disagree. The entry goes to Apple Health, where every other health app can see it. Any scale works, because the display is read, not the scale's radio.
+
+* Prior art, so the claim stays honest
+| What | Weighs? | Glasses? | Apple Health? | Notes |
+|------+---------+----------+---------------+-------|
+| Meta AI food logging (above) | no, estimates | yes | no | US only, Meta AI app |
+| AI Food Coach (iOS, Michal Novotnik, v1.6.1 OCT 2026) | reads the grams off the display from a phone photo | no | writes meals | one developer, no ratings yet; https://apps.apple.com/app/id6759910137 |
+| SnapTrack: Camera Scale Reader (iOS) | reads a body scale's display | no | writes weight | no food |
+| Qalzy (London, Kickstarter 2025) | yes, its own scale with a camera on a stalk | no | ? | USD 269, no independent review |
+| Smart nutrition scales (Etekcity, Renpho, Greater Goods) | yes, by Bluetooth | no | some | the food is picked by hand in the app |
+| Nutrition5k (Google, 2021) | weighed ingredients dataset | no | no | research |
+Not found anywhere: glasses + any scale's display + a second look + voice confirmation + Apple Health. The pieces exist alone; the loop is the contribution.
+
+* Meta's rules that shape the design
+Device Access Toolkit acceptable use (https://wearables.developer.meta.com/docs/develop/dat/acceptable-use):
+- Encouraged: "Hands-free capture and logging" and "Context on demand: the wearer points at something and asks; you answer. Deliberate, not ambient."
+- Design principle: "narrow purpose, short retention, obvious to bystanders."
+- Acceptable Use Policy (last updated 2026-SEPTEMBER-22, https://wearables.developer.meta.com/acceptable-use-policy): no surreptitious recording, no unique identification of people, no bypassing the capture LED, no recording in sensitive locations.
+So: a photo is taken only on the button or on "log it"; only the frames that were read are kept, and only on Pedro's own disk; nothing identifies a person; the kitchen is the wearer's own.
+
+Hackathon participant guide, anti-project list: "AI Nutrition Coach" and "Simple Image Analyzers". This is neither: it is a logger that writes down a weight, never advice, and the second look plus the voice check are what make it more than an image analyzer. Words never to use anywhere: coach, advice, diet plan, what to eat.

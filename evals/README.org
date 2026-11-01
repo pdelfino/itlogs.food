@@ -1,0 +1,14 @@
+#+TITLE: evals · does the reader get the food and the grams right?
+
+Two numbers decide the demo: food top-1 and grams within 1 g, over photos of real food on a real scale, read from the glasses. The third is how often the loop logs without asking.
+
+* A set
+One folder per weighing under =sets/=, named =YYYY-MM-DD-<food>-<n>/=:
+- =a.jpg=, =b.jpg= : two photos of the same food on the scale, about 1.5 s apart, as the glasses took them. Never committed (see .gitignore); they live on the T7.
+- =truth.json= : ={"food": "cooked white rice", "grams": 87.0, "scale": "Renpho", "by": "Pedro", "date": "2026-11-02"}=. Committed.
+- =reads.json= (written by a live run): the model's two reads, so the loop can be re-scored offline. Committed.
+
+A live session with =ITLOGS_RECORD_DIR= set keeps the frames each read was made on and the entries with their labels (agreed, confirmed, corrected); those folders become sets with a =truth.json= written from the confirmed entry.
+
+* Run
+=make eval= replays =reads.json= (fast, offline, deterministic, what CI runs). =make eval-live= runs the photos through the configured provider (=ITLOGS_PROVIDER=meta=, =ITLOGS_VISION=meta|local=) and prints latency per read too.

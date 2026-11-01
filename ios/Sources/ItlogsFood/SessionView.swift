@@ -1,0 +1,57 @@
+import SwiftUI
+
+struct SessionView: View {
+    @Bindable var session: SessionController
+    @State private var urlText = ""
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section("Server") {
+                    TextField("ws://host:8000/ws/session", text: $urlText)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
+                        .onSubmit { if let u = URL(string: urlText) { session.serverURL = u } }
+                    Toggle("Use the glasses", isOn: $session.useGlasses)
+                    Button("Pair the glasses (once)") { Task { await session.registerGlasses() } }
+                    Toggle("Recognize speech on the phone (fallback)", isOn: $session.useDeviceSpeech)
+                }
+                Section("Now") {
+                    if let r = session.lastRead {
+                        LabeledContent("Read", value: r.grams.map { "\(r.food) · \($0.formatted()) g" } ?? r.food)
+                    }
+                    if let q = session.question { Text(q.text).bold() }
+                    if !session.lastSaid.isEmpty { Text("Said: \(session.lastSaid)").italic() }
+                    if let e = session.error { Text(e).foregroundStyle(.red) }
+                }
+                Section("Logged") {
+                    ForEach(session.entries) { e in
+                        HStack {
+                            Text("\(e.index). \(e.food)")
+                            Spacer()
+                            Text("\(e.grams, format: .number) g").monospacedDigit()
+                            if let n = e.nutrients { Text("· \(Int(n.kcal)) kcal").foregroundStyle(.secondary) }
+                            Text(e.status).font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    if let t = session.totals {
+                        LabeledContent("Total", value: "\(Int(t.kcal)) kcal · \(Int(t.protein_g)) g protein · \(Int(t.sodium_mg)) mg sodium")
+                            .font(.caption)
+                    }
+                }
+            }
+            .navigationTitle("itlogs.food")
+            .toolbar {
+                ToolbarItemGroup(placement: .bottomBar) {
+                    if session.running {
+                        Button("Log it") { session.capture() }.buttonStyle(.borderedProminent)
+                        Spacer()
+                        Button("Stop", role: .destructive) { Task { await session.stop() } }
+                    } else {
+                        Button("Start") { Task { await session.start() } }
+                    }
+                }
+            }
+            .onAppear { urlText = session.serverURL.absoluteString }
+        }
+    }
+}
