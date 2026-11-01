@@ -1,0 +1,22 @@
+#+TITLE: itlogs.food · brand
+#+DATE: 2026-11-01
+
+Picked 2026-NOVEMBER-01 (Pedro, option B of three): *the log line*. A terminal wordmark with a block cursor: a log that writes itself.
+
+* Why this one
+Every other health stream fills itself (ring, watch, phone, body scale, screen time). Food was the one log still filled by hand, and the friction is what kills the habit. itlogs.food is where that stops. The cursor is the promise: the line is being written, hands free. The orange is the moment the ear says "logged".
+
+* Files
+| =logo-dark.svg=, =logo-dark@2x.png= | the primary wordmark, on ink (1040 x 240 px rendered) |
+| =logo-light.svg=                     | the same on paper                                     |
+| =mark.svg=                           | the cursor alone, rounded, for app stores and avatars |
+| =favicon.svg=, =favicon-32.png=      | the cursor, square (browsers crop)                    |
+| =apple-touch-icon.png=               | 180 x 180                                             |
+| =icon-1024.png=                      | the iOS app icon source (also in =ios/.../Assets.xcassets=) |
+
+* Rules
+- Wordmark: JetBrains Mono SemiBold, lowercase, "itlogs" in ink or paper, ".food" and the cursor in orange.
+- Colours: ink =#111111=, paper =#fafaf7=, orange =#ff5a1f=. Nothing else.
+- The cursor is a block, 30 x 52 at a 64 px wordmark (about half an em wide, the cap height tall), one space after "d". On the web it may blink (1.1 s); in print it does not.
+- Family: every itlogs product shares the wordmark and the cursor; only the suffix changes colour.
+- Tagline: "Your food, weighed and logged, hands free."

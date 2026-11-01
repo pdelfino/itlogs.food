@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" width="520" height="120">
+  <rect width="520" height="120" fill="#fafaf7"/>
+  <text x="20" y="82" font-family="JetBrains Mono, SF Mono, Menlo, monospace" font-size="64" font-weight="600" fill="#111111">itlogs</text>
+  <text x="258" y="82" font-family="JetBrains Mono, SF Mono, Menlo, monospace" font-size="64" font-weight="600" fill="#ff5a1f">.food</text>
+  <rect x="456" y="36" width="30" height="52" fill="#ff5a1f"/>
+</svg>
