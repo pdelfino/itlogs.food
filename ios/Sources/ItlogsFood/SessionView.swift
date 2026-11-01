@@ -12,7 +12,7 @@ struct SessionView: View {
                         .textInputAutocapitalization(.never).autocorrectionDisabled()
                         .onSubmit { if let u = URL(string: urlText) { session.serverURL = u } }
                     Toggle("Use the glasses", isOn: $session.useGlasses)
-                    Button("Pair the glasses (once)") { Task { await session.registerGlasses() } }
+                    Button("Connect this app to the glasses (once)") { Task { await session.registerGlasses() } }
                     Toggle("Recognize speech on the phone (fallback)", isOn: $session.useDeviceSpeech)
                 }
                 Section("Now") {

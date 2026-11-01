@@ -23,12 +23,18 @@ struct ItlogsFoodApp: App {
                 // registration and permission flows; the SDK must see that URL or the flow
                 // never completes (toolkit guide, step 4).
                 .onOpenURL { url in
+                    Diag.send("callback url: \(url.scheme ?? "")://\(url.host ?? "")\(url.path) action=\(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "metaWearablesAction" }?.value ?? "none")")
                     guard let c = URLComponents(url: url, resolvingAgainstBaseURL: false),
                           c.queryItems?.contains(where: { $0.name == "metaWearablesAction" }) == true
                     else { return }
                     Task { @MainActor in
-                        do { _ = try await Wearables.shared.handleUrl(url) }
-                        catch { session.error = "Glasses callback: \(error.localizedDescription)" }
+                        do {
+                            let handled = try await Wearables.shared.handleUrl(url)
+                            Diag.send("callback handled=\(handled)")
+                        } catch {
+                            session.error = "Glasses callback: \(String(describing: error))"
+                            Diag.send("callback threw: \(String(describing: error))")
+                        }
                     }
                 }
         }
