@@ -19,6 +19,7 @@ struct SessionView: View {
                     if let r = session.lastRead {
                         LabeledContent("Read", value: r.grams.map { "\(r.food) · \($0.formatted()) g" } ?? r.food)
                     }
+                    if session.watching { Text("Weighing: watching the scale").foregroundStyle(.orange) }
                     if let q = session.question { Text(q.text).bold() }
                     if !session.lastSaid.isEmpty { Text("Said: \(session.lastSaid)").italic() }
                     if let e = session.error { Text(e).foregroundStyle(.red) }
@@ -46,6 +47,8 @@ struct SessionView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .bottomBar) {
                     if session.running {
+                        Button(session.watching ? "Done" : "Weighing") { session.setWeighing(!session.watching) }
+                            .buttonStyle(.bordered).tint(session.watching ? .orange : nil)
                         Button("Log it") { session.capture() }.buttonStyle(.borderedProminent)
                         Spacer()
                         Button("Stop", role: .destructive) { Task { await session.stop() } }

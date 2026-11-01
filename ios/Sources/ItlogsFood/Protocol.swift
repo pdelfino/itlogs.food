@@ -22,12 +22,18 @@ struct CaptureMeta: Codable, Sendable {
     var t_ms: Int
 }
 
+struct WatchMeta: Codable, Sendable {
+    var on: Bool
+    var t_ms: Int = 0
+}
+
 struct ClientMessage: Codable, Sendable {
-    var kind: String  // frame | audio | voice | capture | end_session
+    var kind: String  // frame | audio | voice | capture | watch | end_session
     var frame: FrameMeta? = nil
     var audio: AudioMeta? = nil
     var voice: VoiceText? = nil
     var capture: CaptureMeta? = nil
+    var watch: WatchMeta? = nil
 }
 
 struct EntryRead: Codable, Sendable, Equatable {
@@ -69,4 +75,5 @@ struct ServerMessage: Codable, Sendable {
     var ask: Question? = nil
     var say: String? = nil
     var entries: [Entry]? = nil
+    var watching: Bool? = nil
 }

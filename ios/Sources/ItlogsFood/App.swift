@@ -4,12 +4,19 @@ import SwiftUI
 @main
 struct ItlogsFoodApp: App {
     @State private var session = SessionController()
+    @State private var invocations: VoiceInvocations?
 
     init() { GlassesSource.configure() }
 
     var body: some Scene {
         WindowGroup {
             SessionView(session: session)
+                .task {
+                    // "Hey Meta, start itlogs" lands here (dev and beta channels only)
+                    let v = VoiceInvocations { [session] in await session.startWeighingFromVoice() }
+                    v.start()
+                    invocations = v
+                }
                 // The Meta AI app calls back on itlogsfood://...?metaWearablesAction=... after
                 // registration and permission flows; the SDK must see that URL or the flow
                 // never completes (toolkit guide, step 4).

@@ -22,6 +22,7 @@ final class SessionController {
     var lastSaid = ""
     var error: String?
     var running = false
+    var watching = false
 
     private let log = Logger(subsystem: "food.itlogs", category: "session")
     private let client = StreamClient()
@@ -73,6 +74,15 @@ final class SessionController {
     /// The deliberate trigger: read the scale now.
     func capture() { Task { try? await client.capture(tMs: nowMs()) } }
 
+    /// Weighing mode: the server watches the scale and asks after each food.
+    func setWeighing(_ on: Bool) { Task { try? await client.watch(on: on, tMs: nowMs()) } }
+
+    /// "Hey Meta, start itlogs": start the session if needed, then weighing mode.
+    func startWeighingFromVoice() async {
+        if !running { await start() }
+        setWeighing(true)
+    }
+
     /// One-time pairing with the glasses (opens the Meta AI app and returns).
     func registerGlasses() async {
         do { try await GlassesSource.register() } catch { self.error = error.localizedDescription }
@@ -85,6 +95,7 @@ final class SessionController {
         try? await client.endSession()
         await client.disconnect()
         running = false
+        watching = false
     }
 
     func handle(_ msg: ServerMessage) {
@@ -98,7 +109,9 @@ final class SessionController {
         case "say":
             if let text = msg.say { lastSaid = text; voice.say(text) }
             if msg.say == "Skipped." { question = nil }
-        case "state": entries = msg.entries ?? entries
+        case "state":
+            entries = msg.entries ?? entries
+            if let w = msg.watching { watching = w }
         default: break
         }
     }

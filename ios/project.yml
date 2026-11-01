@@ -21,7 +21,7 @@ targets:
     info:
       path: Sources/ItlogsFood/Info.plist
       properties:
-        CFBundleDisplayName: itlogs.food
+        CFBundleDisplayName: itlogs   # the spoken name: "Hey Meta, start itlogs"
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         ItlogsGitSHA: "${GIT_SHA}"   # set by make ios-gen
