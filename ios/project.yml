@@ -10,6 +10,8 @@ settings:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
     DEVELOPMENT_TEAM: "${DEVELOPMENT_TEAM}"   # your Apple team id: DEVELOPMENT_TEAM=XXXXXXXXXX make ios-run (empty = unsigned build)
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "${BUILD_NUMBER}"   # commits on main, set by make ios-gen
     CODE_SIGN_STYLE: Automatic
 targets:
   ItlogsFood:
@@ -19,7 +21,10 @@ targets:
     info:
       path: Sources/ItlogsFood/Info.plist
       properties:
-        CFBundleDisplayName: itlogs
+        CFBundleDisplayName: itlogs.food
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ItlogsGitSHA: "${GIT_SHA}"   # set by make ios-gen
         UILaunchScreen: {}
         NSCameraUsageDescription: The phone camera is the fallback frame source when the glasses are not connected.
         NSMicrophoneUsageDescription: Voice replies like "yes" or "eighty-one", and "log it".

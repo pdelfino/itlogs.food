@@ -42,8 +42,8 @@ ci:               ## what GitHub Actions runs, locally (act) before any push
 docker-build:     ## the server image
 	docker build -t itlogs-food-server server
 
-ios-gen:          ## regenerate ios/ItlogsFood.xcodeproj from ios/project.yml (the .xcodeproj is not committed)
-	cd ios && xcodegen generate
+ios-gen:          ## regenerate ios/ItlogsFood.xcodeproj from ios/project.yml (the .xcodeproj is not committed); build number = commit count, sha into Info.plist
+	cd ios && BUILD_NUMBER=$$(git rev-list --count HEAD) GIT_SHA=$$(git rev-parse --short HEAD) xcodegen generate
 
 ios-build: ios-gen ## build for a connected iPhone
 	cd ios && xcodebuild -scheme $(SCHEME) -destination 'generic/platform=iOS' -configuration Debug build | tail -20

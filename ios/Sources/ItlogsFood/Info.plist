@@ -76,8 +76,13 @@
 		<string>processing</string>
 		<string>bluetooth-central</string>
 		<string>bluetooth-peripheral</string>
+		<string>external-accessory</string>
 	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
+	<key>UISupportedExternalAccessoryProtocols</key>
+	<array>
+		<string>com.meta.ar.wearable</string>
+	</array>
 </dict>
 </plist>

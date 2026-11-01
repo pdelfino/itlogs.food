@@ -40,6 +40,9 @@ struct SessionView: View {
                 }
             }
             .navigationTitle("itlogs.food")
+            .safeAreaInset(edge: .bottom) {
+                Text(Self.versionLine).font(.caption2).foregroundStyle(.secondary).padding(.bottom, 4)
+            }
             .toolbar {
                 ToolbarItemGroup(placement: .bottomBar) {
                     if session.running {
@@ -53,5 +56,14 @@ struct SessionView: View {
             }
             .onAppear { urlText = session.serverURL.absoluteString }
         }
+    }
+
+    /// "itlogs.food 0.1.0 (57 · 0d29b65)": version, commit count, commit sha, from Info.plist.
+    static var versionLine: String {
+        let i = Bundle.main.infoDictionary ?? [:]
+        let v = i["CFBundleShortVersionString"] as? String ?? "?"
+        let b = i["CFBundleVersion"] as? String ?? "?"
+        let sha = i["ItlogsGitSHA"] as? String ?? ""
+        return "itlogs.food \(v) (\(b)\(sha.isEmpty ? "" : " · " + sha))"
     }
 }
