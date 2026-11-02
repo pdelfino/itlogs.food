@@ -1,6 +1,7 @@
 # Every loop Claude Code (or a human) needs, runnable from the terminal. No Xcode GUI required
 # for the server half; the iOS half needs Xcode installed once (App Store) and a signed-in device.
 
+SHELL := /bin/bash   # the ios recipes need `set -o pipefail` (make 3.81 has no .SHELLFLAGS)
 SERVER = uv run --project server
 -include server/.env          # ITLOGS_POSTHOG_TOKEN and ITLOGS_POSTHOG_HOST reach the iOS build from here (the file is ignored)
 export ITLOGS_POSTHOG_TOKEN ITLOGS_POSTHOG_HOST
@@ -59,14 +60,14 @@ docker-build:     ## the server image
 ios-gen:          ## regenerate ios/ItlogsFood.xcodeproj from ios/project.yml (the .xcodeproj is not committed); build number = commit count, sha into Info.plist
 	cd ios && BUILD_NUMBER=$$(git rev-list --count HEAD) GIT_SHA=$$(git rev-parse --short HEAD) POSTHOG_PROJECT_TOKEN="$${ITLOGS_POSTHOG_TOKEN:-}" POSTHOG_HOST="$${ITLOGS_POSTHOG_HOST:-https://us.i.posthog.com}" xcodegen generate
 
-ios-build: ios-gen ## build for a connected iPhone
-	cd ios && xcodebuild -scheme $(SCHEME) -destination 'generic/platform=iOS' -configuration Debug build | tail -20
+ios-build: ios-gen ## build for a connected iPhone, no install (DEVELOPMENT_TEAM=<team id>, as for ios-run)
+	set -o pipefail; cd ios && xcodebuild -scheme $(SCHEME) -destination 'generic/platform=iOS' -configuration Debug build | tail -20
 
 ios-test: ios-gen ## unit tests on the simulator (the glasses path needs a device)
-	cd ios && xcodebuild -scheme $(SCHEME) -destination 'id=$(SIM)' test 2>&1 | grep -E "error:|Test run|✘|TEST (SUCCEEDED|FAILED)" | tail -10
+	set -o pipefail; cd ios && xcodebuild -scheme $(SCHEME) -destination 'id=$(SIM)' test 2>&1 | grep -E "error:|Test run|✘|TEST (SUCCEEDED|FAILED)" | tail -10
 
 ios-run: ios-gen  ## install and launch on the first connected iPhone (DEVELOPMENT_TEAM=<team id>, phone unlocked)
-	cd ios && xcodebuild -scheme $(SCHEME) -destination 'id=$(DEVICE)' -configuration Debug -derivedDataPath build -allowProvisioningUpdates -allowProvisioningDeviceRegistration build | tail -5
+	set -o pipefail; cd ios && xcodebuild -scheme $(SCHEME) -destination 'id=$(DEVICE)' -configuration Debug -derivedDataPath build -allowProvisioningUpdates -allowProvisioningDeviceRegistration build | tail -5
 	xcrun devicectl device install app --device $(DEVICE) ios/build/Build/Products/Debug-iphoneos/$(SCHEME).app
 	xcrun devicectl device process launch --device $(DEVICE) food.itlogs.app
 

@@ -13,6 +13,7 @@ import os
 final class GlassesSource: FrameSource, @unchecked Sendable {
     private let log = Logger(subsystem: "food.itlogs", category: "glasses")
     private let tokens = ListenerTokenBag()
+    private let photoTokens = ListenerTokenBag()  // the photo listeners, cleared on a retry
     private var session: DeviceSession?
     private var camera: Camera?
     private var speech: Speech?
@@ -85,7 +86,7 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
         if useStills {
             // Stream and Photo compete for the camera: stills only, no stream (#2 option B).
             Diag.send("glasses: stills mode (no Hotspot entitlement: \(!Entitlements.hasHotspot)); one photo every \(photoEveryMs) ms")
-            startPhotos(camera)
+            try await startPhotosWithRetry(session, first: camera, config: config)
             await attachSpeech(to: session, wearables: wearables)
             return
         }
@@ -119,20 +120,57 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
     /// Standalone photos (dev and beta channels): `camera.photo` is started once, then each
     /// `capturePhoto` lands on `photoDataPublisher` after crossing the Bluetooth link. One
     /// capture in flight at a time (the publisher carries no request id).
-    private func startPhotos(_ camera: Camera) {
-        let photo = camera.photo
-        self.photo = photo
-        photo.statePublisher.listen { [weak self] state in
+    ///
+    /// Meta's camera-capture guide: starting the photo capability is the most common failure
+    /// (`sessionSetupFailed`, the glasses report their capture service unavailable) and the next
+    /// attempt usually succeeds. So: wait for `started` under a timeout, and on failure stop the
+    /// camera, add a fresh one (a stopped camera is invalidated) and try once more. Seen on
+    /// 2026-NOVEMBER-02 twice in a row at Start. A power cycle of the glasses clears a capture
+    /// service that stays stuck.
+    private func startPhotosWithRetry(_ session: DeviceSession, first: Camera, config: StreamConfiguration) async throws {
+        var camera = first
+        for attempt in 1...2 {
+            let photo = camera.photo
+            self.photo = photo
+            listenToPhotos(photo)
+            let outcome = await waitForPhotoStarted(photo, timeoutMs: 8000)
+            if outcome == "started" {
+                Diag.send("glasses: photos ready (attempt \(attempt))")
+                startPhotoTimer()
+                return
+            }
+            Diag.send("glasses: photo setup failed on attempt \(attempt): \(outcome)")
+            photoTokens.clear()
+            photo.stop()
+            self.photo = nil
+            photoReady = false
+            photoInFlight = false
+            camera.stop()
+            guard attempt == 1 else { break }
+            try? await Task.sleep(for: .milliseconds(500))
+            guard let fresh = try session.addCamera(config: config) else { break }
+            camera = fresh
+            self.camera = fresh
+            Diag.send("glasses: fresh camera, retrying the photo capability")
+        }
+        await stop()
+        throw NSError(domain: "food.itlogs", code: 14, userInfo: [NSLocalizedDescriptionKey:
+            "The glasses camera did not start (capture service unavailable). Turn the glasses off and on, then press Start again."])
+    }
+
+    /// The permanent photo listeners: state, errors, and the stills themselves. Registered
+    /// before `start()`, as the guide asks; the publishers do not replay.
+    private func listenToPhotos(_ photo: Photo) {
+        photo.statePublisher.listen { [weak self] (state: PhotoState) in
             Diag.send("glasses: photo state \(String(describing: state))")
             guard let self else { return }
-            let ready = String(describing: state) == "started"
-            self.photoReady = ready
-            if !ready { self.photoInFlight = false }
-        }.store(in: tokens)
+            self.photoReady = state == .started
+            if state != .started { self.photoInFlight = false }
+        }.store(in: photoTokens)
         photo.errorPublisher.listen { [weak self] error in
             Diag.send("glasses: photo error \(String(describing: error))")
             self?.photoInFlight = false
-        }.store(in: tokens)
+        }.store(in: photoTokens)
         photo.photoDataPublisher.listen { [weak self] capture in
             guard let self else { return }
             self.photoInFlight = false
@@ -154,8 +192,40 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
             let meta = FrameMeta(t_ms: Int(Date().timeIntervalSince(self.started) * 1000),
                                  width: Int(size.width), height: Int(size.height))
             self.sink?(jpeg, meta)
-        }.store(in: tokens)
-        photo.start()
+        }.store(in: photoTokens)
+    }
+
+    /// `start()` the photo capability and wait for its answer: "started", "stopped", an error,
+    /// or a timeout. Temporary listeners, dropped with the bag when this returns.
+    private func waitForPhotoStarted(_ photo: Photo, timeoutMs: UInt64) async -> String {
+        let once = OSAllocatedUnfairLock(initialState: false)
+        let bag = ListenerTokenBag()
+        return await withCheckedContinuation { (c: CheckedContinuation<String, Never>) in
+            let finish: @Sendable (String) -> Void = { outcome in
+                let first = once.withLock { done -> Bool in
+                    if done { return false }
+                    done = true
+                    return true
+                }
+                if first { c.resume(returning: outcome) }
+            }
+            photo.statePublisher.listen { (state: PhotoState) in
+                if state == .started { finish("started") } else if state == .stopped { finish("stopped") }
+            }.store(in: bag)
+            photo.errorPublisher.listen { error in
+                finish("error \(String(describing: error))")
+            }.store(in: bag)
+            Task {
+                try? await Task.sleep(for: .milliseconds(timeoutMs))
+                finish("timeout after \(timeoutMs) ms")
+            }
+            photo.start()
+        }
+    }
+
+    /// One still every `photoEveryMs` while weighing; `takePhoto` skips when one is in flight.
+    private func startPhotoTimer() {
+        photoTimer?.cancel()
         photoTimer = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(for: .milliseconds(self?.photoEveryMs ?? 2500))
@@ -213,6 +283,7 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
         photoTimer = nil
         photo?.stop()
         photo = nil
+        photoTokens.clear()
         speech?.stop()
         speech = nil
         camera?.stop()
