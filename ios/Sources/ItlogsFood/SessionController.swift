@@ -48,11 +48,22 @@ final class SessionController {
         await client.connect(url: serverURL) { [weak self] msg in
             Task { @MainActor in self?.handle(msg) }
         }
-        let source: FrameSource = useGlasses ? GlassesSource() : PhoneCameraSource()
+        var source: FrameSource = useGlasses ? GlassesSource() : PhoneCameraSource()
         self.source = source
         do {
-            try await source.start { [client] jpeg, meta in
-                Task { try? await client.send(frame: jpeg, meta: meta) }
+            do {
+                try await source.start { [client] jpeg, meta in
+                    Task { try? await client.send(frame: jpeg, meta: meta) }
+                }
+            } catch let e as NSError where e.domain == "food.itlogs" && e.code == 13 {
+                // glasses video impossible in this build: fall back to the phone camera, keep going
+                lastSaid = e.localizedDescription
+                Diag.send("falling back to the phone camera: \(e.localizedDescription)")
+                source = PhoneCameraSource()
+                self.source = source
+                try await source.start { [client] jpeg, meta in
+                    Task { try? await client.send(frame: jpeg, meta: meta) }
+                }
             }
             if useDeviceSpeech {
                 try await voice.startListening { [weak self, client] phrase in

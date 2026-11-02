@@ -13,7 +13,9 @@ struct SessionView: View {
                         .onSubmit { if let u = URL(string: urlText) { session.serverURL = u } }
                     Toggle("Use the glasses", isOn: $session.useGlasses)
                     Button("Connect this app to the glasses (once)") { Task { await session.registerGlasses() } }
-                    Button("Install or update the glasses app (Meta AI)") { Task { await session.updateGlassesApp() } }
+                    if session.error?.contains("UpdateRequired") == true {
+                        Button("Install or update the glasses app (Meta AI)") { Task { await session.updateGlassesApp() } }
+                    }
                     Toggle("Recognize speech on the phone (fallback)", isOn: $session.useDeviceSpeech)
                 }
                 Section("Now") {

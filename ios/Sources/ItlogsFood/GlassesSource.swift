@@ -59,6 +59,12 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
                 throw NSError(domain: "food.itlogs", code: 10, userInfo: [NSLocalizedDescriptionKey: "Glasses camera permission denied"])
             }
         }
+        guard Entitlements.hasHotspot else {
+            // Without this entitlement the stream start kills the process (SIGTRAP, 2026-11-01).
+            Diag.send("glasses: no Hotspot entitlement in this build; not starting the stream")
+            session.stop()
+            throw NSError(domain: "food.itlogs", code: 13, userInfo: [NSLocalizedDescriptionKey: "This build cannot stream glasses video (needs the paid Apple team, issue #10). Using the phone camera; the glasses still hear you."])
+        }
         let config = StreamConfiguration(videoCodec: VideoCodec.hvc1, resolution: StreamingResolution.low, frameRate: streamFps)
         guard let camera = try session.addCamera(config: config) else {
             throw NSError(domain: "food.itlogs", code: 11, userInfo: [NSLocalizedDescriptionKey: "Could not create the glasses camera"])
