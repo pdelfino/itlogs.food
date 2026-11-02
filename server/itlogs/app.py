@@ -83,6 +83,9 @@ async def ws_session(ws: WebSocket) -> None:
                     print(f"ASK {m.ask.text}", flush=True)
                 elif m.kind == "say":
                     print(f"SAY {m.say}", flush=True)
+                elif m.kind == "read" and m.read is not None:
+                    r = m.read
+                    print(f"READ {r.food} {r.grams} g conf={r.confidence:.2f}", flush=True)
                 await ws.send_text(m.model_dump_json(exclude_none=True))
 
     def keep(msgs: list[ServerMessage]) -> None:

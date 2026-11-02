@@ -21,9 +21,15 @@ class Recorder:
 
     def event(self, kind: str, payload: dict) -> None:
         self.events.append({"kind": kind, **payload})
+        # written after every event, so a live session can be read while it runs (and survives a
+        # socket that drops without end_session)
+        self._write([])
 
-    def close(self, entries: list[dict]) -> Path:
+    def _write(self, entries: list[dict]) -> None:
         (self.dir / "session.json").write_text(
             json.dumps({"entries": entries, "events": self.events}, indent=1)
         )
+
+    def close(self, entries: list[dict]) -> Path:
+        self._write(entries)
         return self.dir
