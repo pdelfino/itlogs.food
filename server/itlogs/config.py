@@ -1,11 +1,15 @@
+from pathlib import Path
+
 from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+ENV_FILE = Path(__file__).resolve().parents[1] / ".env"  # server/.env, whatever the cwd
 
 
 class Settings(BaseSettings):
     """Every knob comes from the environment. Secrets never live in the repo."""
 
-    model_config = SettingsConfigDict(env_prefix="ITLOGS_", env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_prefix="ITLOGS_", env_file=ENV_FILE, extra="ignore")
 
     provider: str = "fake"  # fake | meta
     meta_api_key: str = Field(
