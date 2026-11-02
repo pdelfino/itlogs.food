@@ -34,6 +34,11 @@ final class SessionController {
     var error: String?
     var running = false
     var watching = false
+    /// When Start was tapped; the Stop button stays disabled for `stopAfterSeconds` from here, so a
+    /// run cannot end before the loop had a still second to read (runs of 5 to 12 s on
+    /// 2026-NOVEMBER-02 all ended with "Nothing logged").
+    var startedAt: Date?
+    let stopAfterSeconds: TimeInterval = 20
 
     private let log = Logger(subsystem: "food.itlogs", category: "session")
     private let client = StreamClient()
@@ -115,6 +120,7 @@ final class SessionController {
                 Telemetry.error(error, ["where": "audio"])
             }
             running = true
+            startedAt = Date()
             // Start means weighing: the server watches the scale from here until Stop
             try? await client.watch(on: true, tMs: nowMs(), ask: askEachFood)
         } catch {
@@ -204,6 +210,7 @@ final class SessionController {
         await client.disconnect()
         running = false
         watching = false
+        startedAt = nil
     }
 
     func handle(_ msg: ServerMessage) {

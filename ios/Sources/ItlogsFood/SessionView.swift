@@ -4,6 +4,9 @@ struct SessionView: View {
     @Bindable var session: SessionController
     @State private var urlText = ""
 
+    @State private var now = Date()
+    private let clock = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
     var body: some View {
         NavigationStack {
             List {
@@ -47,6 +50,7 @@ struct SessionView: View {
                 }
             }
             .navigationTitle("itlogs.food")
+            .onReceive(clock) { now = $0 }
             .safeAreaInset(edge: .bottom) {
                 Text(Self.versionLine).font(.caption2).foregroundStyle(.secondary).padding(.bottom, 4)
             }
@@ -55,7 +59,9 @@ struct SessionView: View {
                     if session.running {
                         Button("Log it") { session.capture() }.buttonStyle(.bordered)
                         Spacer()
-                        Button("Stop") { Task { await session.stop() } }.buttonStyle(.borderedProminent).tint(.orange)
+                        let left = max(0, Int((session.stopAfterSeconds - now.timeIntervalSince(session.startedAt ?? now)).rounded(.up)))
+                        Button(left > 0 ? "Stop (\(left))" : "Stop") { Task { await session.stop() } }
+                            .buttonStyle(.borderedProminent).tint(.orange).disabled(left > 0)
                     } else {
                         Button("Start") { Task { await session.start() } }
                     }
