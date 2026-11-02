@@ -59,7 +59,7 @@ def main() -> int:
 
     # server
     try:
-        with urllib.request.urlopen("http://127.0.0.1:8000/health", timeout=3) as r:
+        with urllib.request.urlopen("http://localhost:8000/health", timeout=3) as r:
             h = json.load(r)
             line("server", f"up on :8000, provider={h.get('provider')}")
     except Exception:
