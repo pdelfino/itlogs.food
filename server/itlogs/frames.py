@@ -60,6 +60,7 @@ class Settle:
 
     move: float = 6.0
     still_ms: int = 800
+    last_diff: float = 0.0  # the last frame-to-frame difference, for tuning `move` on real runs
     _prev: list[int] | None = None
     _still_since_ms: int | None = None
     _frames: deque[tuple[int, bytes]] = field(default_factory=lambda: deque(maxlen=16))
@@ -71,7 +72,8 @@ class Settle:
             # not a picture: nothing to compare, treat as still from the beginning of time
             self._still_since_ms = -1_000_000
             return
-        if self._prev is None or difference(self._prev, thumb) > self.move:
+        self.last_diff = 0.0 if self._prev is None else difference(self._prev, thumb)
+        if self._prev is None or self.last_diff > self.move:
             self._still_since_ms = t_ms
         self._prev = thumb
 

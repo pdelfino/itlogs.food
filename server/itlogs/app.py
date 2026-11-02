@@ -126,7 +126,23 @@ async def ws_session(ws: WebSocket) -> None:
                 frames += 1
                 if frames == 1 or frames % 100 == 0:
                     print(f"FRAMES {frames} ({len(jpeg)} bytes, t={msg.frame.t_ms} ms)", flush=True)
+                t0 = time.perf_counter()
                 out = await session.on_frame(jpeg, msg.frame.t_ms)
+                took_ms = int((time.perf_counter() - t0) * 1000)
+                if any(m.kind == "read" for m in out):
+                    print(f"READ took {took_ms} ms (frame t={msg.frame.t_ms})", flush=True)
+                    if recorder:
+                        recorder.event("read_latency", {"t_ms": msg.frame.t_ms, "ms": took_ms})
+                if recorder and frames % 7 == 1:
+                    # about once a second: how much the picture moved and whether it counts as still
+                    recorder.event(
+                        "motion",
+                        {
+                            "t_ms": msg.frame.t_ms,
+                            "diff": round(session.settle.last_diff, 1),
+                            "still": session.settle.still(msg.frame.t_ms),
+                        },
+                    )
             elif msg.kind == "audio" and msg.audio:
                 pcm = await ws.receive_bytes()
                 if transcriber is None:
