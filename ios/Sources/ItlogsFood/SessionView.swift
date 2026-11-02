@@ -25,6 +25,7 @@ struct SessionView: View {
                     }
                     if session.watching { Text("Weighing: watching the scale. Stop to hear the list.").foregroundStyle(.orange) }
                     if let q = session.question { Text(q.text).bold() }
+                    if !session.lastHeard.isEmpty { Text("Heard: \(session.lastHeard)").foregroundStyle(.secondary) }
                     if !session.lastSaid.isEmpty { Text("Said: \(session.lastSaid)").italic() }
                     if let e = session.error { Text(e).foregroundStyle(.red) }
                 }

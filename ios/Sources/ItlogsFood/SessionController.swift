@@ -1,3 +1,4 @@
+import AVFoundation
 import AudioToolbox
 import Foundation
 import MWDATCore
@@ -15,13 +16,16 @@ final class SessionController {
     }() {
         didSet { UserDefaults.standard.set(serverURL.absoluteString, forKey: "serverURL") }
     }
-    var useGlasses = false
+    var useGlasses = UserDefaults.standard.bool(forKey: "useGlasses") {
+        didSet { UserDefaults.standard.set(useGlasses, forKey: "useGlasses") }
+    }
     var useDeviceSpeech = false  // fallback: recognize on the phone, send text
     var askEachFood = false      // off: log quietly, hear the list at Stop; on: "..., right?" after each food
     var lastRead: EntryRead?
     var question: Question?
     var entries: [Entry] = []
     var lastSaid = ""
+    var lastHeard = ""
     var error: String?
     var running = false
     var watching = false
@@ -49,7 +53,15 @@ final class SessionController {
         await client.connect(url: serverURL) { [weak self] msg in
             Task { @MainActor in self?.handle(msg) }
         }
-        var source: FrameSource = useGlasses ? GlassesSource() : PhoneCameraSource()
+        let glasses: GlassesSource? = useGlasses ? GlassesSource() : nil
+        glasses?.onPhrase = { [weak self, client] phrase in
+            Task { @MainActor in
+                guard let self else { return }
+                self.lastHeard = phrase
+                try? await client.send(voice: phrase, tMs: self.nowMs())
+            }
+        }
+        var source: FrameSource = glasses ?? PhoneCameraSource()
         self.source = source
         do {
             do {
@@ -66,7 +78,13 @@ final class SessionController {
                     Task { try? await client.send(frame: jpeg, meta: meta) }
                 }
             }
-            if useDeviceSpeech {
+            if glasses?.hearsThroughGlasses == true {
+                // the glasses transcribe; no HFP on the phone, so the voice out keeps A2DP quality
+                let session = AVAudioSession.sharedInstance()
+                try? session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+                try? session.setActive(true, options: .notifyOthersOnDeactivation)
+                Diag.send("hearing through the glasses; speaking over A2DP")
+            } else if useDeviceSpeech {
                 try await voice.startListening { [weak self, client] phrase in
                     Task { @MainActor in
                         guard let self else { return }

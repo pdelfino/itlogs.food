@@ -76,6 +76,8 @@ targets:
         product: MWDATCore
       - package: MWDAT
         product: MWDATCamera
+      - package: MWDAT
+        product: MWDATSpeech
       - package: PostHog
         product: PostHog
   ItlogsFoodTests:

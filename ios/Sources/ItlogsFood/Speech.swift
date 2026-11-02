@@ -12,9 +12,34 @@ final class Voice {
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
 
+    /// The best English voice installed on this phone: premium, then enhanced, then the default.
+    /// Premium voices are downloaded once in Settings > Accessibility > Spoken Content > Voices.
+    private static let chosenVoice: AVSpeechSynthesisVoice? = {
+        if let id = UserDefaults.standard.string(forKey: "voiceIdentifier"),
+           let v = AVSpeechSynthesisVoice(identifier: id) { return v }
+        let english = AVSpeechSynthesisVoice.speechVoices().filter { $0.language.hasPrefix("en") }
+        func rank(_ v: AVSpeechSynthesisVoice) -> Int {
+            let quality = v.quality == .premium ? 20 : (v.quality == .enhanced ? 10 : 0)
+            let locale = v.language == "en-US" ? 2 : (v.language == "en-CA" ? 1 : 0)
+            return quality + locale
+        }
+        return english.max { rank($0) < rank($1) }
+    }()
+
+    private var announcedVoice = false
+
     func say(_ text: String) {
         let u = AVSpeechUtterance(string: text)
-        u.rate = AVSpeechUtteranceDefaultSpeechRate
+        u.rate = AVSpeechUtteranceDefaultSpeechRate * 0.95
+        u.pitchMultiplier = 1.0
+        u.prefersAssistiveTechnologySettings = false
+        if let v = Self.chosenVoice {
+            u.voice = v
+            if !announcedVoice {
+                announcedVoice = true
+                Diag.send("voice: \(v.name) \(v.language) quality=\(v.quality.rawValue)")
+            }
+        }
         synth.speak(u)
     }
 

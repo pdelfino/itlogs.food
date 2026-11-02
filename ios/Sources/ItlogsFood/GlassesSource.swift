@@ -1,6 +1,7 @@
 import Foundation
 import MWDATCamera
 import MWDATCore
+import MWDATSpeech
 import UIKit
 import os
 
@@ -14,6 +15,11 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
     private let tokens = ListenerTokenBag()
     private var session: DeviceSession?
     private var camera: Camera?
+    private var speech: Speech?
+    /// Final transcriptions from the glasses' own recognizer (dev and beta channels). When this
+    /// runs, the phone keeps no HFP microphone open, so the ear keeps A2DP quality for speech out.
+    var onPhrase: (@Sendable (String) -> Void)?
+    private(set) var hearsThroughGlasses = false
     private var started = Date()
     private var lastSent = Date.distantPast
     private var frames = 0
@@ -92,10 +98,50 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
         }.store(in: tokens)
         camera.stream.start()
         Diag.send("glasses: stream start requested")
+        await attachSpeech(to: session, wearables: wearables)
         log.info("glasses stream started at \(self.streamFps) fps, sending \(self.fps) fps")
     }
 
+    /// The glasses' on-device speech recognition: text in, no Bluetooth HFP, so the voice out
+    /// stays high quality. Needs the microphone permission through the Meta AI app (once).
+    private func attachSpeech(to session: DeviceSession, wearables: any WearablesInterface) async {
+        do {
+            if try await wearables.checkPermissionStatus(.microphone) != .granted {
+                Diag.send("glasses: asking for the microphone permission")
+                guard try await wearables.requestPermission(.microphone) == .granted else {
+                    Diag.send("glasses: microphone permission denied; phone microphone instead")
+                    return
+                }
+            }
+            guard let speech = try session.addSpeech() else {
+                Diag.send("glasses: this pair reports no on-device speech; phone microphone instead")
+                return
+            }
+            self.speech = speech
+            speech.statePublisher.listen { state in
+                Diag.send("glasses: speech state \(String(describing: state))")
+            }.store(in: tokens)
+            speech.errorPublisher.listen { error in
+                Diag.send("glasses: speech error \(String(describing: error))")
+            }.store(in: tokens)
+            speech.transcriptionPublisher.listen { [weak self] (result: TranscriptionResult) in
+                guard result.isFinal, let self, let onPhrase = self.onPhrase else { return }
+                let text = result.text.trimmingCharacters(in: .whitespaces)
+                guard !text.isEmpty else { return }
+                Diag.send("glasses: heard \"\(text)\" (confidence \(result.confidence))")
+                onPhrase(text)
+            }.store(in: tokens)
+            speech.start()
+            hearsThroughGlasses = true
+            Diag.send("glasses: speech started")
+        } catch {
+            Diag.send("glasses: speech unavailable: \(String(describing: error)); phone microphone instead")
+        }
+    }
+
     func stop() async {
+        speech?.stop()
+        speech = nil
         camera?.stop()
         camera = nil
         session?.stop()
