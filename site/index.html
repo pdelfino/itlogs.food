@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>itlogs.food · your food, weighed and logged, hands free</title>
   <meta name="description" content="Ray-Ban Meta glasses look at any kitchen scale, read the food and the grams, and log it. No typing.">
+  <meta name="theme-color" content="#111111">
   <meta property="og:title" content="itlogs.food">
   <meta property="og:description" content="Your food, weighed and logged, hands free.">
   <meta property="og:url" content="https://itlogs.food/">
@@ -19,28 +20,56 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main>
-    <header class="top">
-      <a class="wordmark" href="/" aria-label="itlogs.food">
-        <span class="ink">itlogs</span><span class="orange">.food</span><span class="cursor" aria-hidden="true"></span>
-      </a>
-      <a class="repo" href="https://github.com/pdelfino/itlogs.food">source</a>
-    </header>
+  <header class="band">
+    <div class="inner">
+      <nav class="top">
+        <a class="wordmark" href="/" aria-label="itlogs.food">
+          <span class="ink">itlogs</span><span class="orange">.food</span><span class="cursor" aria-hidden="true"></span>
+        </a>
+        <a class="repo" href="https://github.com/pdelfino/itlogs.food">source</a>
+      </nav>
 
-    <section class="hero">
-      <figure>
-        <img src="img/hero.webp" width="1536" height="1024"
-             alt="A man in Ray-Ban Meta glasses sets a bowl of rice on a kitchen scale; the display is lit."
-             fetchpriority="high">
-        <figcaption>Pictures on this page generated with Muse Image, Meta's image model.</figcaption>
+      <h1>You eat.<br>It logs.</h1>
+      <p class="tagline">Your food, weighed and logged, hands free.</p>
+
+      <!-- FILM: when the demo film exists, replace the <div class="poster"> below with
+           <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="itlogs.food demo" allow="fullscreen" loading="lazy"></iframe>
+           (or a <video controls poster="img/film-poster.jpg" src="..."> if it is hosted elsewhere). Nothing else changes. -->
+      <figure class="film" id="film">
+        <div class="poster">
+          <img src="img/hero.webp" width="1536" height="1024" alt="" fetchpriority="high">
+          <div class="mark" aria-hidden="true"><span class="cursor big"></span></div>
+          <figcaption>
+            <span class="k">the film</span>
+            <span>Three minutes, shot in a Montréal kitchen. Here by 2026-NOVEMBER-04.</span>
+          </figcaption>
+        </div>
       </figure>
-      <div class="lede">
-        <h1>You eat. It logs.</h1>
-        <p class="tagline">Your food, weighed and logged, hands free.</p>
-        <p>Ray-Ban Meta glasses look at the kitchen scale you already own, read the food and the grams off its display, and write the line. No app on the scale, no pairing, no hands.</p>
-      </div>
-    </section>
 
+      <div class="ticker" aria-hidden="true">
+        <div class="track">
+          <span>18:42 grilled chicken breast 142 g <b>agreed</b></span>
+          <span>18:43 cooked white rice 187 g <b>confirmed</b></span>
+          <span>18:44 olive oil 9 g <b>agreed</b></span>
+          <span>18:45 roasted pumpkin 120 g <b>corrected</b></span>
+          <span>07:10 egg whites 210 g <b>agreed</b></span>
+          <span>07:11 oats 82 g <b>agreed</b></span>
+          <span>12:30 canned pumpkin 240 g <b>confirmed</b></span>
+          <span>18:42 grilled chicken breast 142 g <b>agreed</b></span>
+          <span>18:43 cooked white rice 187 g <b>confirmed</b></span>
+          <span>18:44 olive oil 9 g <b>agreed</b></span>
+          <span>18:45 roasted pumpkin 120 g <b>corrected</b></span>
+          <span>07:10 egg whites 210 g <b>agreed</b></span>
+          <span>07:11 oats 82 g <b>agreed</b></span>
+          <span>12:30 canned pumpkin 240 g <b>confirmed</b></span>
+        </div>
+      </div>
+
+      <p class="lede">Ray-Ban Meta glasses look at the kitchen scale you already own, read the food and the grams off its display, and write the line. No app on the scale, no pairing, no hands.</p>
+    </div>
+  </header>
+
+  <main>
     <section class="log" aria-label="a log that writes itself">
       <ol>
         <li><span class="t">18:42</span><span class="f">grilled chicken breast</span><span class="g">142 g</span><span class="c">234 kcal</span><span class="s">agreed</span></li>
@@ -53,19 +82,24 @@
     </section>
     <p class="fine note">Two reads that agree log the entry. Two reads that disagree become a question in your ear: <em>181 or 187 grams?</em> Your answer is the label. Calories and protein come from the grams and a nutrient table, nothing else.</p>
 
-    <section class="strip" aria-label="the story in six frames">
-      <figure><img src="img/story-1.webp" width="1536" height="1024" loading="lazy" alt=""><figcaption><span class="k">1</span>Glasses on. Nothing to open.</figcaption></figure>
-      <figure><img src="img/story-2.webp" width="1536" height="1024" loading="lazy" alt=""><figcaption><span class="k">2</span>Chicken on the scale.</figcaption></figure>
-      <figure><img src="img/story-3.webp" width="1536" height="1024" loading="lazy" alt=""><figcaption><span class="k">3</span>Say <em>log it</em>.</figcaption></figure>
-      <figure><img src="img/story-4.webp" width="1536" height="1024" loading="lazy" alt=""><figcaption><span class="k">4</span><em>142 grams of chicken breast, logged.</em></figcaption></figure>
-      <figure><img src="img/story-5.webp" width="1536" height="1024" loading="lazy" alt=""><figcaption><span class="k">5</span>Rice. Oil. Pumpkin. Three more lines.</figcaption></figure>
-      <figure><img src="img/story-6.webp" width="1536" height="1024" loading="lazy" alt=""><figcaption><span class="k">6</span>Dinner, weighed. The log wrote itself.</figcaption></figure>
+    <section class="how" aria-label="how it works">
+      <ol>
+        <li><span class="n">1</span><span>Put the food on the scale.</span></li>
+        <li><span class="n">2</span><span>Say <em>log it</em>, or press the button on the glasses.</span></li>
+        <li><span class="n">3</span><span>Hear it back: <em>142 grams of grilled chicken breast, logged.</em></span></li>
+      </ol>
     </section>
 
-    <!-- VIDEO_URL: when the demo video exists (issue #5), replace this comment with
-         <figure class="video"><iframe src="VIDEO_URL" title="itlogs.food demo" allowfullscreen loading="lazy"></iframe></figure> -->
+    <!-- STORY: the six-frame strip goes here once site/img/story-1..6.webp exist (hero.py --story).
+         Markup and CSS are ready on the hero branch, commit c6f319c. -->
 
-    <figure class="still">
+    <figure class="photo">
+      <img src="img/hero.webp" width="1920" height="1280" loading="lazy"
+           alt="A man in Ray-Ban Meta glasses sets a bowl of rice on a kitchen scale; the display is lit.">
+      <figcaption>Pictures on this page generated with Muse Image, Meta's image model.</figcaption>
+    </figure>
+
+    <figure class="photo">
       <img src="img/still.webp" width="1920" height="1280" loading="lazy"
            alt="Ray-Ban Meta glasses beside a white kitchen scale holding a bowl of oats, and a clementine.">
     </figure>
