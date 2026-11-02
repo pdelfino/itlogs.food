@@ -30,7 +30,7 @@ doctor:           ## one screen: repo, phone, last build, server, the phone's la
 	$(SERVER) python server/scripts/doctor.py
 
 run-bg:           ## the server in the background with a persistent log (.sessions/server.log); survives the Claude session
-	@mkdir -p .sessions; if curl -s --max-time 2 http://127.0.0.1:8000/health >/dev/null; then echo "already up on :8000"; else nohup $(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000 >> .sessions/server.log 2>&1 & echo $$! > .sessions/server.pid; sleep 3; curl -s --max-time 3 http://127.0.0.1:8000/health && echo " (pid $$(cat .sessions/server.pid), log .sessions/server.log)"; fi
+	@mkdir -p .sessions; if curl -s --max-time 2 http://127.0.0.1:8000/health >/dev/null; then echo "already up on :8000"; else nohup $(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000 >> .sessions/server.log 2>&1 & echo $$! > .sessions/server.pid; for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; curl -s --max-time 2 http://127.0.0.1:8000/health >/dev/null && break; done; curl -s --max-time 3 http://127.0.0.1:8000/health && echo " (pid $$(cat .sessions/server.pid), log .sessions/server.log)" || echo "did not come up; see .sessions/server.log"; fi
 
 stop:             ## stop the background server
 	@pkill -f "uvicorn itlogs.app:app" && echo "stopped" || echo "nothing running"
