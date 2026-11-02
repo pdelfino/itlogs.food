@@ -85,6 +85,15 @@ final class SessionController {
         setWeighing(true)
     }
 
+    /// The glasses-side toolkit app is installed or updated from the Meta AI app.
+    func updateGlassesApp() async {
+        Diag.send("update glasses app tapped")
+        do { try await Wearables.shared.openDATGlassesAppUpdate() } catch {
+            self.error = "Glasses app update: \(String(describing: error))"
+            Diag.send("openDATGlassesAppUpdate threw: \(String(describing: error))")
+        }
+    }
+
     /// One-time pairing with the glasses (opens the Meta AI app and returns).
     func registerGlasses() async {
         Diag.send("pair tapped; registration state before: \(String(describing: Wearables.shared.registrationState))")

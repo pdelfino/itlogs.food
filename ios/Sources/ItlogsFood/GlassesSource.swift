@@ -44,6 +44,13 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
         }
         let session = try wearables.createSession(deviceSelector: selector)
         self.session = session
+        // Subscribe before start() so no transition or error is missed (Meta's CameraAccess sample).
+        session.statePublisher.listen { (state: DeviceSessionState) in
+            Diag.send("glasses: session state \(String(describing: state))")
+        }.store(in: tokens)
+        session.errorPublisher.listen { (error: DeviceSessionError) in
+            Diag.send("glasses: session error \(String(describing: error)) / \(error.localizedDescription)")
+        }.store(in: tokens)
         try session.start()
         try await waitForStarted(session)
         Diag.send("glasses: session started")
