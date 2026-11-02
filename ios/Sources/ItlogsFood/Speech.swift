@@ -30,8 +30,15 @@ final class Voice {
         request.shouldReportPartialResults = true
         self.request = request
         let node = audio.inputNode
-        node.installTap(onBus: 0, bufferSize: 1024, format: node.outputFormat(forBus: 0)) { buffer, _ in
-            request.append(buffer)
+        let format = node.outputFormat(forBus: 0)
+        guard format.sampleRate > 0, format.channelCount > 0 else {
+            throw NSError(domain: "food.itlogs", code: 22, userInfo: [NSLocalizedDescriptionKey: "No microphone route yet (sample rate 0); try again in a second"])
+        }
+        // The tap runs on Core Audio's realtime queue: no main-actor state may be touched there
+        // (crash report 2026-11-01 19:31). SpeechTap is a plain object that only appends.
+        let tap = SpeechTap(request: request)
+        node.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
+            tap.handle(buffer)
         }
         audio.prepare()
         try audio.start()
@@ -56,4 +63,11 @@ private extension SFSpeechRecognizer {
             requestAuthorization { c.resume(returning: $0 == .authorized) }
         }
     }
+}
+
+/// The realtime side of on-device recognition: appends buffers to the request. No actor.
+final class SpeechTap: @unchecked Sendable {
+    private let request: SFSpeechAudioBufferRecognitionRequest
+    init(request: SFSpeechAudioBufferRecognitionRequest) { self.request = request }
+    func handle(_ buffer: AVAudioPCMBuffer) { request.append(buffer) }
 }
