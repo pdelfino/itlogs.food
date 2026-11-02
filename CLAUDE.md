@@ -9,6 +9,13 @@ The food product of the itlogs family: Ray-Ban Meta glasses look at the kitchen 
 - **Evals** (`evals/`): two photos per weighing plus the truth; `make eval` prints food top-1, grams within 1 g, and how often the loop logged without asking. The number in the README is the number this prints.
 - **The label comes free**: every entry ends as agreed, confirmed or corrected. That is the eval set and the recalibration data (issue #4); no separate labeling session.
 
+## Session start (Claude, every time)
+1. `make doctor`: repo, phone, last build, server, the phone's last words, crashes, telemetry, one screen.
+2. `gh issue list`: #1 to #10 are the plan; the demo-critical ones first.
+3. The server runs as `make run-bg` (persistent log in `.sessions/server.log`, survives the Claude session); `make stop` ends it. `make run` is the foreground, auto-reloading variant for server work.
+4. Build numbers: the phone shows `itlogs.food 0.1.0 (N · sha)` at the bottom; N is the commit count at build time, so a build made before the commit shows N-1.
+5. Stills vs stream: without the Hotspot entitlement (#10) the glasses source takes one still every 2.5 s (`useStills`); with it, the video stream.
+
 ## Loops (all from the terminal; see `make help`)
 - `make test`, `make lint`, `make format`, `make run`, `make eval`. Run `make lint test eval` before every commit.
 - `make run-live` is the real thing (Meta models, the recorder). It needs `MODEL_API_KEY` in the environment, which lives in Pedro's `~/.secure_env_vars`: Pedro runs it in his own terminal; Claude never holds the key.

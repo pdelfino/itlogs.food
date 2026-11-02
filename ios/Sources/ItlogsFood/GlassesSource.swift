@@ -16,6 +16,15 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
     private var session: DeviceSession?
     private var camera: Camera?
     private var speech: Speech?
+    private var photo: Photo?
+    private var photoReady = false
+    private var photoInFlight = false
+    private var photoTimer: Task<Void, Never>?
+    private var sink: (@Sendable (Data, FrameMeta) -> Void)?
+    /// Stills instead of the video stream: one photo every ``photoEveryMs`` over Bluetooth, no
+    /// Wi-Fi handoff. The default when this build cannot carry the Hotspot entitlement (#10).
+    var useStills = !Entitlements.hasHotspot
+    var photoEveryMs: UInt64 = 2500
     /// Final transcriptions from the glasses' own recognizer (dev and beta channels). When this
     /// runs, the phone keeps no HFP microphone open, so the ear keeps A2DP quality for speech out.
     var onPhrase: (@Sendable (String) -> Void)?
@@ -66,18 +75,23 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
                 throw NSError(domain: "food.itlogs", code: 10, userInfo: [NSLocalizedDescriptionKey: "Glasses camera permission denied"])
             }
         }
-        if !Entitlements.hasHotspot {
-            // Meta's sample carries the Hotspot entitlement for the Wi-Fi stream; this build cannot
-            // (personal team, #10). Try anyway: the earlier "kill at stream start" turned out to be
-            // the audio tap crash re-raised by the SDK's crash reporter, not this.
-            Diag.send("glasses: no Hotspot entitlement in this build; starting the stream anyway")
-        }
+        self.sink = sink
         let config = StreamConfiguration(videoCodec: VideoCodec.hvc1, resolution: StreamingResolution.low, frameRate: streamFps)
         guard let camera = try session.addCamera(config: config) else {
             throw NSError(domain: "food.itlogs", code: 11, userInfo: [NSLocalizedDescriptionKey: "Could not create the glasses camera"])
         }
         self.camera = camera
         started = Date()
+        if useStills {
+            // Stream and Photo compete for the camera: stills only, no stream (#2 option B).
+            Diag.send("glasses: stills mode (no Hotspot entitlement: \(!Entitlements.hasHotspot)); one photo every \(photoEveryMs) ms")
+            startPhotos(camera)
+            await attachSpeech(to: session, wearables: wearables)
+            return
+        }
+        if !Entitlements.hasHotspot {
+            Diag.send("glasses: no Hotspot entitlement in this build; starting the stream anyway")
+        }
         camera.stream.statePublisher.listen { state in
             Diag.send("glasses: stream state \(String(describing: state))")
         }.store(in: tokens)
@@ -100,6 +114,61 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
         Diag.send("glasses: stream start requested")
         await attachSpeech(to: session, wearables: wearables)
         log.info("glasses stream started at \(self.streamFps) fps, sending \(self.fps) fps")
+    }
+
+    /// Standalone photos (dev and beta channels): `camera.photo` is started once, then each
+    /// `capturePhoto` lands on `photoDataPublisher` after crossing the Bluetooth link. One
+    /// capture in flight at a time (the publisher carries no request id).
+    private func startPhotos(_ camera: Camera) {
+        let photo = camera.photo
+        self.photo = photo
+        photo.statePublisher.listen { [weak self] state in
+            Diag.send("glasses: photo state \(String(describing: state))")
+            guard let self else { return }
+            let ready = String(describing: state) == "started"
+            self.photoReady = ready
+            if !ready { self.photoInFlight = false }
+        }.store(in: tokens)
+        photo.errorPublisher.listen { [weak self] error in
+            Diag.send("glasses: photo error \(String(describing: error))")
+            self?.photoInFlight = false
+        }.store(in: tokens)
+        photo.photoDataPublisher.listen { [weak self] capture in
+            guard let self else { return }
+            self.photoInFlight = false
+            self.frames += 1
+            let data = capture.imageData
+            if self.frames == 1 || self.frames % 20 == 0 {
+                Diag.send("glasses: photo \(self.frames) received, \(data.count) bytes")
+            }
+            // the server wants JPEG; a HEIC still is re-encoded through UIImage
+            let jpeg: Data
+            let size: CGSize
+            if let image = UIImage(data: data) {
+                size = CGSize(width: image.size.width * image.scale, height: image.size.height * image.scale)
+                jpeg = image.jpegData(compressionQuality: 0.8) ?? data
+            } else {
+                size = .zero
+                jpeg = data
+            }
+            let meta = FrameMeta(t_ms: Int(Date().timeIntervalSince(self.started) * 1000),
+                                 width: Int(size.width), height: Int(size.height))
+            self.sink?(jpeg, meta)
+        }.store(in: tokens)
+        photo.start()
+        photoTimer = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(self?.photoEveryMs ?? 2500))
+                self?.takePhoto()
+            }
+        }
+    }
+
+    /// One still now (the Log it button, or the timer). Ignored while one is crossing the link.
+    func takePhoto() {
+        guard let photo, photoReady, !photoInFlight else { return }
+        photoInFlight = true
+        photo.capturePhoto(resolution: PhotoResolution.medium, quality: PhotoQuality.high)
     }
 
     /// The glasses' on-device speech recognition: text in, no Bluetooth HFP, so the voice out
@@ -140,6 +209,10 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
     }
 
     func stop() async {
+        photoTimer?.cancel()
+        photoTimer = nil
+        photo?.stop()
+        photo = nil
         speech?.stop()
         speech = nil
         camera?.stop()

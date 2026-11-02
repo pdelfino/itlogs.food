@@ -49,7 +49,7 @@ def main() -> int:
         udid = phones[0].rsplit("(", 1)[-1].rstrip(")")
         procs = sh(["xcrun", "devicectl", "device", "info", "processes", "--device", udid], 30)
         running = [p for p in ("ItlogsFood", "MetaAI") if p + ".app" in procs]
-        apps = ", ".join(running) + " running" if running else "itlogs.food not running on the phone"
+        apps = ", ".join(running) + " running" if running else "itlogs.food not running"
         line("phone apps", apps)
     built = ROOT / "ios/build/Build/Products/Debug-iphoneos/ItlogsFood.app/Info.plist"
     if built.exists():
@@ -86,7 +86,7 @@ def main() -> int:
     crash_dir = SESSIONS / "crashes"
     crashes = sorted(crash_dir.glob("ItlogsFood-*.ips")) if crash_dir.exists() else []
     newest = crashes[-1].stem[-15:] if crashes else "none"
-    line("crashes", f"{len(crashes)} pulled so far, newest {newest} (make phone-crashes pulls new ones)")
+    line("crashes", f"{len(crashes)} pulled so far, newest {newest} (make phone-crashes pulls new)")
 
     # telemetry
     env = ROOT / "server/.env"
@@ -95,7 +95,8 @@ def main() -> int:
     where = "token in server/.env; project itlogs.food 703736 (Claude: execute-sql on events)"
     line("posthog", where if tok else "no token: telemetry off")
 
-    print("\nnext: gh issue list · make phone-logs · make phone-crashes · DEVELOPMENT_TEAM=6X8G2S2P89 make ios-run")
+    print("\nnext: gh issue list · make phone-logs · make phone-crashes")
+    print("      DEVELOPMENT_TEAM=6X8G2S2P89 make ios-run")
     return 0
 
 

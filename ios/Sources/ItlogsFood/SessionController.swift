@@ -106,8 +106,11 @@ final class SessionController {
         }
     }
 
-    /// The deliberate trigger: read the scale now.
-    func capture() { Task { try? await client.capture(tMs: nowMs()) } }
+    /// The deliberate trigger: read the scale now (in stills mode, take a still first).
+    func capture() {
+        (source as? GlassesSource)?.takePhoto()
+        Task { try? await client.capture(tMs: nowMs()) }
+    }
 
     /// Weighing mode on or off by hand (Start already turns it on).
     func setWeighing(_ on: Bool) { Task { try? await client.watch(on: on, tMs: nowMs(), ask: askEachFood) } }

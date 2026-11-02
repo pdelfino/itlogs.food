@@ -80,8 +80,11 @@ async def main() -> int:
     ap.add_argument("--sets", default=str(Path(__file__).parent / "sets"))
     ap.add_argument("--from-reads", action="store_true")
     args = ap.parse_args()
-    folders = sorted(
-        p for p in Path(args.sets).iterdir() if (p / "truth.json").exists()
+    sets_dir = Path(args.sets)
+    folders = (
+        sorted(p for p in sets_dir.iterdir() if (p / "truth.json").exists())
+        if sets_dir.is_dir()
+        else []
     )
     rows = [r for r in [await score_set(f, args.from_reads) for f in folders] if r]
     if not rows:
