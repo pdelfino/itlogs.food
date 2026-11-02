@@ -194,6 +194,7 @@ final class SessionController {
     }
 
     func stop() async {
+        Diag.send("stop tapped after \(nowMs() / 1000) s; entries=\(entries.count)")
         voice.stopListening()
         audio.stop()
         await source?.stop()

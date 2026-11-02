@@ -5,6 +5,7 @@ import SwiftUI
 struct ItlogsFoodApp: App {
     @State private var session = SessionController()
     @State private var invocations: VoiceInvocations?
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         Telemetry.setup()
@@ -25,6 +26,11 @@ struct ItlogsFoodApp: App {
                 // The Meta AI app calls back on itlogsfood://...?metaWearablesAction=... after
                 // registration and permission flows; the SDK must see that URL or the flow
                 // never completes (toolkit guide, step 4).
+                // raw frames only arrive in the foreground, and the glasses end a session when the app
+                // leaves: this line tells a "session state stopping" from a Stop tap apart
+                .onChange(of: scenePhase) { _, phase in
+                    Diag.send("app \(String(describing: phase)); running=\(session.running)")
+                }
                 .onOpenURL { url in
                     Diag.send("callback url: \(url.scheme ?? "")://\(url.host ?? "")\(url.path) action=\(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "metaWearablesAction" }?.value ?? "none")")
                     guard let c = URLComponents(url: url, resolvingAgainstBaseURL: false),
