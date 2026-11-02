@@ -76,49 +76,67 @@ PROMPTS = {
 }
 
 # The storyboard: six frames, the same man, glasses, shirt and kitchen as the
-# reference picture (site/img/hero.webp). The caption is the one line under
-# each frame on the page; the prompt is what Muse Image gets.
+# reference picture (site/img/hero.webp). The subject of every frame is the line
+# of sight: the glasses are pointed at the scale's lit display, the display is
+# large, sharp and legible, and the viewer can see that the glasses see it.
+# The caption is the one line under each frame on the page.
 SAME = (
-    "Keep the same man, the same black smart glasses, the same beige linen "
-    "shirt and the same bright kitchen with the window and the plants as in "
-    "the reference picture. New scene: "
+    "Keep the same man, the same black smart glasses with the small camera lens "
+    "at the temple, the same beige linen shirt and the same bright kitchen with "
+    "the window and the plants as in the reference picture. "
+)
+GAZE = (
+    "Composition: his head is tilted down toward the kitchen scale and the glasses "
+    "point straight at the scale's lit display; the display is large in the frame, "
+    "in sharp focus, and reads a clear three-digit number in grams; the line from "
+    "the glasses to the display is the subject of the picture, nothing blocks it. "
 )
 STORY = {
     1: (
-        "Glasses on. Nothing to open.",
-        SAME + "he stands at the counter with nothing in his hands, glasses on, "
-        "looking down at an empty digital kitchen scale, morning light, calm. " + STYLE,
+        "What the glasses see.",
+        SAME + "New scene, first-person view from the wearer's eyes, as if the "
+        "picture were taken by the camera on the glasses: the kitchen scale fills "
+        "the lower half of the frame with a plate of grilled chicken breast on it, "
+        "the lit display dead centre and sharp, reading 218 g, his two forearms "
+        "and hands at the left and right edges of the frame, the counter and the "
+        "window beyond, slight wide-angle. " + STYLE,
     ),
     2: (
         "Chicken on the scale.",
-        SAME + "he sets a plate with a grilled chicken breast on the kitchen "
-        "scale; the display lights up with a three-digit number; seen from the "
-        "side at counter height. " + STYLE,
+        SAME + "New scene: he has just set a plate with a grilled chicken breast "
+        "on the kitchen scale and looks at the display. Shot from the far side of "
+        "the scale at counter height, so the lit display reading 218 g is in the "
+        "foreground, sharp, and his face with the glasses is behind it, turned "
+        "down at it. " + GAZE + STYLE,
     ),
     3: (
         "Say log it.",
-        SAME + "close on his face in three-quarter view, lips parted mid-word as "
-        "if speaking quietly to no one, the small camera lens on the glasses "
-        "catching the light, the scale soft in the foreground. " + STYLE,
+        SAME + "New scene: close on his face from the scale's side, three-quarter "
+        "view, lips parted mid-word as if speaking quietly to no one, the glasses "
+        "aimed at the lit display in the lower foreground, which reads 218 g. "
+        + GAZE + STYLE,
     ),
     4: (
-        "142 grams of chicken breast, logged.",
-        SAME + "a small satisfied smile as he lifts the plate with the grilled "
-        "chicken breast off the scale with one hand, the display behind it still "
-        "lit, hands otherwise free. " + STYLE,
+        "218 grams of chicken breast, logged.",
+        SAME + "New scene: a small satisfied smile as he lifts the plate with the "
+        "chicken off the scale with one hand, his eyes and the glasses still on "
+        "the display, which is lit and sharp. " + GAZE + STYLE,
     ),
     5: (
         "Rice. Oil. Pumpkin. Three more lines.",
-        SAME + "he assembles a bowl on the counter next to the scale: white rice, "
-        "the chicken, roasted pumpkin cubes, a drizzle of olive oil from a small "
-        "bottle, a wooden spoon, overhead three-quarter view. " + STYLE,
+        SAME + "New scene: he drizzles olive oil from a small bottle into a bowl "
+        "on the scale that holds white rice, the chicken and roasted pumpkin "
+        "cubes, while looking at the display, which is lit, sharp and reads a "
+        "three-digit number; a wooden spoon beside the scale; three-quarter view "
+        "from the display's side. " + GAZE + STYLE,
     ),
     6: (
         "Dinner, weighed. The log wrote itself.",
-        SAME + "the finished dinner bowl on the counter in warm evening light: "
-        "white rice, sliced grilled chicken breast and roasted pumpkin cubes "
-        "glossy with olive oil, a wooden spoon, the glasses folded beside it, "
-        "the scale switched off, no person in frame. " + STYLE,
+        SAME + "New scene: the finished dinner bowl on the scale in warm evening "
+        "light: white rice, sliced grilled chicken breast and roasted pumpkin "
+        "cubes glossy with olive oil; the display still lit with a three-digit "
+        "number, sharp; the glasses folded on the counter beside the scale, their "
+        "lenses toward the display; a wooden spoon; no person in frame. " + STYLE,
     ),
 }
 
