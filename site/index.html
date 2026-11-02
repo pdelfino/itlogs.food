@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>itlogs.food · your food, weighed and logged, hands free</title>
   <meta name="description" content="Ray-Ban Meta glasses look at any kitchen scale, read the food and the grams, and log it. No typing.">
-  <meta name="theme-color" content="#111111">
+  <meta name="theme-color" content="#fafaf7">
   <meta property="og:title" content="itlogs.food">
   <meta property="og:description" content="Your food, weighed and logged, hands free.">
   <meta property="og:url" content="https://itlogs.food/">
@@ -17,109 +17,175 @@
   <link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="brand/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+  <link rel="preload" href="fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="band">
-    <div class="inner">
-      <nav class="top">
-        <a class="wordmark" href="/" aria-label="itlogs.food">
-          <span class="ink">itlogs</span><span class="orange">.food</span><span class="cursor" aria-hidden="true"></span>
-        </a>
-        <a class="repo" href="https://github.com/pdelfino/itlogs.food">source</a>
-      </nav>
+  <div class="glow" aria-hidden="true"></div>
 
-      <h1>You eat.<br>It logs.</h1>
-      <p class="tagline">Your food, weighed and logged, hands free.</p>
+  <header class="nav">
+    <div class="wrap">
+      <a class="wordmark" href="/" aria-label="itlogs.food">
+        <span>itlogs</span><span class="orange">.food</span><span class="cursor" aria-hidden="true"></span>
+      </a>
+      <nav class="links" aria-label="sections">
+        <a href="#how">How it works</a>
+        <a href="#film">The film</a>
+        <a href="#log">The log</a>
+        <a href="#built">Built on</a>
+      </nav>
+      <a class="btn ghost small" href="https://github.com/pdelfino/itlogs.food">GitHub</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <a class="pill reveal" href="#built">
+        <span class="dot" aria-hidden="true"></span>
+        Meta Global AI Developer Hackathon 2026 · Indie track
+      </a>
+      <h1 class="reveal">You eat.<br><span class="grad">It logs.</span></h1>
+      <p class="sub reveal">Ray-Ban Meta glasses look at the kitchen scale you already own, read the food and the grams off its display, and write the line. No app on the scale. No pairing. No hands.</p>
+      <div class="cta reveal">
+        <a class="btn primary" href="#film">Watch the film</a>
+        <a class="btn ghost" href="https://github.com/pdelfino/itlogs.food">View the source</a>
+      </div>
 
       <!-- FILM: when the demo film exists, replace the <div class="poster"> below with
            <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="itlogs.food demo" allow="fullscreen" loading="lazy"></iframe>
-           (or a <video controls poster="img/film-poster.jpg" src="..."> if it is hosted elsewhere). Nothing else changes. -->
-      <figure class="film" id="film">
+           Nothing else changes. -->
+      <figure class="film reveal" id="film">
         <div class="poster">
           <img src="img/hero.webp" width="1536" height="1024" alt="" fetchpriority="high">
-          <div class="mark" aria-hidden="true"><span class="cursor big"></span></div>
+          <div class="play" aria-hidden="true"><span class="cursor big"></span></div>
           <figcaption>
-            <span class="k">the film</span>
+            <span class="k">The film</span>
             <span>Three minutes, shot in a Montréal kitchen. Here by 2026-NOVEMBER-04.</span>
           </figcaption>
         </div>
       </figure>
 
-      <div class="ticker" aria-hidden="true">
-        <div class="track">
-          <span>18:42 grilled chicken breast 142 g <b>agreed</b></span>
-          <span>18:43 cooked white rice 187 g <b>confirmed</b></span>
-          <span>18:44 olive oil 9 g <b>agreed</b></span>
-          <span>18:45 roasted pumpkin 120 g <b>corrected</b></span>
-          <span>07:10 egg whites 210 g <b>agreed</b></span>
-          <span>07:11 oats 82 g <b>agreed</b></span>
-          <span>12:30 canned pumpkin 240 g <b>confirmed</b></span>
-          <span>18:42 grilled chicken breast 142 g <b>agreed</b></span>
-          <span>18:43 cooked white rice 187 g <b>confirmed</b></span>
-          <span>18:44 olive oil 9 g <b>agreed</b></span>
-          <span>18:45 roasted pumpkin 120 g <b>corrected</b></span>
-          <span>07:10 egg whites 210 g <b>agreed</b></span>
-          <span>07:11 oats 82 g <b>agreed</b></span>
-          <span>12:30 canned pumpkin 240 g <b>confirmed</b></span>
+      <ul class="proof reveal" aria-label="works with">
+        <li>Works with Ray-Ban Meta</li>
+        <li>Any kitchen scale</li>
+        <li>Muse Spark reads the frame</li>
+        <li>Muse Voice hears you</li>
+        <li>Every entry stays on your phone</li>
+      </ul>
+    </section>
+
+    <section class="how wrap" id="how">
+      <div class="head reveal">
+        <p class="eyebrow">How it works</p>
+        <h2>Three seconds. Zero typing.</h2>
+        <p class="lead">Food apps make you type. Smart scales make you pick. itlogs.food reads the number the scale already shows, and asks only when it has to.</p>
+      </div>
+      <div class="cards">
+        <article class="card reveal">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="12" width="18" height="8" rx="2"/><path d="M7 12V9a5 5 0 0 1 10 0v3"/><path d="M8 16h3"/></svg></div>
+          <span class="num">01</span>
+          <h3>Put the food on the scale</h3>
+          <p>The one you own. The glasses read the display, not a Bluetooth radio, so nothing to pair and nothing to buy.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3a4 4 0 0 1 4 4v5a4 4 0 0 1-8 0V7a4 4 0 0 1 4-4z"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></div>
+          <span class="num">02</span>
+          <h3>Say <em>log it</em></h3>
+          <p>Or press the button on the frame. Muse Spark names the food and reads the grams. A second look 1.5 s later checks the first.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10v4a2 2 0 0 0 2 2h2l5 4V4L8 8H6a2 2 0 0 0-2 2z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/></svg></div>
+          <span class="num">03</span>
+          <h3>Hear it back</h3>
+          <p><em>218 grams of chicken breast, logged.</em> When two reads disagree you get a question in your ear instead, and your answer is the label.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="logsec wrap" id="log">
+      <div class="logtext reveal">
+        <p class="eyebrow">The log</p>
+        <h2>A log that writes itself.</h2>
+        <p class="lead">Every line carries the grams, the calories and protein from a nutrient table, and the label the loop produced: agreed, confirmed, or corrected. Those labels are tomorrow's eval set.</p>
+        <ul class="ticks">
+          <li>Grams to the unit, straight off the display</li>
+          <li>Kcal and protein from the grams, nothing else</li>
+          <li>Apple Health on your phone, nowhere else</li>
+        </ul>
+      </div>
+      <div class="logcard reveal" aria-label="a log that writes itself">
+        <div class="bar"><span></span><span></span><span></span><b>dinner · 2026-NOVEMBER-01</b></div>
+        <ol>
+          <li><span class="t">18:42</span><span class="f">grilled chicken breast</span><span class="g">218 g</span><span class="c">360 kcal</span><span class="s">agreed</span></li>
+          <li><span class="t">18:43</span><span class="f">cooked white rice</span><span class="g">187 g</span><span class="c">243 kcal</span><span class="s">confirmed</span></li>
+          <li><span class="t">18:44</span><span class="f">olive oil</span><span class="g">9 g</span><span class="c">80 kcal</span><span class="s">agreed</span></li>
+          <li><span class="t">18:45</span><span class="f">roasted pumpkin</span><span class="g">120 g</span><span class="c">53 kcal</span><span class="s">corrected</span></li>
+          <li class="live"><span class="t">18:47</span><span class="f">&nbsp;</span><span class="cursor small" aria-hidden="true"></span></li>
+        </ol>
+        <p class="sum"><span>dinner</span><span>534 g</span><span>736 kcal</span><span>74 g protein</span></p>
+      </div>
+    </section>
+
+    <section class="gallery wrap">
+      <div class="head reveal">
+        <p class="eyebrow">In the kitchen</p>
+        <h2>Glasses on. Scale on. That's the setup.</h2>
+      </div>
+      <!-- STORY: the six-frame strip replaces this bento once site/img/story-1..6.webp exist (hero.py --story). -->
+      <div class="bento">
+        <figure class="reveal big"><img src="img/hero.webp" width="1920" height="1280" loading="lazy" alt="A man in Ray-Ban Meta glasses sets a bowl of rice on a kitchen scale; the display is lit."></figure>
+        <figure class="reveal"><img src="img/still.webp" width="1920" height="1280" loading="lazy" alt="Ray-Ban Meta glasses beside a white kitchen scale holding a bowl of oats, and a clementine."></figure>
+        <figure class="reveal quote"><blockquote>“Every other health stream fills itself: the ring, the watch, the body scale. Food was the one log still typed by hand. The typing is what kills the habit.”</blockquote><figcaption>Why this exists</figcaption></figure>
+      </div>
+      <p class="fine reveal">Pictures generated with Muse Image, Meta's image model.</p>
+    </section>
+
+    <section class="built wrap" id="built">
+      <div class="head reveal">
+        <p class="eyebrow">Built on</p>
+        <h2>Meta's models, in the loop.</h2>
+      </div>
+      <div class="chips">
+        <div class="chip reveal"><b>Ray-Ban Meta</b><span>The glasses, through the Wearables Device Access Toolkit: camera stream, microphone, the button.</span></div>
+        <div class="chip reveal"><b>Muse Spark</b><span>Reads the frame: the food, the number on the display, and how sure it is. Structured output, every time.</span></div>
+        <div class="chip reveal"><b>Muse Voice Transcribe</b><span>Hears your answer when the two reads disagree. Realtime, endpointing, 24 kHz.</span></div>
+        <div class="chip reveal"><b>Muse Image</b><span>Made every picture on this page from a text prompt and one reference frame.</span></div>
+        <div class="chip reveal"><b>Muse Glimmer</b><span>The open-weight path: the same reader on a Mac, recalibrated on the labels the loop produces.</span></div>
+        <div class="chip reveal"><b>FastAPI + Swift</b><span>A thin phone client streams frames up a WebSocket; one Python loop does the rest. Open source.</span></div>
+      </div>
+    </section>
+
+    <section class="band wrap">
+      <div class="bandcard reveal">
+        <h2>Submission 2026-NOVEMBER-04.<br>The build is public.</h2>
+        <p>Ten days, one kitchen, every commit in the open. Watch the repository to see the film land.</p>
+        <div class="cta">
+          <a class="btn primary" href="https://github.com/pdelfino/itlogs.food">Watch on GitHub</a>
+          <a class="btn ghost light" href="#film">The film</a>
         </div>
       </div>
-
-      <p class="lede">Ray-Ban Meta glasses look at the kitchen scale you already own, read the food and the grams off its display, and write the line. No app on the scale, no pairing, no hands.</p>
-    </div>
-  </header>
-
-  <main>
-    <section class="log" aria-label="a log that writes itself">
-      <ol>
-        <li><span class="t">18:42</span><span class="f">grilled chicken breast</span><span class="g">142 g</span><span class="c">234 kcal</span><span class="s">agreed</span></li>
-        <li><span class="t">18:43</span><span class="f">cooked white rice</span><span class="g">187 g</span><span class="c">243 kcal</span><span class="s">confirmed</span></li>
-        <li><span class="t">18:44</span><span class="f">olive oil</span><span class="g">9 g</span><span class="c">80 kcal</span><span class="s">agreed</span></li>
-        <li><span class="t">18:45</span><span class="f">roasted pumpkin</span><span class="g">120 g</span><span class="c">53 kcal</span><span class="s">corrected</span></li>
-        <li class="live"><span class="t">18:47</span><span class="f">&nbsp;</span><span class="cursor small" aria-hidden="true"></span></li>
-      </ol>
-      <p class="sum"><span>dinner</span><span>458 g</span><span>610 kcal</span><span>50 g protein</span></p>
     </section>
-    <p class="fine note">Two reads that agree log the entry. Two reads that disagree become a question in your ear: <em>181 or 187 grams?</em> Your answer is the label. Calories and protein come from the grams and a nutrient table, nothing else.</p>
-
-    <section class="how" aria-label="how it works">
-      <ol>
-        <li><span class="n">1</span><span>Put the food on the scale.</span></li>
-        <li><span class="n">2</span><span>Say <em>log it</em>, or press the button on the glasses.</span></li>
-        <li><span class="n">3</span><span>Hear it back: <em>142 grams of grilled chicken breast, logged.</em></span></li>
-      </ol>
-    </section>
-
-    <!-- STORY: the six-frame strip goes here once site/img/story-1..6.webp exist (hero.py --story).
-         Markup and CSS are ready on the hero branch, commit c6f319c. -->
-
-    <figure class="photo">
-      <img src="img/hero.webp" width="1920" height="1280" loading="lazy"
-           alt="A man in Ray-Ban Meta glasses sets a bowl of rice on a kitchen scale; the display is lit.">
-      <figcaption>Pictures on this page generated with Muse Image, Meta's image model.</figcaption>
-    </figure>
-
-    <figure class="photo">
-      <img src="img/still.webp" width="1920" height="1280" loading="lazy"
-           alt="Ray-Ban Meta glasses beside a white kitchen scale holding a bowl of oats, and a clementine.">
-    </figure>
-
-    <section class="built" aria-label="built on">
-      <h2>Built on</h2>
-      <dl>
-        <div><dt>Ray-Ban Meta</dt><dd>the glasses, through the Wearables Device Access Toolkit: camera stream, microphone, the button</dd></div>
-        <div><dt>Muse Spark</dt><dd>reads the frame: the food, the number on the display, how sure it is</dd></div>
-        <div><dt>Muse Voice Transcribe</dt><dd>hears your answer when the two reads disagree</dd></div>
-        <div><dt>Muse Image</dt><dd>made the pictures on this page</dd></div>
-      </dl>
-      <p class="fine">An entry in the Meta Global AI Developer Hackathon, Indie track, built in Montréal in the ten days to 2026-NOVEMBER-04. Every entry stays on your phone.</p>
-    </section>
-
-    <footer>
-      <p><a href="https://github.com/pdelfino/itlogs.food">github.com/pdelfino/itlogs.food</a></p>
-      <p class="family">itlogs<span class="orange">.food</span> is the first of a family. Only the suffix changes.</p>
-      <p class="legal">Ray-Ban Meta and Muse are trademarks of their owners. itlogs.food is an independent project, not affiliated with Meta.</p>
-    </footer>
   </main>
+
+  <footer class="wrap">
+    <div class="wordmark small"><span>itlogs</span><span class="orange">.food</span><span class="cursor" aria-hidden="true"></span></div>
+    <p>itlogs<span class="orange">.food</span> is the first of a family. Only the suffix changes.</p>
+    <p class="legal">Built in Montréal. Ray-Ban Meta and Muse are trademarks of their owners. itlogs.food is an independent project, not affiliated with Meta.</p>
+  </footer>
+
+  <script>
+    (function () {
+      var els = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+      function show(e) { e.classList.add('in'); }
+      // anything already on screen shows at once; everything else within 1.6 s no matter what
+      els.forEach(function (e) { var r = e.getBoundingClientRect(); if (r.top < window.innerHeight * 0.92) show(e); });
+      setTimeout(function () { els.forEach(show); }, 1600);
+      if (!('IntersectionObserver' in window)) { els.forEach(show); return; }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) { show(en.target); io.unobserve(en.target); } });
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+      els.forEach(function (e) { if (!e.classList.contains('in')) io.observe(e); });
+    })();
+  </script>
 </body>
 </html>
