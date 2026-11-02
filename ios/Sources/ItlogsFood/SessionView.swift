@@ -13,9 +13,8 @@ struct SessionView: View {
                         .onSubmit { if let u = URL(string: urlText) { session.serverURL = u } }
                     Toggle("Use the glasses", isOn: $session.useGlasses)
                     Button("Connect this app to the glasses (once)") { Task { await session.registerGlasses() } }
-                    if session.error?.contains("UpdateRequired") == true {
-                        Button("Install or update the glasses app (Meta AI)") { Task { await session.updateGlassesApp() } }
-                    }
+                    // always visible: the toolkit app on the glasses can be stale without the session saying so (#2)
+                    Button("Install or update the glasses app (Meta AI)") { Task { await session.updateGlassesApp() } }
                     Toggle("Recognize speech on the phone (fallback)", isOn: $session.useDeviceSpeech)
                     Toggle("Ask me after each food", isOn: $session.askEachFood)
                 }
