@@ -8,7 +8,7 @@ SCHEME = ItlogsFood
 DEVICE ?= $(shell xcrun xctrace list devices 2>/dev/null | grep -i iphone | grep -v Simulator | head -1 | sed -E 's/.*\(([0-9A-F-]+)\)$$/\1/')
 SIM ?= $(shell xcrun simctl list devices available 2>/dev/null | grep -i iphone | head -1 | sed -E 's/^ *(.*) \(([0-9A-F-]+)\).*/\2/')
 
-.PHONY: help setup test lint format run run-live eval eval-live ci ios-gen ios-build ios-test ios-run ios-logs phone-logs phone-crashes docker-build
+.PHONY: help setup test lint format doctor run-bg stop run run-live eval eval-live ci ios-gen ios-build ios-test ios-run ios-logs phone-logs phone-crashes docker-build
 
 help:             ## this list
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed -E 's/:.*## /  /' | column -t -s '  '
@@ -25,6 +25,15 @@ lint:             ## ruff lint and format check
 
 format:           ## ruff format
 	$(SERVER) ruff check --fix server evals && $(SERVER) ruff format server evals
+
+doctor:           ## one screen: repo, phone, last build, server, the phone's last words, crashes, telemetry
+	$(SERVER) python server/scripts/doctor.py
+
+run-bg:           ## the server in the background with a persistent log (.sessions/server.log); survives the Claude session
+	@mkdir -p .sessions; if curl -s --max-time 2 http://127.0.0.1:8000/health >/dev/null; then echo "already up on :8000"; else nohup $(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000 >> .sessions/server.log 2>&1 & echo $$! > .sessions/server.pid; sleep 3; curl -s --max-time 3 http://127.0.0.1:8000/health && echo " (pid $$(cat .sessions/server.pid), log .sessions/server.log)"; fi
+
+stop:             ## stop the background server
+	@pkill -f "uvicorn itlogs.app:app" && echo "stopped" || echo "nothing running"
 
 run:              ## the server on :8000 with the fake provider
 	$(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000 --reload
