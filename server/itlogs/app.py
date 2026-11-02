@@ -76,6 +76,13 @@ async def ws_session(ws: WebSocket) -> None:
     async def send_all(msgs: list[ServerMessage]) -> None:
         async with send_lock:
             for m in msgs:
+                if m.kind == "entry" and m.entry is not None:
+                    e = m.entry
+                    print(f"ENTRY {e.index} {e.food} {e.grams:g} g {e.status}", flush=True)
+                elif m.kind == "ask" and m.ask is not None:
+                    print(f"ASK {m.ask.text}", flush=True)
+                elif m.kind == "say":
+                    print(f"SAY {m.say}", flush=True)
                 await ws.send_text(m.model_dump_json(exclude_none=True))
 
     def keep(msgs: list[ServerMessage]) -> None:

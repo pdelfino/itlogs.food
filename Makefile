@@ -30,8 +30,11 @@ format:           ## ruff format
 doctor:           ## one screen: repo, phone, last build, server, the phone's last words, crashes, telemetry
 	$(SERVER) python server/scripts/doctor.py
 
-run-bg:           ## the server in the background with a persistent log (.sessions/server.log); survives the Claude session
-	@mkdir -p .sessions; if curl -s --max-time 2 http://localhost:8000/health >/dev/null; then echo "already up on :8000"; else nohup $(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000 >> .sessions/server.log 2>&1 & echo $$! > .sessions/server.pid; for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; curl -s --max-time 2 http://localhost:8000/health >/dev/null && break; done; curl -s --max-time 3 http://localhost:8000/health && echo " (pid $$(cat .sessions/server.pid), log .sessions/server.log)" || echo "did not come up; see .sessions/server.log"; fi
+# where live sessions are recorded (the frames a read was made on + session.json): the T7 when it is mounted, else an ignored local dir
+RECORD_DIR ?= $(shell [ -d /Volumes/T7 ] && echo /Volumes/T7/itlogs-food-sessions || echo .sessions/record)
+
+run-bg:           ## the server in the background with a persistent log (.sessions/server.log); records sessions to RECORD_DIR; survives the Claude session
+	@mkdir -p .sessions; if curl -s --max-time 2 http://localhost:8000/health >/dev/null; then echo "already up on :8000"; else ITLOGS_RECORD_DIR=$(RECORD_DIR) nohup $(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000 >> .sessions/server.log 2>&1 & echo $$! > .sessions/server.pid; for i in 1 2 3 4 5 6 7 8 9 10; do sleep 1; curl -s --max-time 2 http://localhost:8000/health >/dev/null && break; done; curl -s --max-time 3 http://localhost:8000/health && echo " (pid $$(cat .sessions/server.pid), log .sessions/server.log)" || echo "did not come up; see .sessions/server.log"; fi
 
 stop:             ## stop the background server
 	@pkill -f "uvicorn itlogs.app:app" && echo "stopped" || echo "nothing running"
