@@ -127,6 +127,31 @@ final class SessionController {
         setWeighing(true)
     }
 
+    /// Forget this app's registration with the glasses and register again. Needed when the
+    /// glasses drop the app from their manifest (seen 2026-NOVEMBER-02 after another developer-mode
+    /// app registered: "This app is no longer registered"), and the clean way to get a registration
+    /// record newer than the glasses-app update of NOVEMBER-01 (#2).
+    func reconnectGlasses() async {
+        Diag.send("reconnect tapped; registration state before: \(String(describing: Wearables.shared.registrationState))")
+        if Wearables.shared.registrationState == .registered {
+            do {
+                try await Wearables.shared.startUnregistration()
+                Diag.send("unregistered; state now \(String(describing: Wearables.shared.registrationState))")
+            } catch {
+                Diag.send("startUnregistration threw: \(String(describing: error))")
+            }
+        }
+        do {
+            try await GlassesSource.register()
+            Diag.send("startRegistration returned; state now \(String(describing: Wearables.shared.registrationState))")
+            self.error = nil
+            self.lastSaid = "Reconnecting to the glasses through Meta AI."
+        } catch {
+            self.error = "Reconnect failed: \(String(describing: error))"
+            Diag.send("startRegistration threw: \(String(describing: error))")
+        }
+    }
+
     /// The glasses-side toolkit app is installed or updated from the Meta AI app.
     func updateGlassesApp() async {
         Diag.send("update glasses app tapped")

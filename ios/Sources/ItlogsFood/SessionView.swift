@@ -13,6 +13,7 @@ struct SessionView: View {
                         .onSubmit { if let u = URL(string: urlText) { session.serverURL = u } }
                     Toggle("Use the glasses", isOn: $session.useGlasses)
                     Button("Connect this app to the glasses (once)") { Task { await session.registerGlasses() } }
+                    Button("Forget and reconnect the glasses (re-register)") { Task { await session.reconnectGlasses() } }
                     // always visible: the toolkit app on the glasses can be stale without the session saying so (#2)
                     Button("Install or update the glasses app (Meta AI)") { Task { await session.updateGlassesApp() } }
                     Toggle("Video stream instead of stills (experiment)", isOn: $session.useStream)
