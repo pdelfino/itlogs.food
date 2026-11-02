@@ -63,6 +63,10 @@ final class SessionController {
         glasses?.onPhrase = { [weak self, client] phrase in
             Task { @MainActor in
                 guard let self else { return }
+                if self.voice.isSpeaking {
+                    Diag.send("ignored, our own voice: \"\(phrase)\"")
+                    return
+                }
                 self.lastHeard = phrase
                 try? await client.send(voice: phrase, tMs: self.nowMs())
             }

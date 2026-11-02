@@ -27,8 +27,17 @@ final class Voice {
     }()
 
     private var announcedVoice = false
+    /// When the ear last heard this app speak: the glasses' microphone hears the glasses' speaker, and
+    /// the recognizer sent "Put the first put on the scale" back as the wearer's words (2026-NOVEMBER-02
+    /// 18:34). Phrases heard while speaking, or within `echoTailSeconds` after, are the app's own voice.
+    private(set) var speakingUntil = Date.distantPast
+    let echoTailSeconds: TimeInterval = 1.2
+
+    var isSpeaking: Bool { synth.isSpeaking || Date() < speakingUntil }
 
     func say(_ text: String) {
+        // a rough duration: about 14 characters a second at this rate, plus the tail
+        speakingUntil = Date().addingTimeInterval(Double(text.count) / 14.0 + echoTailSeconds)
         let u = AVSpeechUtterance(string: text)
         u.rate = AVSpeechUtteranceDefaultSpeechRate * 0.95
         u.pitchMultiplier = 1.0
