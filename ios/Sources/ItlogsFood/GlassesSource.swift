@@ -34,7 +34,15 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
         let wearables = Wearables.shared
         Diag.send("glasses: creating session; devices=\(wearables.devices.count)")
         for id in wearables.devices { await Diag.describe(id) }
-        let session = try wearables.createSession(deviceSelector: AutoDeviceSelector(wearables: wearables))
+        // Meta's BirdSpotter sample selects the device by identifier; AutoDeviceSelector threw
+        // noEligibleDevice here with the glasses connected and compatible (2026-11-01 19:10).
+        let selector: DeviceSelector
+        if let id = wearables.devices.first {
+            selector = SpecificDeviceSelector(device: id)
+        } else {
+            selector = AutoDeviceSelector(wearables: wearables)
+        }
+        let session = try wearables.createSession(deviceSelector: selector)
         self.session = session
         try session.start()
         try await waitForStarted(session)
