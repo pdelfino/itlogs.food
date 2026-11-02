@@ -84,7 +84,7 @@ main {
 @keyframes blink { 50% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .cursor { animation: none; }
-  .log li { animation: none; opacity: 1; }
+  .log li, .log .sum { animation: none; opacity: 1; }
 }
 
 /* hero: one photograph, short lines */
@@ -138,7 +138,7 @@ main {
 }
 .log li {
   display: grid;
-  grid-template-columns: 5ch 1fr 6ch 9ch;
+  grid-template-columns: 5ch 1fr 6ch 8ch 9ch;
   gap: 1.2ch;
   white-space: nowrap;
   opacity: 0;
@@ -149,10 +149,41 @@ main {
 .log li:nth-child(3) { animation-delay: 2.3s; }
 .log li:nth-child(4) { animation-delay: 3.3s; }
 .log li:nth-child(5) { animation-delay: 4.3s; grid-template-columns: 5ch 1fr auto; }
+.log .c { text-align: right; color: rgba(250, 250, 247, 0.7); }
+.log .sum {
+  display: flex;
+  gap: 2ch;
+  justify-content: flex-end;
+  margin: 0.6rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(250, 250, 247, 0.18);
+  font-size: 0.9rem;
+  color: rgba(250, 250, 247, 0.7);
+  opacity: 0;
+  animation: write 0.2s steps(1, end) 5.2s forwards;
+}
+.log .sum span { white-space: nowrap; }
+.log .sum span:first-child { margin-right: auto; color: var(--orange); font-weight: 600; }
 @keyframes write { to { opacity: 1; } }
 .log .t { color: rgba(250, 250, 247, 0.5); }
 .log .g { text-align: right; font-weight: 600; }
 .log .s { color: var(--orange); text-align: right; }
+
+.fine.note { margin: -1.25rem 0 3rem; max-width: 44rem; }
+
+/* the strip: six frames, one line each */
+.strip { margin: 0 0 2.5rem; display: grid; gap: 2rem; }
+.strip figure { margin: 0; }
+.strip img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 10px; background: var(--ink); }
+.strip figcaption {
+  margin-top: 0.75rem;
+  font-size: clamp(1.1rem, 3.2vw, 1.5rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+.strip .k { color: var(--orange); margin-right: 1ch; }
+.strip em { font-style: normal; color: var(--orange); }
 
 /* steps */
 .steps { margin: 0 0 2.5rem; max-width: 44rem; }
@@ -232,7 +263,8 @@ footer a:hover { border-bottom-color: var(--orange); }
   .log ol { font-size: 0.8rem; }
   .log li { grid-template-columns: 1fr 6ch 9ch; }
   .log li:nth-child(5) { grid-template-columns: 1fr auto; }
-  .log .t { display: none; }
+  .log .t, .log .c { display: none; }
+  .log .sum { font-size: 0.78rem; gap: 1.5ch; }
 }
 
 /* wide screens: photograph left, words right; built-on in two columns */
@@ -247,6 +279,8 @@ footer a:hover { border-bottom-color: var(--orange); }
   .hero img { aspect-ratio: 3 / 2; }
   .lede { margin-top: 0; padding-bottom: 1.5rem; }
   .log ol { font-size: 1rem; }
+  .strip { grid-template-columns: 1fr 1fr; gap: 2.5rem 2rem; }
+  .strip figure:nth-child(1), .strip figure:nth-child(6) { grid-column: 1 / -1; }
   .built dl > div {
     grid-template-columns: 14rem 1fr;
     gap: 1.5rem;
