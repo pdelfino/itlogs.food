@@ -47,6 +47,7 @@ enum Diag {
             return
         }
         send("device '\(device.name)' type=\(String(describing: device.deviceType())) compatibility=\(String(describing: device.compatibility()))")
+        send("device '\(device.name)' battery=\(device.batteryLevel.map(String.init) ?? "?") charging=\(String(describing: device.chargingState)) worn=\(String(describing: device.donState)) hinge=\(String(describing: device.hingeState)) thermal=\(String(describing: device.thermalLevel))")
         device.addLinkStateListener { (state: LinkState) in
             send("device '\(device.name)' link=\(String(describing: state))")
         }.store(in: tokens)

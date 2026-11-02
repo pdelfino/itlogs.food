@@ -19,6 +19,11 @@ final class SessionController {
     var useGlasses = UserDefaults.standard.bool(forKey: "useGlasses") {
         didSet { UserDefaults.standard.set(useGlasses, forKey: "useGlasses") }
     }
+    /// Experiment (#2): ask the glasses for the video stream instead of stills. The stream has never
+    /// published a state in this app; this switch lets a test say whether it does now.
+    var useStream = UserDefaults.standard.bool(forKey: "useStream") {
+        didSet { UserDefaults.standard.set(useStream, forKey: "useStream") }
+    }
     var useDeviceSpeech = false  // fallback: recognize on the phone, send text
     var askEachFood = false      // off: log quietly, hear the list at Stop; on: "..., right?" after each food
     var lastRead: EntryRead?
@@ -54,6 +59,7 @@ final class SessionController {
             Task { @MainActor in self?.handle(msg) }
         }
         let glasses: GlassesSource? = useGlasses ? GlassesSource() : nil
+        if useStream { glasses?.useStills = false }
         glasses?.onPhrase = { [weak self, client] phrase in
             Task { @MainActor in
                 guard let self else { return }

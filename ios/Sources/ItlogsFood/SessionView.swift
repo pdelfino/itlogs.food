@@ -15,6 +15,7 @@ struct SessionView: View {
                     Button("Connect this app to the glasses (once)") { Task { await session.registerGlasses() } }
                     // always visible: the toolkit app on the glasses can be stale without the session saying so (#2)
                     Button("Install or update the glasses app (Meta AI)") { Task { await session.updateGlassesApp() } }
+                    Toggle("Video stream instead of stills (experiment)", isOn: $session.useStream)
                     Toggle("Recognize speech on the phone (fallback)", isOn: $session.useDeviceSpeech)
                     Toggle("Ask me after each food", isOn: $session.askEachFood)
                 }
