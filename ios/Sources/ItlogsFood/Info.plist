@@ -34,7 +34,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ItlogsGitSHA</key>
-	<string>3495e91</string>
+	<string>376faba</string>
 	<key>MWDAT</key>
 	<dict>
 		<key>Analytics</key>
@@ -72,6 +72,10 @@
 	<string>Voice replies like "yes" or "eighty-one", and "log it".</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Voice replies are recognized on the phone and sent as text.</string>
+	<key>PosthogHost</key>
+	<string>$(POSTHOG_HOST)</string>
+	<key>PosthogProjectToken</key>
+	<string>$(POSTHOG_PROJECT_TOKEN)</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

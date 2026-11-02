@@ -9,6 +9,7 @@ enum Diag {
 
     static func send(_ line: String) {
         log.notice("\(line, privacy: .public)")
+        Telemetry.event("phone_diag", ["line": line])
         guard let ws = UserDefaults.standard.string(forKey: "serverURL") ?? Optional("ws://Pedros-MacBook-Air.local:8000/ws/session"),
               var c = URLComponents(string: ws) else { return }
         c.scheme = (c.scheme == "wss") ? "https" : "http"

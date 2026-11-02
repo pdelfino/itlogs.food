@@ -12,9 +12,11 @@ import asyncio
 import time
 from pathlib import Path
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from itlogs import telemetry
 from itlogs.asr import Transcriber, make_transcriber
 from itlogs.config import settings
 from itlogs.models import ClientMessage, ServerMessage
@@ -23,6 +25,12 @@ from itlogs.record import Recorder
 from itlogs.session import Session
 
 app = FastAPI(title="itlogs.food")
+
+
+@app.exception_handler(Exception)
+async def unhandled(request: Request, exc: Exception) -> JSONResponse:
+    telemetry.exception(exc, {"path": request.url.path})
+    return JSONResponse(status_code=500, content={"message": str(exc)})
 
 
 @app.get("/health")
@@ -41,6 +49,7 @@ async def phone_log(item: PhoneLine) -> dict[str, str]:
     wearer sees, and appended to .sessions/phone.log. Never photos or audio."""
     stamp = time.strftime("%H:%M:%S", time.localtime(item.t))
     print(f"PHONE {stamp} {item.line}", flush=True)
+    telemetry.event("phone_diag", {"line": item.line, "phone_t": item.t}, distinct_id="phone")
     path = Path(".sessions")
     path.mkdir(exist_ok=True)
     with (path / "phone.log").open("a") as f:
@@ -70,9 +79,20 @@ async def ws_session(ws: WebSocket) -> None:
 
     def keep(msgs: list[ServerMessage]) -> None:
         """Only the frames a read was made on are kept, plus every entry and question."""
-        if recorder is None:
-            return
         for m in msgs:
+            if m.kind == "entry" and m.entry is not None:
+                telemetry.event(
+                    "entry_logged",
+                    {
+                        "food": m.entry.food,
+                        "grams": m.entry.grams,
+                        "status": m.entry.status,
+                        "provider": settings.provider,
+                        "known_food": m.entry.nutrients is not None,
+                    },
+                )
+            if recorder is None:
+                continue
             if m.kind == "read" and last_frame is not None:
                 recorder.photo(last_frame[1], last_frame[0])
                 recorder.event("read", {"t_ms": last_frame[0], **m.read.model_dump()})  # type: ignore[union-attr]

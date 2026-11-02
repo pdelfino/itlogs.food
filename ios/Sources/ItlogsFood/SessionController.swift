@@ -70,6 +70,7 @@ final class SessionController {
         } catch {
             self.error = "Start failed: \(String(describing: error))"
             Diag.send("start failed: \(String(describing: error))")
+            Telemetry.error(error, ["where": "start"])
         }
     }
 
@@ -110,6 +111,7 @@ final class SessionController {
             let detail = String(describing: error)
             self.error = "Pair failed: \(detail)"
             Diag.send("startRegistration threw: \(detail) / \(error.localizedDescription)")
+            Telemetry.error(error, ["where": "registration"])
         }
     }
 

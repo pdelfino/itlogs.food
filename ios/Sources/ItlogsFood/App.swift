@@ -6,7 +6,10 @@ struct ItlogsFoodApp: App {
     @State private var session = SessionController()
     @State private var invocations: VoiceInvocations?
 
-    init() { GlassesSource.configure() }
+    init() {
+        Telemetry.setup()
+        GlassesSource.configure()
+    }
 
     var body: some Scene {
         WindowGroup {

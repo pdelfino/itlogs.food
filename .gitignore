@@ -28,3 +28,6 @@ DerivedData/
 
 # landing page: Muse Image candidates stay local; only the chosen hero is committed
 site/img/candidates/
+
+# the example env file is documentation, not a secret
+!server/.env.example

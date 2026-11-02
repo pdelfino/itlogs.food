@@ -29,6 +29,8 @@ class Settings(BaseSettings):
     second_read_after_ms: int = 1500
     grams_tolerance_g: float = 1.0
     record_dir: str = ""  # set to keep photos and entries for the eval sets
+    posthog_token: str = ""  # the PostHog project token (public, write-only); empty = telemetry off
+    posthog_host: str = "https://us.i.posthog.com"
 
     @property
     def usual_food_list(self) -> list[str]:

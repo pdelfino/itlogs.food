@@ -11,6 +11,8 @@ settings:
     SWIFT_STRICT_CONCURRENCY: complete
     DEVELOPMENT_TEAM: "${DEVELOPMENT_TEAM}"   # your Apple team id: DEVELOPMENT_TEAM=XXXXXXXXXX make ios-run (empty = unsigned build)
     MARKETING_VERSION: "0.1.0"
+    POSTHOG_PROJECT_TOKEN: "${POSTHOG_PROJECT_TOKEN}"   # public project token, from server/.env at make ios-gen; never committed
+    POSTHOG_HOST: "${POSTHOG_HOST}"
     CURRENT_PROJECT_VERSION: "${BUILD_NUMBER}"   # commits on main, set by make ios-gen
     CODE_SIGN_STYLE: Automatic
 targets:
@@ -25,6 +27,8 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         ItlogsGitSHA: "${GIT_SHA}"   # set by make ios-gen
+        PosthogProjectToken: $(POSTHOG_PROJECT_TOKEN)
+        PosthogHost: $(POSTHOG_HOST)
         UILaunchScreen: {}
         NSCameraUsageDescription: The phone camera is the fallback frame source when the glasses are not connected.
         NSMicrophoneUsageDescription: Voice replies like "yes" or "eighty-one", and "log it".
@@ -60,6 +64,8 @@ targets:
         product: MWDATCore
       - package: MWDAT
         product: MWDATCamera
+      - package: PostHog
+        product: PostHog
   ItlogsFoodTests:
     type: bundle.unit-test
     platform: iOS
@@ -73,3 +79,6 @@ packages:
   MWDAT:
     url: https://github.com/facebook/meta-wearables-dat-ios
     exactVersion: 1.0.1
+  PostHog:
+    url: https://github.com/PostHog/posthog-ios
+    from: 3.56.0

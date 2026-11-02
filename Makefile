@@ -2,6 +2,8 @@
 # for the server half; the iOS half needs Xcode installed once (App Store) and a signed-in device.
 
 SERVER = uv run --project server
+-include server/.env          # ITLOGS_POSTHOG_TOKEN and ITLOGS_POSTHOG_HOST reach the iOS build from here (the file is ignored)
+export ITLOGS_POSTHOG_TOKEN ITLOGS_POSTHOG_HOST
 SCHEME = ItlogsFood
 DEVICE ?= $(shell xcrun xctrace list devices 2>/dev/null | grep -i iphone | grep -v Simulator | head -1 | sed -E 's/.*\(([0-9A-F-]+)\)$$/\1/')
 SIM ?= $(shell xcrun simctl list devices available 2>/dev/null | grep -i iphone | head -1 | sed -E 's/^ *(.*) \(([0-9A-F-]+)\).*/\2/')
@@ -46,7 +48,7 @@ docker-build:     ## the server image
 	docker build -t itlogs-food-server server
 
 ios-gen:          ## regenerate ios/ItlogsFood.xcodeproj from ios/project.yml (the .xcodeproj is not committed); build number = commit count, sha into Info.plist
-	cd ios && BUILD_NUMBER=$$(git rev-list --count HEAD) GIT_SHA=$$(git rev-parse --short HEAD) xcodegen generate
+	cd ios && BUILD_NUMBER=$$(git rev-list --count HEAD) GIT_SHA=$$(git rev-parse --short HEAD) POSTHOG_PROJECT_TOKEN="$${ITLOGS_POSTHOG_TOKEN:-}" POSTHOG_HOST="$${ITLOGS_POSTHOG_HOST:-https://us.i.posthog.com}" xcodegen generate
 
 ios-build: ios-gen ## build for a connected iPhone
 	cd ios && xcodebuild -scheme $(SCHEME) -destination 'generic/platform=iOS' -configuration Debug build | tail -20
