@@ -17,10 +17,10 @@ spoken), which is what the evals and the open-weight recalibration (issue #4) fe
 
 from __future__ import annotations
 
-from collections import deque
 from dataclasses import dataclass, field
 
 from itlogs import nutrients
+from itlogs.frames import Settle
 from itlogs.models import Entry, EntryRead, Question, Reply, ServerMessage
 from itlogs.providers.base import LLMProvider, VisionProvider
 
@@ -43,7 +43,10 @@ class Session:
     entries: list[Entry] = field(default_factory=list)
     watching: bool = False
     ask: bool = False  # weighing mode: ask after each food, or log quietly and read back at the end
-    _frames: deque[tuple[int, bytes]] = field(default_factory=lambda: deque(maxlen=30))
+    # the recent frames, and whether the scene is still: the reader sees the sharpest frame of a
+    # still second, not whatever arrived last (the first live read, 2026-NOVEMBER-02 18:15, was a
+    # hand on the apple and a display at 0)
+    settle: Settle = field(default_factory=Settle)
     _first: tuple[EntryRead, int] | None = None  # "log it": waiting for the second look
     _question: tuple[Question, list[EntryRead]] | None = None  # waiting for the wearer
     _last_watch_ms: int = -1_000_000
@@ -53,31 +56,37 @@ class Session:
     # frames
 
     async def on_frame(self, jpeg: bytes, t_ms: int) -> list[ServerMessage]:
-        self._frames.append((t_ms, jpeg))
+        self.settle.observe(jpeg, t_ms)
         if self._first is not None:
             first, first_ms = self._first
             if t_ms - first_ms < self.second_read_after_ms:
                 return []
             self._first = None
-            second = await self.vision.read_entry(jpeg)
+            _, best = self.settle.sharpest(t_ms - 700, t_ms) or (t_ms, jpeg)
+            second = await self.vision.read_entry(best)
             return [ServerMessage(kind="read", read=second), *self._resolve(first, second, t_ms)]
         if self.watching and self._question is None:
             if t_ms - self._last_watch_ms < self.watch_every_ms:
                 return []
+            if not self.settle.still(t_ms):
+                return []  # a hand, a moving plate: not worth a model call
             self._last_watch_ms = t_ms
-            read = await self.vision.read_entry(jpeg)
+            since = max(self.settle.still_since() or t_ms, t_ms - 1000)
+            _, best = self.settle.sharpest(since, t_ms) or (t_ms, jpeg)
+            read = await self.vision.read_entry(best)
             return [ServerMessage(kind="read", read=read), *self._watch(read, t_ms)]
         return []
 
     # the trigger
 
     async def capture(self, t_ms: int) -> list[ServerMessage]:
-        if not self._frames:
+        if self.settle.latest is None:
             return [ServerMessage(kind="say", say="No picture yet.")]
         if self._question is not None:
             q, _ = self._question
             return [ServerMessage(kind="say", say=q.text)]
-        frame_ms, jpeg = self._frames[-1]
+        latest_ms = self.settle.latest[0]
+        frame_ms, jpeg = self.settle.sharpest(latest_ms - 1000, latest_ms) or self.settle.latest
         read = await self.vision.read_entry(jpeg)
         if not read.readable:
             return [
