@@ -103,8 +103,9 @@ STORY = {
     ),
     4: (
         "142 grams of chicken breast, logged.",
-        SAME + "a small satisfied smile as he lifts the plate off the scale with "
-        "one hand, the display behind it still lit, hands otherwise free. " + STYLE,
+        SAME + "a small satisfied smile as he lifts the plate with the grilled "
+        "chicken breast off the scale with one hand, the display behind it still "
+        "lit, hands otherwise free. " + STYLE,
     ),
     5: (
         "Rice. Oil. Pumpkin. Three more lines.",
@@ -114,8 +115,10 @@ STORY = {
     ),
     6: (
         "Dinner, weighed. The log wrote itself.",
-        SAME + "the finished bowl on the counter in warm evening light, the "
-        "glasses folded beside it, the scale switched off, no person in frame. " + STYLE,
+        SAME + "the finished dinner bowl on the counter in warm evening light: "
+        "white rice, sliced grilled chicken breast and roasted pumpkin cubes "
+        "glossy with olive oil, a wooden spoon, the glasses folded beside it, "
+        "the scale switched off, no person in frame. " + STYLE,
     ),
 }
 
