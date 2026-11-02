@@ -34,7 +34,7 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
     private var lastSent = Date.distantPast
     private var frames = 0
     var fps: Double = 10
-    var streamFps: UInt = 24
+    var streamFps: UInt = 7  // valid: 2, 7, 15, 24, 30
 
     static func configure() {
         do { try Wearables.configure() } catch {
@@ -81,7 +81,10 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
         // the first streaming run (2026-NOVEMBER-02 18:04, 1600 frames on the phone) sent nothing to the Mac.
         // Raw frames only arrive in the foreground; the demo keeps the app open. hvc1 + a decoder is the
         // background-capable path (Meta's CameraAccess sample has VideoFrameDecoder.swift).
-        let config = StreamConfiguration(videoCodec: VideoCodec.raw, resolution: StreamingResolution.low, frameRate: streamFps)
+        // high (720 x 1280) at 7 fps: the display's digits are a few pixels tall at low (the first real
+        // frame, 2026-NOVEMBER-02 18:15, was 360 x 640), and the Bluetooth ladder keeps more quality per
+        // frame when few frames are asked for; the loop reads one frame every 1.5 s anyway.
+        let config = StreamConfiguration(videoCodec: VideoCodec.raw, resolution: StreamingResolution.high, frameRate: streamFps)
         guard let camera = try session.addCamera(config: config) else {
             throw NSError(domain: "food.itlogs", code: 11, userInfo: [NSLocalizedDescriptionKey: "Could not create the glasses camera"])
         }
