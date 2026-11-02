@@ -88,6 +88,12 @@ final class SessionController {
     /// One-time pairing with the glasses (opens the Meta AI app and returns).
     func registerGlasses() async {
         Diag.send("pair tapped; registration state before: \(String(describing: Wearables.shared.registrationState))")
+        if Wearables.shared.registrationState == .registered {
+            self.error = nil
+            self.lastSaid = "Already connected to the glasses."
+            for id in Wearables.shared.devices { Diag.describe(id) }
+            return
+        }
         do {
             try await GlassesSource.register()
             Diag.send("startRegistration returned without error")

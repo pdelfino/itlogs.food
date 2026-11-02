@@ -34,7 +34,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ItlogsGitSHA</key>
-	<string>ff18b92</string>
+	<string>9a24a57</string>
 	<key>MWDAT</key>
 	<dict>
 		<key>Analytics</key>

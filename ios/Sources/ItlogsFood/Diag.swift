@@ -21,7 +21,10 @@ enum Diag {
         URLSession.shared.dataTask(with: req).resume()
     }
 
-    /// The toolkit's registration state and errors, as they change.
+    private static let tokens = ListenerTokenBag()
+
+    /// The toolkit's registration state, the devices it knows, their link state and
+    /// compatibility, as they change.
     @MainActor static func watchRegistration() {
         Task {
             for await state in Wearables.shared.registrationStateStream() {
@@ -30,8 +33,24 @@ enum Diag {
         }
         Task {
             for await devices in Wearables.shared.devicesStream() {
-                send("devices: \(devices.map { String(describing: $0) })")
+                send("devices: \(devices.count)")
+                for id in devices { describe(id) }
             }
         }
+    }
+
+    /// One line per device now, then a line on every link-state or compatibility change.
+    @MainActor static func describe(_ id: DeviceIdentifier) {
+        guard let device = Wearables.shared.deviceForIdentifier(id) else {
+            send("device \(String(describing: id)): no Device object")
+            return
+        }
+        send("device '\(device.name)' type=\(String(describing: device.deviceType())) compatibility=\(String(describing: device.compatibility()))")
+        device.addLinkStateListener { (state: LinkState) in
+            send("device '\(device.name)' link=\(String(describing: state))")
+        }.store(in: tokens)
+        device.addCompatibilityListener { (c: Compatibility) in
+            send("device '\(device.name)' compatibility=\(String(describing: c))")
+        }.store(in: tokens)
     }
 }

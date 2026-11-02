@@ -33,6 +33,7 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
     func start(_ sink: @escaping @Sendable (Data, FrameMeta) -> Void) async throws {
         let wearables = Wearables.shared
         Diag.send("glasses: creating session; devices=\(wearables.devices.count)")
+        for id in wearables.devices { await Diag.describe(id) }
         let session = try wearables.createSession(deviceSelector: AutoDeviceSelector(wearables: wearables))
         self.session = session
         try session.start()
