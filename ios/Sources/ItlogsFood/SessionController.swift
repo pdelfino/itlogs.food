@@ -21,7 +21,7 @@ final class SessionController {
     }
     /// Experiment (#2): ask the glasses for the video stream instead of stills. The stream has never
     /// published a state in this app; this switch lets a test say whether it does now.
-    var useStream = UserDefaults.standard.bool(forKey: "useStream") {
+    var useStream = (UserDefaults.standard.object(forKey: "useStream") as? Bool) ?? true {
         didSet { UserDefaults.standard.set(useStream, forKey: "useStream") }
     }
     var useDeviceSpeech = false  // fallback: recognize on the phone, send text
@@ -59,7 +59,7 @@ final class SessionController {
             Task { @MainActor in self?.handle(msg) }
         }
         let glasses: GlassesSource? = useGlasses ? GlassesSource() : nil
-        if useStream { glasses?.useStills = false }
+        glasses?.useStills = !useStream  // the stream works without the Hotspot entitlement (2026-NOVEMBER-02 18:04, build 47)
         glasses?.onPhrase = { [weak self, client] phrase in
             Task { @MainActor in
                 guard let self else { return }
@@ -84,23 +84,31 @@ final class SessionController {
                     Task { try? await client.send(frame: jpeg, meta: meta) }
                 }
             }
-            if glasses?.hearsThroughGlasses == true {
-                // the glasses transcribe; no HFP on the phone, so the voice out keeps A2DP quality
-                let session = AVAudioSession.sharedInstance()
-                try? session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
-                try? session.setActive(true, options: .notifyOthersOnDeactivation)
-                Diag.send("hearing through the glasses; speaking over A2DP")
-            } else if useDeviceSpeech {
-                try await voice.startListening { [weak self, client] phrase in
-                    Task { @MainActor in
-                        guard let self else { return }
-                        try? await client.send(voice: phrase, tMs: self.nowMs())
+            do {
+                if glasses?.hearsThroughGlasses == true {
+                    // the glasses transcribe; no HFP on the phone, so the voice out keeps A2DP quality
+                    let session = AVAudioSession.sharedInstance()
+                    try? session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+                    try? session.setActive(true, options: .notifyOthersOnDeactivation)
+                    Diag.send("hearing through the glasses; speaking over A2DP")
+                } else if useDeviceSpeech {
+                    try await voice.startListening { [weak self, client] phrase in
+                        Task { @MainActor in
+                            guard let self else { return }
+                            try? await client.send(voice: phrase, tMs: self.nowMs())
+                        }
+                    }
+                } else {
+                    try audio.start { [client] pcm, tMs in
+                        Task { try? await client.send(audio: pcm, tMs: tMs) }
                     }
                 }
-            } else {
-                try audio.start { [client] pcm, tMs in
-                    Task { try? await client.send(audio: pcm, tMs: tMs) }
-                }
+            } catch {
+                // the first streaming run (2026-NOVEMBER-02 18:04) ended here on a phone-mic start error
+                // while the video kept flowing; voice is a second input, never the reason to stop
+                lastSaid = "Voice input is off this session (the microphone did not start). The Log it button still works."
+                Diag.send("voice input unavailable this session: \(String(describing: error))")
+                Telemetry.error(error, ["where": "audio"])
             }
             running = true
             // Start means weighing: the server watches the scale from here until Stop

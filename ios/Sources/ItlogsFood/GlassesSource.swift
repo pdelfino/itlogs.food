@@ -77,7 +77,11 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
             }
         }
         self.sink = sink
-        let config = StreamConfiguration(videoCodec: VideoCodec.hvc1, resolution: StreamingResolution.low, frameRate: streamFps)
+        // raw (420v pixel buffers): `frame.makeUIImage()` works on these and returns nil on hvc1, which is why
+        // the first streaming run (2026-NOVEMBER-02 18:04, 1600 frames on the phone) sent nothing to the Mac.
+        // Raw frames only arrive in the foreground; the demo keeps the app open. hvc1 + a decoder is the
+        // background-capable path (Meta's CameraAccess sample has VideoFrameDecoder.swift).
+        let config = StreamConfiguration(videoCodec: VideoCodec.raw, resolution: StreamingResolution.low, frameRate: streamFps)
         guard let camera = try session.addCamera(config: config) else {
             throw NSError(domain: "food.itlogs", code: 11, userInfo: [NSLocalizedDescriptionKey: "Could not create the glasses camera"])
         }
