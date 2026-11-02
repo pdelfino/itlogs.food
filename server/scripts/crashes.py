@@ -31,7 +31,8 @@ def summarize(path: Path) -> str:
     when = path.stem.split("-", 1)[1]
     kind = f"{exc.get('type', '?')}/{exc.get('signal', '?')}"
     where = thread.get("queue", thread.get("name", "?"))
-    return f"{when}  build {build}  {kind}  by {term.get('byProc', '?')}  queue {where}\n    {frames}"
+    who = term.get("byProc", "?")
+    return f"{when}  build {build}  {kind}  by {who}  queue {where}\n    {frames}"
 
 
 def main() -> int:
