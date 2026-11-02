@@ -17,6 +17,7 @@ final class SessionController {
     }
     var useGlasses = false
     var useDeviceSpeech = false  // fallback: recognize on the phone, send text
+    var askEachFood = false      // off: log quietly, hear the list at Stop; on: "..., right?" after each food
     var lastRead: EntryRead?
     var question: Question?
     var entries: [Entry] = []
@@ -78,6 +79,8 @@ final class SessionController {
                 }
             }
             running = true
+            // Start means weighing: the server watches the scale from here until Stop
+            try? await client.watch(on: true, tMs: nowMs(), ask: askEachFood)
         } catch {
             self.error = "Start failed: \(String(describing: error))"
             Diag.send("start failed: \(String(describing: error))")
@@ -88,8 +91,8 @@ final class SessionController {
     /// The deliberate trigger: read the scale now.
     func capture() { Task { try? await client.capture(tMs: nowMs()) } }
 
-    /// Weighing mode: the server watches the scale and asks after each food.
-    func setWeighing(_ on: Bool) { Task { try? await client.watch(on: on, tMs: nowMs()) } }
+    /// Weighing mode on or off by hand (Start already turns it on).
+    func setWeighing(_ on: Bool) { Task { try? await client.watch(on: on, tMs: nowMs(), ask: askEachFood) } }
 
     /// "Hey Meta, start itlogs": start the session if needed, then weighing mode.
     func startWeighingFromVoice() async {
@@ -131,6 +134,8 @@ final class SessionController {
         audio.stop()
         await source?.stop()
         try? await client.endSession()
+        // the server answers with the list to read back; give it a moment before closing
+        try? await Task.sleep(for: .seconds(2))
         await client.disconnect()
         running = false
         watching = false

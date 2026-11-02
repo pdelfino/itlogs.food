@@ -136,23 +136,42 @@ async def feed(s, t0, n, step=1500):
     return out
 
 
-async def test_weighing_mode_asks_after_the_display_settles_and_yes_confirms():
-    # changing, then settled on apple 113 twice, then still showing it
-    s = Session(FakeVision([UNREADABLE, RICE_87, APPLE_113, APPLE_113, APPLE_113]), FakeLLM())
+async def test_quiet_weighing_logs_settled_foods_and_reads_the_list_back_at_the_end():
+    # changing, then apple 113 settles (two reads), still apple, then rice settles
+    reads = [UNREADABLE, RICE_87, APPLE_113, APPLE_113, APPLE_113, UNREADABLE, RICE_87, RICE_87]
+    s = Session(FakeVision(reads), FakeLLM())
     out = await s.on_voice("I am weighing my food", 0)
     assert s.watching and said(out) == ["Weighing. Put the first food on the scale."]
+    out = await feed(s, 0, 8)
+    assert said(out) == []  # quiet: nothing spoken per food
+    assert [(e.food, e.grams, e.status) for e in s.entries] == [
+        ("apple", 113.0, "auto"),
+        ("cooked white rice", 87.0, "auto"),
+    ]
+    out = await s.end_session(20000)
+    assert kinds(out) == ["state", "say"]
+    assert said(out) == [
+        # apple is not in the placeholder table, so the totals count the rice only
+        "Done. 2 foods. apple, 113 grams. cooked white rice, 87 grams. "
+        "113 calories, 2 grams of protein."
+    ]
+
+
+async def test_ask_mode_asks_after_the_display_settles_and_yes_confirms():
+    s = Session(FakeVision([UNREADABLE, RICE_87, APPLE_113, APPLE_113, APPLE_113]), FakeLLM())
+    s.set_watching(True, ask=True)
     out = await feed(s, 0, 4)
     assert said(out) == ["113 grams of apple, right?"]
     assert s.entries == []
     out = await s.on_voice("yes", 7000)
     assert (s.entries[0].food, s.entries[0].status) == ("apple", "confirmed")
     # the display still shows 113 apple: not asked again
-    assert await feed(s, 8000, 2) == [] or all(m.kind == "read" for m in await feed(s, 8000, 2))
+    assert all(m.kind == "read" for m in await feed(s, 8000, 2))
 
 
 async def test_weighing_mode_same_value_again_after_the_scale_was_emptied():
     s = Session(FakeVision([APPLE_113, APPLE_113, UNREADABLE, APPLE_113, APPLE_113]), FakeLLM())
-    s.set_watching(True)
+    s.set_watching(True, ask=True)
     out = await feed(s, 0, 2)
     assert said(out) == ["113 grams of apple, right?"]
     await s.on_voice("yes", 3000)
@@ -160,9 +179,9 @@ async def test_weighing_mode_same_value_again_after_the_scale_was_emptied():
     assert said(out) == ["113 grams of apple, right?"]  # a second apple
 
 
-async def test_weighing_mode_no_skips_and_done_speaks_the_totals():
+async def test_ask_mode_no_skips_and_done_speaks_the_summary():
     s = Session(FakeVision([RICE_87, RICE_87, RICE_87]), FakeLLM())
-    s.set_watching(True)
+    s.set_watching(True, ask=True)
     out = await feed(s, 0, 2)
     assert said(out) == ["87 grams of cooked white rice, right?"]
     out = await s.on_voice("no", 3000)
@@ -171,10 +190,12 @@ async def test_weighing_mode_no_skips_and_done_speaks_the_totals():
     assert not s.watching and said(out) == ["Done. Nothing logged."]
 
 
-async def test_done_totals_after_entries():
+async def test_done_reads_the_list_after_entries():
     s = Session(FakeVision([RICE_87, RICE_87]), FakeLLM())
-    s.set_watching(True)
+    s.set_watching(True, ask=True)
     await feed(s, 0, 2)
     await s.on_voice("yes", 3000)
     out = await s.on_voice("that's it", 4000)
-    assert said(out) == ["Done. 1 food, 113 calories, 2 grams of protein."]
+    assert said(out) == [
+        "Done. 1 food. cooked white rice, 87 grams. 113 calories, 2 grams of protein."
+    ]

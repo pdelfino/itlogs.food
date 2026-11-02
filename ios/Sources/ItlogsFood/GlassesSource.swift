@@ -16,6 +16,7 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
     private var camera: Camera?
     private var started = Date()
     private var lastSent = Date.distantPast
+    private var frames = 0
     var fps: Double = 10
     var streamFps: UInt = 24
 
@@ -71,8 +72,13 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
         }
         self.camera = camera
         started = Date()
+        camera.stream.statePublisher.listen { state in
+            Diag.send("glasses: stream state \(String(describing: state))")
+        }.store(in: tokens)
         camera.stream.videoFramePublisher.listen { [weak self] (frame: VideoFrame) in
             guard let self else { return }
+            self.frames += 1
+            if self.frames == 1 || self.frames % 200 == 0 { Diag.send("glasses: frame \(self.frames) received") }
             let now = Date()
             guard now.timeIntervalSince(self.lastSent) >= 1 / self.fps else { return }
             self.lastSent = now

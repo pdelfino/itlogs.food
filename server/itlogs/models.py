@@ -36,10 +36,13 @@ class CaptureMeta(BaseModel):
 
 
 class WatchMeta(BaseModel):
-    """Weighing mode on or off: the server reads the scale on its own while it is on."""
+    """Weighing mode on or off: the server reads the scale on its own while it is on. With
+    ``ask`` the ear asks "..., right?" after each food; without it the foods are logged quietly
+    and read back as a list when the session ends."""
 
     on: bool
     t_ms: int = 0
+    ask: bool = False
 
 
 class ClientMessage(BaseModel):
@@ -78,12 +81,13 @@ class Entry(BaseModel):
     """One logged food. ``status`` is the label the eval loop produced for free:
     agreed = both reads matched; confirmed = the wearer said yes to a read; corrected = the
     wearer changed the food or the grams by voice; spoken = no camera read at all, the wearer
-    said the food and the grams (the hands-free fallback when the display cannot be read)."""
+    said the food and the grams (the hands-free fallback when the display cannot be read);
+    auto = two matching reads in quiet weighing mode, nobody asked, read back at the end."""
 
     index: int
     food: str
     grams: float
-    status: Literal["agreed", "confirmed", "corrected", "spoken"]
+    status: Literal["agreed", "confirmed", "corrected", "spoken", "auto"]
     reads: list[EntryRead] = Field(default_factory=list)
     nutrients: Nutrients | None = None
     t_ms: int

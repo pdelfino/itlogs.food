@@ -38,7 +38,7 @@ actor StreamClient {
         try await send(ClientMessage(kind: "voice", voice: VoiceText(t_ms: tMs, text: text)))
     }
 
-    func watch(on: Bool, tMs: Int) async throws { try await send(ClientMessage(kind: "watch", watch: WatchMeta(on: on, t_ms: tMs))) }
+    func watch(on: Bool, tMs: Int, ask: Bool = false) async throws { try await send(ClientMessage(kind: "watch", watch: WatchMeta(on: on, t_ms: tMs, ask: ask))) }
     func capture(tMs: Int) async throws { try await send(ClientMessage(kind: "capture", capture: CaptureMeta(t_ms: tMs))) }
     func endSession() async throws { try await send(ClientMessage(kind: "end_session")) }
 

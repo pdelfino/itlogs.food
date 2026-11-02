@@ -71,6 +71,7 @@ async def ws_session(ws: WebSocket) -> None:
     transcriber: Transcriber | None = None
     send_lock = asyncio.Lock()
     last_frame: tuple[int, bytes] | None = None
+    frames = 0
 
     async def send_all(msgs: list[ServerMessage]) -> None:
         async with send_lock:
@@ -112,6 +113,9 @@ async def ws_session(ws: WebSocket) -> None:
             if msg.kind == "frame" and msg.frame:
                 jpeg = await ws.receive_bytes()
                 last_frame = (msg.frame.t_ms, jpeg)
+                frames += 1
+                if frames == 1 or frames % 100 == 0:
+                    print(f"FRAMES {frames} ({len(jpeg)} bytes, t={msg.frame.t_ms} ms)", flush=True)
                 out = await session.on_frame(jpeg, msg.frame.t_ms)
             elif msg.kind == "audio" and msg.audio:
                 pcm = await ws.receive_bytes()
@@ -127,7 +131,7 @@ async def ws_session(ws: WebSocket) -> None:
             elif msg.kind == "capture" and msg.capture:
                 out = await session.capture(msg.capture.t_ms)
             elif msg.kind == "watch" and msg.watch:
-                out = session.set_watching(msg.watch.on, msg.watch.t_ms)
+                out = session.set_watching(msg.watch.on, msg.watch.t_ms, ask=msg.watch.ask)
             else:
                 if transcriber is not None:
                     await transcriber.close()

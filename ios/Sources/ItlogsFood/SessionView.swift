@@ -17,12 +17,13 @@ struct SessionView: View {
                         Button("Install or update the glasses app (Meta AI)") { Task { await session.updateGlassesApp() } }
                     }
                     Toggle("Recognize speech on the phone (fallback)", isOn: $session.useDeviceSpeech)
+                    Toggle("Ask me after each food", isOn: $session.askEachFood)
                 }
                 Section("Now") {
                     if let r = session.lastRead {
                         LabeledContent("Read", value: r.grams.map { "\(r.food) · \($0.formatted()) g" } ?? r.food)
                     }
-                    if session.watching { Text("Weighing: watching the scale").foregroundStyle(.orange) }
+                    if session.watching { Text("Weighing: watching the scale. Stop to hear the list.").foregroundStyle(.orange) }
                     if let q = session.question { Text(q.text).bold() }
                     if !session.lastSaid.isEmpty { Text("Said: \(session.lastSaid)").italic() }
                     if let e = session.error { Text(e).foregroundStyle(.red) }
@@ -50,11 +51,9 @@ struct SessionView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .bottomBar) {
                     if session.running {
-                        Button(session.watching ? "Done" : "Weighing") { session.setWeighing(!session.watching) }
-                            .buttonStyle(.bordered).tint(session.watching ? .orange : nil)
-                        Button("Log it") { session.capture() }.buttonStyle(.borderedProminent)
+                        Button("Log it") { session.capture() }.buttonStyle(.bordered)
                         Spacer()
-                        Button("Stop", role: .destructive) { Task { await session.stop() } }
+                        Button("Stop") { Task { await session.stop() } }.buttonStyle(.borderedProminent).tint(.orange)
                     } else {
                         Button("Start") { Task { await session.start() } }
                     }

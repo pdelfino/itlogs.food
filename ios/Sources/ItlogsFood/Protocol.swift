@@ -25,6 +25,7 @@ struct CaptureMeta: Codable, Sendable {
 struct WatchMeta: Codable, Sendable {
     var on: Bool
     var t_ms: Int = 0
+    var ask: Bool = false
 }
 
 struct ClientMessage: Codable, Sendable {

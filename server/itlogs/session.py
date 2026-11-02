@@ -4,11 +4,12 @@ Two ways in:
 
 - **Log it** (the button, or "log it" by voice): read the latest frame, read the frame about
   ``second_read_after_ms`` later, log when the two agree, ask when they differ.
-- **Weighing mode** ("I'm weighing my food", or the button): the server reads a frame every
+- **Weighing mode** (on from Start, or "I'm weighing my food"): the server reads a frame every
   ``watch_every_ms`` on its own. When the display settles on a new value (two reads in a row
-  with the same food and grams, different from what was last logged) it asks "113 grams of
-  apple, right?" and the wearer answers yes, a correction, or no. "Done" ends the mode and
-  the ear hears the totals. Nothing is logged without the wearer's word in this mode.
+  with the same food and grams, different from what was last logged) the food is logged
+  quietly (status ``auto``; the phone ticks). Stop, or "done", reads the whole list back:
+  "cooked white rice, 87 grams. apple, 113 grams." With ``ask`` on, the ear instead asks
+  "113 grams of apple, right?" after each food and nothing is logged without the wearer's word.
 
 Every entry carries a label the loop produced for free (agreed, confirmed, corrected,
 spoken), which is what the evals and the open-weight recalibration (issue #4) feed on.
@@ -41,6 +42,7 @@ class Session:
     watch_every_ms: int = 1500
     entries: list[Entry] = field(default_factory=list)
     watching: bool = False
+    ask: bool = False  # weighing mode: ask after each food, or log quietly and read back at the end
     _frames: deque[tuple[int, bytes]] = field(default_factory=lambda: deque(maxlen=30))
     _first: tuple[EntryRead, int] | None = None  # "log it": waiting for the second look
     _question: tuple[Question, list[EntryRead]] | None = None  # waiting for the wearer
@@ -87,7 +89,9 @@ class Session:
 
     # weighing mode
 
-    def set_watching(self, on: bool, t_ms: int = 0) -> list[ServerMessage]:
+    def set_watching(self, on: bool, t_ms: int = 0, ask: bool | None = None) -> list[ServerMessage]:
+        if ask is not None:
+            self.ask = ask
         if on and not self.watching:
             self.watching = True
             self._watch_prev = None
@@ -102,7 +106,7 @@ class Session:
             self._question = None
             return [
                 ServerMessage(kind="state", entries=list(self.entries), watching=False),
-                ServerMessage(kind="say", say=self._totals_line()),
+                ServerMessage(kind="say", say=self.summary()),
             ]
         return []
 
@@ -117,7 +121,11 @@ class Session:
         if prev is None or not prev.readable or not self._agree(read, prev):
             return []  # the display is still changing; wait for two reads in a row
         self._watch_logged = read
-        return self._ask(read, read, t_ms, confirm_only=True)
+        if self.ask:
+            return self._ask(read, read, t_ms, confirm_only=True)
+        assert read.grams is not None
+        # quiet: log it, the phone ticks, the list is read back at the end
+        return self._log(read.food, read.grams, "auto", [prev, read], t_ms, speak=False)
 
     def _agree(self, a: EntryRead, b: EntryRead) -> bool:
         return (
@@ -205,7 +213,13 @@ class Session:
         return [ServerMessage(kind="say", say=q.text)]
 
     def _log(
-        self, food: str, grams: float, status: str, reads: list[EntryRead], t_ms: int
+        self,
+        food: str,
+        grams: float,
+        status: str,
+        reads: list[EntryRead],
+        t_ms: int,
+        speak: bool = True,
     ) -> list[ServerMessage]:
         food = nutrients.canonical(food)
         entry = Entry(
@@ -218,25 +232,33 @@ class Session:
             t_ms=t_ms,
         )
         self.entries.append(entry)
-        return [
-            ServerMessage(kind="entry", entry=entry),
-            ServerMessage(kind="say", say=f"{fmt_grams(grams)} grams of {food}, logged."),
-        ]
+        out = [ServerMessage(kind="entry", entry=entry)]
+        if speak:
+            line = f"{fmt_grams(grams)} grams of {food}, logged."
+            out.append(ServerMessage(kind="say", say=line))
+        return out
 
-    def _totals_line(self) -> str:
+    def summary(self) -> str:
+        """What the ear hears at the end: every food with its grams, then the totals."""
         n = len(self.entries)
         if n == 0:
             return "Done. Nothing logged."
+        items = ". ".join(f"{e.food}, {fmt_grams(e.grams)} grams" for e in self.entries)
         known = [e.nutrients for e in self.entries if e.nutrients]
         foods = "food" if n == 1 else "foods"
+        head = f"Done. {n} {foods}. {items}."
         if not known:
-            return f"Done. {n} {foods} logged."
+            return head
         kcal = round(sum(k.kcal for k in known))
         protein = round(sum(k.protein_g for k in known))
-        return f"Done. {n} {foods}, {kcal} calories, {protein} grams of protein."
+        return f"{head} {kcal} calories, {protein} grams of protein."
 
     async def end_session(self, t_ms: int = 0) -> list[ServerMessage]:
         self._first = None
         self._question = None
+        was_watching = self.watching
         self.watching = False
-        return [ServerMessage(kind="state", entries=list(self.entries), watching=False)]
+        out = [ServerMessage(kind="state", entries=list(self.entries), watching=False)]
+        if was_watching:
+            out.append(ServerMessage(kind="say", say=self.summary()))
+        return out
