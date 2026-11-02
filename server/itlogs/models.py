@@ -63,7 +63,9 @@ class EntryRead(BaseModel):
 
     @property
     def readable(self) -> bool:
-        return self.food != "none" and self.grams is not None
+        # 0 is an empty or tared scale; a negative number is a scale tared with food on it
+        # (2026-NOVEMBER-02 18:36, the apple as the tare): neither is a weight to log
+        return self.food != "none" and self.grams is not None and self.grams > 0
 
 
 class Nutrients(BaseModel):

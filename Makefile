@@ -42,8 +42,8 @@ stop:             ## stop the background server
 run:              ## the server on :8000 with the fake provider
 	$(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000 --reload
 
-run-live:         ## the server with the Meta models and the recorder (MODEL_API_KEY from the env)
-	ITLOGS_PROVIDER=meta ITLOGS_RECORD_DIR=$${ITLOGS_RECORD_DIR:-/Volumes/T7/itlogs-food-sessions} $(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000
+run-live:         ## the server with the Meta models and the recorder (MODEL_API_KEY from the env); reloads on server/ changes
+	ITLOGS_PROVIDER=meta ITLOGS_RECORD_DIR=$${ITLOGS_RECORD_DIR:-/Volumes/T7/itlogs-food-sessions} $(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000 --reload --reload-dir server/itlogs
 
 eval:             ## replay the recorded reads, no model calls (fast, offline)
 	$(SERVER) python evals/run.py --from-reads

@@ -52,6 +52,7 @@ class Session:
     _last_watch_ms: int = -1_000_000
     _watch_prev: EntryRead | None = None  # the previous read in weighing mode
     _watch_logged: EntryRead | None = None  # what the display showed when last asked
+    _said_negative: bool = False  # the tare hint, once per session
 
     # frames
 
@@ -124,6 +125,10 @@ class Session:
         if not read.readable:
             # the scale is empty or tared: the next value, even the same one, is a new food
             self._watch_logged = None
+            if read.grams is not None and read.grams < 0 and not self._said_negative:
+                self._said_negative = True
+                hint = "The scale shows a negative number. Lift everything off and tare it."
+                return [ServerMessage(kind="say", say=hint)]
             return []
         if self._watch_logged is not None and self._agree(read, self._watch_logged):
             return []  # still showing what was already asked about
