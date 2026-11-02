@@ -11,12 +11,103 @@ Meta Global AI Developer Hackathon entry, Indie track, Build for Your World. Eve
 - So: the glasses read the number on the scale. Any scale, no pairing, no app on the scale's side, hands free while cooking. See [[file:hackathon/meta-food-logging.org][what Meta has done and said]], with the prior art.
 
 * How it works
-1. The phone streams the glasses' camera to a server on the LAN. Nothing is kept.
+1. The phone sends the glasses' camera (one still every 2.5 s, or the video stream) to a server on the LAN. The stream is never written; only the frames a read was made on are kept, and only when recording is on.
 2. "Log it" (voice) or the button: the latest frame is read by Muse Spark (Meta Model API) as structured output: =food=, =display_value=, =unit=, =confidence=. Foods you log often are checked first.
 3. About 1.5 s later the next frame is read again. Two reads that agree (same food, grams within 1 g) log the entry as *agreed* and the ear hears "87 grams of cooked white rice, logged." Two reads also prove the scale had settled.
 4. Reads that disagree become a question in the ear: "cooked white rice: 81 or 87 grams?" The answer ("87", "yes", "quinoa", "no") is heard by Muse Voice Transcribe and parsed by Muse Spark into confirm, correct or cancel. The entry is logged as *confirmed* or *corrected*.
 5. Grams × a per-100 g table give kcal, protein, carbs, fat, fiber and sodium (the Canadian Nutrient File, issue #3; a placeholder table until then). Salt is weighed like everything else: 1 g of salt is about 390 mg of sodium, and no camera sees salt.
 6. Every entry carries the label the loop produced (agreed, confirmed, corrected). Those labels are the eval set and the recalibration data for the open-weight reader, Muse Glimmer on the Mac (issue #4).
+
+* Engineering
+Three machines, one WebSocket, one seam. The glasses see and hear, the phone carries, the Mac on the LAN thinks, and the models sit behind two Python protocols so any of them can be swapped without touching the loop.
+
+#+begin_example
+ +------------------------------------------------------------------------------------+
+ | Ray-Ban Meta glasses                                                               |
+ |   camera      one still every 2.5 s (capturePhoto), or the video stream (#10)      |
+ |   microphone  the glasses' own recognizer (MWDATSpeech) turns speech into text     |
+ |   "Hey Meta, start It Logs Food"  a LaunchApp invocation (Beta channel, #7)        |
+ |   ear         whatever the phone says, over A2DP                                   |
+ +------------------------+--------------------------------------------+--------------+
+                          |                                            ^
+                          |  Bluetooth, Wearables Device Access Toolkit|  speech
+         stills, phrases, |                                            |
+                LaunchApp v                                            |
+ +------------------------+--------------------------------------------+--------------+
+ | iPhone   ios/  Swift, SwiftUI; no model calls, no keys                             |
+ |   GlassesSource | PhoneCameraSource   FrameSource: a JPEG + t_ms, same downstream  |
+ |   VoiceInvocations                    LaunchApp -> start weighing                  |
+ |   AudioStreamer                       PCM 24 kHz up, only when the glasses do not  |
+ |                                       recognize                                    |
+ |   StreamClient                        the one WebSocket to the Mac                 |
+ |   Voice.say                           AVSpeechSynthesizer -> the ear               |
+ |   SessionView                         the list, the question, the totals           |
+ |   HealthKit                           the entry (#3)                               |
+ |   Diag.send                           every step -> POST /log and PostHog          |
+ +------------------------+--------------------------------------------+--------------+
+    up: frame (JSON meta, |  ws://<mac>.local:8000/ws/session (LAN)    |  ^
+    then the JPEG), audio |                                            |  down: read, entry,
+ (JSON, then PCM), voice, |                                            |  ask, say, state
+          capture, watch, |                                            |
+              end_session v                                            |
+ +------------------------+--------------------------------------------+--------------+
+ | Mac   server/  FastAPI, Python 3.12                                                |
+ |   app.py        /ws/session, /health, /log                                         |
+ |   session.py    the loop: capture ("log it"), on_frame (the second look, and       |
+ |                 weighing mode), on_voice (the answer), set_watching (Start, Stop)  |
+ |   nutrients.py  per-100 g table: kcal, protein, carbs, fat, fiber, sodium          |
+ |   asr.py        Muse Voice Transcribe, realtime WebSocket, when PCM comes up       |
+ |   record.py     only the frames a read was made on + session.json -> the T7        |
+ |   telemetry.py  entry_logged, $exception, phone_diag -> PostHog                    |
+ |   providers/    the seam: VisionProvider.read_entry(jpeg)                          |
+ |                           LLMProvider.parse_reply(text, context)                   |
+ +------------------------+------------------------------------+----------------------+
+                          |                                    |
+                          v                                    v
+        +----------------------------------+   +--------------------------------------------+
+        | fake.py                          |   | meta.py  one OpenAI-compatible client,     |
+        |   deterministic reads, replies   |   |   JSON-schema output; MODEL_API_KEY        |
+        |   tests, make eval, CI           |   |   never leaves the Mac                     |
+        +----------------------------------+   |   Muse Spark 1.3    api.meta.ai, the       |
+                                               |                     reader and the parser  |
+                                               |   Muse Glimmer 30B  llama-server on the    |
+                                               |                     Mac, open weights (#4) |
+                                               +--------------------------------------------+
+#+end_example
+
+- The phone never calls a model and never holds a key: =MODEL_API_KEY= lives on the Mac, and the phone only ever receives text to speak and entries to show.
+- Every model call goes through =VisionProvider.read_entry= and =LLMProvider.parse_reply= (=server/itlogs/providers/base.py=). The tests, =make eval= and CI run on =fake.py=; =make run-live= puts the Meta models behind the same two calls. Another model is one new file under =providers/=.
+- What is kept: only the frames a read was made on, plus the entries and the questions (=record.py=, on the T7 disk, never in git). The stream itself is never written. Every entry carries the label the loop produced (agreed, confirmed, corrected, spoken, auto), so the eval set and the recalibration data (issue #4) come out of ordinary use.
+
+One entry, message by message:
+
+#+begin_example
+ phone                                  server                                  model
+   |                                    |                                       |
+   |-- frame, every 2.5 s (a still) --->|  a ring of 30 frames in memory,       |
+   |                                    |  nothing on disk                      |
+   |-- capture ("log it") ------------->|-- read_entry(latest frame) ---------->|
+   |<-- read: rice, 87 g ---------------|<-- {food, display_value, unit, conf} -|
+   |-- frame, 1.5 s later ------------->|-- read_entry(this frame) ------------>|
+   |<-- read: rice, 87 g ---------------|<--------------------------------------|
+   |                                    |  same food, grams within 1 g?         |
+   |                                    |                                       |
+   |  they agree                        |                                       |
+   |<-- entry: rice, 87 g, agreed ------|  nutrients from the per-100 g table;  |
+   |<-- say "87 grams of rice, logged" -|  the frames read and the reads kept   |
+   |                                    |  for the evals (record.py)            |
+   |                                    |                                       |
+   |  they disagree (81 vs 87)          |                                       |
+   |<-- ask: rice, 81 or 87 grams? -----|                                       |
+   |<-- say (the question) -------------|                                       |
+   |-- voice: "87" -------------------->|-- parse_reply("87", the question) --->|
+   |                                    |<-- {action: correct, grams: 87} ------|
+   |<-- entry: rice, 87 g, corrected ---|  corrected: the answer changed the    |
+   |<-- say "87 grams of rice, logged" -|  first read; confirmed: "yes" or the  |
+   |                                    |  same value; cancel: "Skipped."       |
+#+end_example
+
+Weighing mode is the same loop driven by the server. From Start (the button, or "I'm weighing my food") it reads a frame every 1.5 s on its own; two reads in a row that agree on a new value log the food quietly (status =auto=, the phone ticks). Stop, or "done", reads the whole list back with the totals. With "ask me after each food" on, the ear asks "113 grams of apple, right?" instead, and nothing is logged without the wearer's word.
 
 * Layout
 | =server/=   | FastAPI, the loop (=session.py=), nutrients, the provider seam, tests          |
