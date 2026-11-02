@@ -49,6 +49,8 @@ targets:
           TeamID: $(DEVELOPMENT_TEAM)
           Analytics:
             OptOut: true
+          CrashReporting:
+            OptOut: true   # its handler re-raises SIGTRAP on the main thread and masks the real crash
         NSBluetoothAlwaysUsageDescription: Needed to connect to the Meta glasses.
         NSBluetoothPeripheralUsageDescription: Needed to connect to the Meta glasses.
         NSLocalNetworkUsageDescription: Lets the phone find the glasses over Wi-Fi and reach the itlogs.food server on the LAN.

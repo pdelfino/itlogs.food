@@ -8,7 +8,7 @@ SCHEME = ItlogsFood
 DEVICE ?= $(shell xcrun xctrace list devices 2>/dev/null | grep -i iphone | grep -v Simulator | head -1 | sed -E 's/.*\(([0-9A-F-]+)\)$$/\1/')
 SIM ?= $(shell xcrun simctl list devices available 2>/dev/null | grep -i iphone | head -1 | sed -E 's/^ *(.*) \(([0-9A-F-]+)\).*/\2/')
 
-.PHONY: help setup test lint format run run-live eval eval-live ci ios-gen ios-build ios-test ios-run ios-logs docker-build
+.PHONY: help setup test lint format run run-live eval eval-live ci ios-gen ios-build ios-test ios-run ios-logs phone-logs phone-crashes docker-build
 
 help:             ## this list
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed -E 's/:.*## /  /' | column -t -s '  '
@@ -63,3 +63,9 @@ ios-run: ios-gen  ## install and launch on the first connected iPhone (DEVELOPME
 
 ios-logs:         ## stream the app's log lines from the device (idevicesyslog from brew libimobiledevice)
 	idevicesyslog -u $(DEVICE) -p ItlogsFood
+
+phone-logs:       ## what the phone reported to the server (Diag.send lines), newest last
+	@tail -n $${N:-40} .sessions/phone.log 2>/dev/null || echo "no phone lines yet (server not started with ITLOGS_RECORD_DIR? the file is .sessions/phone.log)"
+
+phone-crashes:    ## pull the app's crash reports off the phone and summarize them (SINCE=HH:MM to filter)
+	$(SERVER) python server/scripts/crashes.py --device $(DEVICE) $(if $(SINCE),--since $(SINCE),)

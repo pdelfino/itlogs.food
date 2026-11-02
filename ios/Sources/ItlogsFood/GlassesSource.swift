@@ -59,11 +59,11 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
                 throw NSError(domain: "food.itlogs", code: 10, userInfo: [NSLocalizedDescriptionKey: "Glasses camera permission denied"])
             }
         }
-        guard Entitlements.hasHotspot else {
-            // Without this entitlement the stream start kills the process (SIGTRAP, 2026-11-01).
-            Diag.send("glasses: no Hotspot entitlement in this build; not starting the stream")
-            session.stop()
-            throw NSError(domain: "food.itlogs", code: 13, userInfo: [NSLocalizedDescriptionKey: "This build cannot stream glasses video (needs the paid Apple team, issue #10). Using the phone camera; the glasses still hear you."])
+        if !Entitlements.hasHotspot {
+            // Meta's sample carries the Hotspot entitlement for the Wi-Fi stream; this build cannot
+            // (personal team, #10). Try anyway: the earlier "kill at stream start" turned out to be
+            // the audio tap crash re-raised by the SDK's crash reporter, not this.
+            Diag.send("glasses: no Hotspot entitlement in this build; starting the stream anyway")
         }
         let config = StreamConfiguration(videoCodec: VideoCodec.hvc1, resolution: StreamingResolution.low, frameRate: streamFps)
         guard let camera = try session.addCamera(config: config) else {

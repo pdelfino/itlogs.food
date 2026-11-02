@@ -25,7 +25,9 @@ final class AudioStreamer {
         }
         let tap = try Tap(inFormat: inFormat, sink: sink)
         self.tap = tap
-        input.installTap(onBus: 0, bufferSize: 2048, format: inFormat) { buffer, _ in
+        // @Sendable: a plain closure literal here inherits the main actor and traps on the realtime
+        // queue (two crash reports 2026-11-01); a @Sendable closure has no actor.
+        input.installTap(onBus: 0, bufferSize: 2048, format: inFormat) { @Sendable buffer, _ in
             tap.handle(buffer)
         }
         engine.prepare()

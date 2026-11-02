@@ -37,7 +37,7 @@ final class Voice {
         // The tap runs on Core Audio's realtime queue: no main-actor state may be touched there
         // (crash report 2026-11-01 19:31). SpeechTap is a plain object that only appends.
         let tap = SpeechTap(request: request)
-        node.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
+        node.installTap(onBus: 0, bufferSize: 1024, format: format) { @Sendable buffer, _ in
             tap.handle(buffer)
         }
         audio.prepare()
