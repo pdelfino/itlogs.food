@@ -60,6 +60,7 @@ class EntryRead(BaseModel):
     food: str = Field(description='short lowercase name, or "none" when nothing is on the scale')
     grams: float | None = Field(default=None, description="the display, converted to grams")
     confidence: float = Field(ge=0, le=1)
+    raw: str | None = Field(default=None, description="what the model said, e.g. '113 unknown'")
 
     @property
     def readable(self) -> bool:

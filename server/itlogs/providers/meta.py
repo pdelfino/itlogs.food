@@ -35,8 +35,10 @@ ENTRY_SYSTEM = (
     "sits on the scale and the scale's digital display shows a number. Name the food in two "
     'or three plain lowercase words (for example "cooked white rice", "chicken breast", '
     '"egg whites"), or "none" when nothing is on the scale. Read the number on the display '
-    "exactly as shown, digit by digit, with its unit. When the display is not readable "
-    "(glare, out of frame, blurred, mid-change), display_value is null and confidence is 0. "
+    "exactly as shown, digit by digit, with its unit. A kitchen scale shows grams unless the "
+    'display says oz, lb, kg or ml; when no unit is visible, the unit is "g". When the display '
+    "is not readable (glare, out of frame, blurred, mid-change), display_value is null and "
+    "confidence is 0. "
     "Never guess a weight from the look of the food. Answer only with the JSON object."
 )
 
@@ -95,10 +97,19 @@ class MetaReader:
         if not d:
             return EntryRead(food="none", confidence=0.0)
         value, unit = d.get("display_value"), d.get("unit", "unknown")
+        if unit == "unknown" and value is not None and 0 < float(value) < 10000:
+            # a kitchen scale with no unit on the display is in grams (the apple read as
+            # "113, unknown" on 2026-NOVEMBER-02 and was thrown away)
+            unit = "g"
         grams = None if value is None or unit not in TO_GRAMS else float(value) * TO_GRAMS[unit]
         food = (d.get("food") or "none").strip().lower() or "none"
+        raw = f"{value} {d.get('unit', 'unknown')}"
+        print(f"MODEL food={food!r} display={raw} conf={d.get('confidence')}", flush=True)
         return EntryRead(
-            food=food, grams=grams, confidence=min(1.0, max(0.0, float(d.get("confidence", 0))))
+            food=food,
+            grams=grams,
+            confidence=min(1.0, max(0.0, float(d.get("confidence", 0)))),
+            raw=raw,
         )
 
     async def aclose(self) -> None:
