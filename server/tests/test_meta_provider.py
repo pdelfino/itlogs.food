@@ -77,3 +77,10 @@ async def test_parser_bad_action_becomes_none():
         transport=canned({"action": "dance", "food": None, "grams": None}, []),
     )
     assert (await p.parse_reply("hi", "")).action == "none"
+
+
+def test_reader_prompt_tells_containers_from_food():
+    """A bowl on the scale before the tare is not a food row (2026-NOVEMBER-03, the powder)."""
+    from itlogs.providers.meta import ENTRY_SYSTEM
+
+    assert "container" in ENTRY_SYSTEM and "name the food" in ENTRY_SYSTEM

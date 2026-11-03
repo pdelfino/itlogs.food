@@ -43,6 +43,8 @@ ENTRY_SYSTEM = (
     'display says oz, lb, kg or ml; when no unit is visible, the unit is "g". When the display '
     "is not readable (glare, out of frame, blurred, mid-change), display_value is null and "
     "confidence is 0. "
+    'A plate, bowl, cup or container with nothing in it is "none": the container is never the '
+    "food; when it holds food, name the food. "
     "Never guess a weight from the look of the food. Answer only with the JSON object."
 )
 
