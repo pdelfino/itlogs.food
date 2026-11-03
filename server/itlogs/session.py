@@ -359,15 +359,9 @@ class Session:
     def summary(self) -> str:
         """What the ear hears at the end: the count and the calories. The list itself is on the
         phone (the review table); reading it out was too much (Pedro, 2026-NOVEMBER-02)."""
-        n = len(self.entries)
-        if n == 0:
+        if not self.entries:
             return "Done. Nothing logged."
-        known = [e.nutrients for e in self.entries if e.nutrients]
-        foods = "food" if n == 1 else "foods"
-        if not known:
-            return f"Done. {n} {foods}."
-        kcal = round(sum(k.kcal for k in known))
-        return f"Done. {n} {foods}, {kcal} calories."
+        return "Check the meal."  # the table is on the phone; Pedro: "just say check the meal"
 
     async def final_look(self, t_ms: int = 0) -> list[ServerMessage]:
         """At Stop: read whatever is on the scale now, so the last food is never lost to the

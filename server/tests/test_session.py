@@ -154,7 +154,7 @@ async def test_quiet_weighing_logs_settled_foods_and_reads_the_list_back_at_the_
     out = await s.end_session(20000)
     assert kinds(out) == ["state", "say"]
     # apple 113 g (59 kcal) plus rice 87 g (113 kcal); the list itself is on the phone
-    assert said(out) == ["Done. 2 foods, 172 calories."]
+    assert said(out) == ["Check the meal."]
 
 
 async def test_a_doubtful_read_waits_for_a_second_that_agrees():
@@ -211,7 +211,7 @@ async def test_done_reads_the_list_after_entries():
     await feed(s, 0, 2)
     await s.on_voice("yes", 3000)
     out = await s.on_voice("that's it", 4000)
-    assert said(out) == ["Done. 1 food, 113 calories."]
+    assert said(out) == ["Check the meal."]
 
 
 async def test_stop_takes_a_final_look_at_what_is_on_the_scale():
@@ -223,7 +223,7 @@ async def test_stop_takes_a_final_look_at_what_is_on_the_scale():
     assert kinds(out) == ["read", "entry"]
     assert (s.entries[0].food, s.entries[0].status) == ("apple", "auto")
     out = await s.end_session(3100)
-    assert said(out) == ["Done. 1 food, 59 calories."]
+    assert said(out) == ["Check the meal."]
 
 
 async def test_the_same_food_read_again_corrects_the_row_until_the_scale_empties():
