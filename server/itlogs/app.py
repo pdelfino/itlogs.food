@@ -182,7 +182,8 @@ async def ws_session(ws: WebSocket) -> None:
                 if recorder:
                     recorder.event("voice", {"t_ms": msg.voice.t_ms, "text": msg.voice.text})
                 # in the background: parsing a sentence blocked the frame loop for the rest of a
-                # run on 2026-NOVEMBER-02 19:26 ("Okay, I put the first food." at 14 s, then nothing)
+                # run on 2026-NOVEMBER-02 19:26 ("Okay, I put the first food." at 14 s, then
+                # nothing)
                 start_thinking(
                     session.on_voice(msg.voice.text, msg.voice.t_ms), msg.voice.t_ms, "voice"
                 )
