@@ -125,9 +125,6 @@ final class SessionController {
         lastRead = nil
         question = nil
         Diag.send("start tapped; glasses=\(useGlasses) server=\(serverURL.absoluteString)")
-        await client.connect(url: serverURL) { [weak self] msg in
-            Task { @MainActor in self?.handle(msg) }
-        }
         let glasses: GlassesSource? = useGlasses ? GlassesSource() : nil
         glasses?.useStills = !useStream  // the stream works without the Hotspot entitlement (2026-NOVEMBER-02 18:04, build 47)
         glasses?.onPhrase = { [weak self, client] phrase in
@@ -144,6 +141,11 @@ final class SessionController {
         var source: FrameSource = glasses ?? PhoneCameraSource()
         self.source = source
         do {
+            // the socket first, and only once the server accepted it: frames queued on a socket
+            // still opening went out meta before bytes and killed two runs (NOVEMBER-03 09:27)
+            try await client.connect(url: serverURL) { [weak self] msg in
+                Task { @MainActor in self?.handle(msg) }
+            }
             do {
                 try await source.start { [weak self, client] jpeg, meta in
                     Task { @MainActor in self?.showFrame(jpeg) }
@@ -191,8 +193,11 @@ final class SessionController {
             // Start means weighing: the server watches the scale from here until Stop
             try? await client.watch(on: true, tMs: nowMs(), ask: askEachFood)
         } catch {
-            self.error = "Start failed: \(String(describing: error))"
-            Diag.send("start failed: \(String(describing: error))")
+            let why = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
+            self.error = "Start failed: \(why)"
+            Diag.send("start failed: \(why)")
+            await source.stop()
+            await client.disconnect()
             Telemetry.error(error, ["where": "start"])
         }
     }

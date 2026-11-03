@@ -52,3 +52,20 @@ def test_audio_chunks_become_a_voice_trigger_via_the_fake_transcriber():
         assert kinds == ["read"]
         send(ws, "end_session")
         drain_until(ws, "state")
+
+
+def test_two_metas_back_to_back_do_not_end_the_session():
+    """2026-NOVEMBER-03 09:27: the phone's frame tasks queued every meta ahead of its bytes while
+    the socket was still opening; the server read a meta where it expected bytes and the session
+    died. Now the older meta is dropped and end_session is still answered."""
+    import json
+
+    with TestClient(app).websocket_connect("/ws/session") as ws:
+        meta = {"width": 720, "height": 1280}
+        ws.send_text(json.dumps({"kind": "frame", "frame": {"t_ms": 0, **meta}}))
+        ws.send_text(json.dumps({"kind": "frame", "frame": {"t_ms": 140, **meta}}))
+        ws.send_bytes(b"jpeg")
+        ws.send_bytes(b"jpeg")  # no meta left for these: dropped, not fatal
+        send(ws, "end_session")
+        _, state = drain_until(ws, "state")
+        assert "entries" in state

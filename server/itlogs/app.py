@@ -148,37 +148,70 @@ async def ws_session(ws: WebSocket) -> None:
                 t.cancel()
         thinking.clear()
 
+    async def on_frame(meta: Any, jpeg: bytes) -> list[ServerMessage]:
+        nonlocal last_frame, frames
+        last_frame = (meta.t_ms, jpeg)
+        frames += 1
+        if frames == 1 or frames % 100 == 0:
+            print(f"FRAMES {frames} ({len(jpeg)} bytes, t={meta.t_ms} ms)", flush=True)
+        session.observe(jpeg, meta.t_ms)
+        out = session.ready()  # "Ready..." once, on the first frame after Start
+        if busy() < MAX_IN_FLIGHT:
+            start_thinking(session.decide(jpeg, meta.t_ms), meta.t_ms)
+        if recorder and frames % 7 == 1:
+            # about once a second: how much the picture moved and whether it counts as still
+            recorder.event(
+                "motion",
+                {
+                    "t_ms": meta.t_ms,
+                    "diff": round(session.settle.last_diff, 1),
+                    "still": session.settle.still(meta.t_ms),
+                },
+            )
+        return out
+
+    async def on_audio(pcm: bytes) -> None:
+        nonlocal transcriber
+        if transcriber is None:
+            transcriber = make_transcriber()
+            await transcriber.start(on_turn)
+        await transcriber.feed(pcm)
+
     try:
+        # A frame or an audio chunk is two messages, the JSON meta then the bytes. The phone now
+        # sends them back to back from one queue, but a meta can still arrive while another is
+        # waiting for its bytes (2026-NOVEMBER-03 09:27 and 09:28: the socket opened seconds
+        # after the stream, every frame had queued its meta ahead of its bytes, and the handler
+        # died on the second meta; two runs logged nothing). The older meta is dropped, the
+        # session goes on.
+        pending: ClientMessage | None = None
+        resyncs = 0
         while True:
-            msg = ClientMessage.model_validate_json(await ws.receive_text())
-            if msg.kind == "frame" and msg.frame:
-                jpeg = await ws.receive_bytes()
-                last_frame = (msg.frame.t_ms, jpeg)
-                frames += 1
-                if frames == 1 or frames % 100 == 0:
-                    print(f"FRAMES {frames} ({len(jpeg)} bytes, t={msg.frame.t_ms} ms)", flush=True)
-                session.observe(jpeg, msg.frame.t_ms)
-                out = session.ready()  # "Ready..." once, on the first frame after Start
-                if busy() < MAX_IN_FLIGHT:
-                    start_thinking(session.decide(jpeg, msg.frame.t_ms), msg.frame.t_ms)
-                if recorder and frames % 7 == 1:
-                    # about once a second: how much the picture moved and whether it counts as still
-                    recorder.event(
-                        "motion",
-                        {
-                            "t_ms": msg.frame.t_ms,
-                            "diff": round(session.settle.last_diff, 1),
-                            "still": session.settle.still(msg.frame.t_ms),
-                        },
-                    )
-            elif msg.kind == "audio" and msg.audio:
-                pcm = await ws.receive_bytes()
-                if transcriber is None:
-                    transcriber = make_transcriber()
-                    await transcriber.start(on_turn)
-                await transcriber.feed(pcm)
-                out = []
-            elif msg.kind == "voice" and msg.voice:
+            raw = await ws.receive()
+            if raw["type"] == "websocket.disconnect":
+                raise WebSocketDisconnect(raw.get("code", 1000))
+            blob = raw.get("bytes")
+            if blob is not None:
+                if pending is None:
+                    continue  # bytes whose meta was lost: nothing to pair them with
+                msg, pending = pending, None
+                if msg.kind == "frame" and msg.frame:
+                    out = await on_frame(msg.frame, blob)
+                else:
+                    await on_audio(blob)
+                    out = []
+                keep(out)
+                await send_all(out)
+                continue
+            msg = ClientMessage.model_validate_json(raw.get("text") or "")
+            if msg.kind in ("frame", "audio") and (msg.frame or msg.audio):
+                if pending is not None:
+                    resyncs += 1
+                    if resyncs == 1:
+                        print("RESYNC meta before the previous bytes; older dropped", flush=True)
+                pending = msg
+                continue
+            if msg.kind == "voice" and msg.voice:
                 if recorder:
                     recorder.event("voice", {"t_ms": msg.voice.t_ms, "text": msg.voice.text})
                 # in the background: parsing a sentence blocked the frame loop for the rest of a
