@@ -10,6 +10,7 @@ those train on the content, and the content is Pedro's kitchen).
 
 from __future__ import annotations
 
+import asyncio
 import io
 
 import httpx
@@ -158,7 +159,12 @@ class MetaParser:
     async def parse_reply(self, text: str, context: str) -> Reply:
         user = f"What was asked: {context or 'nothing'}\nSentence: {text}"
         for _attempt in (1, 2):  # a reasoning runaway occasionally truncates the JSON
-            d = await self.chat.structured(REPLY_SYSTEM, user, REPLY_SCHEMA)
+            try:
+                d = await asyncio.wait_for(
+                    self.chat.structured(REPLY_SYSTEM, user, REPLY_SCHEMA), timeout=8.0
+                )
+            except TimeoutError:
+                return Reply(action="none")  # a sentence is never worth stalling the loop for
             if d and d.get("action") in Reply.model_fields["action"].annotation.__args__:
                 food = d.get("food")
                 return Reply(

@@ -114,9 +114,7 @@ async def ws_session(ws: WebSocket) -> None:
     async def on_turn(text: str) -> None:
         if recorder:
             recorder.event("voice", {"text": text})
-        out = await session.on_voice(text)
-        keep(out)
-        await send_all(out)
+        start_thinking(session.on_voice(text), 0, "voice")
 
     # The model call runs in the background, two at a time at most, so frames keep arriving (and
     # the still detector keeps seeing them) while the reader thinks (#12 option A).
@@ -134,13 +132,13 @@ async def ws_session(ws: WebSocket) -> None:
         keep(out)
         await send_all(out)
 
-    def start_thinking(coro: Any, t_ms: int) -> None:
-        task = asyncio.create_task(think(coro, t_ms))
+    def start_thinking(coro: Any, t_ms: int, kind: str = "read") -> None:
+        task = asyncio.create_task(think(coro, t_ms), name=kind)
         thinking.add(task)
         task.add_done_callback(thinking.discard)
 
     def busy() -> int:
-        return sum(1 for t in thinking if not t.done())
+        return sum(1 for t in thinking if not t.done() and t.get_name() == "read")
 
     async def settle_thinking(timeout: float = 8.0) -> None:
         pending = [t for t in thinking if not t.done()]
@@ -183,7 +181,12 @@ async def ws_session(ws: WebSocket) -> None:
             elif msg.kind == "voice" and msg.voice:
                 if recorder:
                     recorder.event("voice", {"t_ms": msg.voice.t_ms, "text": msg.voice.text})
-                out = await session.on_voice(msg.voice.text, msg.voice.t_ms)
+                # in the background: parsing a sentence blocked the frame loop for the rest of a
+                # run on 2026-NOVEMBER-02 19:26 ("Okay, I put the first food." at 14 s, then nothing)
+                start_thinking(
+                    session.on_voice(msg.voice.text, msg.voice.t_ms), msg.voice.t_ms, "voice"
+                )
+                out = []
             elif msg.kind == "capture" and msg.capture:
                 await settle_thinking()
                 start_thinking(session.capture(msg.capture.t_ms), msg.capture.t_ms)
