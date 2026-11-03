@@ -14,7 +14,11 @@ struct SessionView: View {
                     TextField("ws://host:8000/ws/session", text: $urlText)
                         .textInputAutocapitalization(.never).autocorrectionDisabled()
                         .onSubmit { if let u = URL(string: urlText) { session.serverURL = u } }
-                    Toggle("Use the glasses", isOn: $session.useGlasses)
+                    Picker("Camera", selection: $session.useGlasses) {
+                        Text("Meta glasses").tag(true)
+                        Text("This phone").tag(false)
+                    }
+                    .pickerStyle(.segmented)
                     Button("Connect this app to the glasses (once)") { Task { await session.registerGlasses() } }
                     Button("Forget and reconnect the glasses (re-register)") { Task { await session.reconnectGlasses() } }
                     // always visible: the toolkit app on the glasses can be stale without the session saying so (#2)
@@ -60,6 +64,7 @@ struct SessionView: View {
             }
             .navigationTitle("itlogs.food")
             .onReceive(clock) { now = $0 }
+            .sheet(isPresented: $session.reviewing) { ReviewView(session: session) }
             .safeAreaInset(edge: .bottom) {
                 Text(Self.versionLine).font(.caption2).foregroundStyle(.secondary).padding(.bottom, 4)
             }
@@ -72,6 +77,10 @@ struct SessionView: View {
                         Button(session.finishing ? "Finishing…" : (left > 0 ? "Stop (\(left))" : "Stop")) { Task { await session.stop() } }
                             .buttonStyle(.borderedProminent).tint(.orange).disabled(left > 0 || session.finishing)
                     } else {
+                        if !session.entries.isEmpty {
+                            Button("Review") { session.reviewing = true }.buttonStyle(.bordered)
+                            Spacer()
+                        }
                         Button(session.starting ? "Starting…" : "Start") { Task { await session.start() } }
                             .disabled(session.starting)
                     }

@@ -44,6 +44,35 @@ final class SessionController {
     let stopAfterSeconds: TimeInterval = 3  // only against an accidental tap; the loop no longer needs waiting (#12)
     /// Stop was tapped and the server is finishing the last read before it reads the list back.
     var finishing = false
+    /// After Stop with entries: the review table is up; Confirm writes to Apple Health (#3).
+    var reviewing = false
+    var healthSaving = false
+    var healthSaved = false
+    var healthMessage: String?
+    private let health = Health()
+
+    func saveToHealth() async {
+        healthSaving = true
+        defer { healthSaving = false }
+        guard Health.available else { healthMessage = "Apple Health is not available on this device."; return }
+        guard await health.authorize() else {
+            healthMessage = "Apple Health access was not granted. Settings > Health > Data Access & Devices > It Logs Food."
+            return
+        }
+        do {
+            let n = try await health.save(entries)
+            healthSaved = n > 0
+            healthMessage = n == entries.count
+                ? "Saved \(n) \(n == 1 ? "food" : "foods") to Apple Health."
+                : "Saved \(n) of \(entries.count): foods without a nutrient row have nothing to write yet."
+            voice.say(healthMessage ?? "")
+        } catch {
+            healthMessage = "Apple Health refused: \(error.localizedDescription)"
+            Diag.send("health: save threw \(String(describing: error))")
+            Telemetry.error(error, ["where": "health"])
+        }
+    }
+
     /// The first frame has reached the phone: before this, weighing is pointless (the stream takes
     /// about six seconds to start; on 2026-NOVEMBER-02 19:12 the foods went on before it did).
     var cameraLive = false
@@ -71,6 +100,9 @@ final class SessionController {
         error = nil
         started = Date()
         cameraLive = false
+        reviewing = false
+        healthSaved = false
+        healthMessage = nil
         Diag.send("start tapped; glasses=\(useGlasses) server=\(serverURL.absoluteString)")
         await client.connect(url: serverURL) { [weak self] msg in
             Task { @MainActor in self?.handle(msg) }
@@ -236,6 +268,7 @@ final class SessionController {
         finishing = false
         cameraLive = false
         startedAt = nil
+        reviewing = !entries.isEmpty  // the table comes up; Confirm sends it to Apple Health
     }
 
     private var finalStateArrived = false

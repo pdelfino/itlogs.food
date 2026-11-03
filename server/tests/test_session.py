@@ -154,9 +154,9 @@ async def test_quiet_weighing_logs_settled_foods_and_reads_the_list_back_at_the_
     out = await s.end_session(20000)
     assert kinds(out) == ["state", "say"]
     assert said(out) == [
-        # apple is not in the placeholder table, so the totals count the rice only
+        # apple 113 g (59 kcal) plus rice 87 g (113 kcal)
         "Done. 2 foods. apple, 113 grams. cooked white rice, 87 grams. "
-        "113 calories, 2 grams of protein."
+        "172 calories, 3 grams of protein."
     ]
 
 

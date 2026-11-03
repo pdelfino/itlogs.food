@@ -55,6 +55,8 @@ targets:
         NSBluetoothPeripheralUsageDescription: Needed to connect to the Meta glasses.
         NSLocalNetworkUsageDescription: Lets the phone find the glasses over Wi-Fi and reach the itlogs.food server on the LAN.
         NSBonjourServices: [_bonjour._tcp]
+        NSHealthUpdateUsageDescription: Each confirmed meal is written to Apple Health as food samples (energy, protein, carbs, fat, fiber, sodium) with the food name and grams.
+        NSHealthShareUsageDescription: It Logs Food does not read your Health data; it only writes the meals you confirm.
     # The camera stream rides a Wi-Fi network the glasses host; Meta's CameraAccess sample carries the
     # HotspotConfiguration and wifi-info entitlements, and without them the process died with SIGTRAP
     # at stream start (2026-11-01). Xcode: "Personal development teams do not support the Access Wi-Fi
@@ -65,6 +67,11 @@ targets:
     #   properties:
     #     com.apple.developer.networking.HotspotConfiguration: true
     #     com.apple.developer.networking.wifi-info: true
+    entitlements:
+      path: ItlogsFood.entitlements
+      properties:
+        com.apple.developer.healthkit: true   # Apple Health write on Confirm (#3); allowed on a personal team
+        com.apple.developer.healthkit.access: []
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: food.itlogs.app
