@@ -1,0 +1,44 @@
+#+TITLE: The hackathon Discord, as of 2026-NOVEMBER-03
+#+DATE: 2026-NOVEMBER-03
+
+The Cerebral Valley server for the Meta Global AI Developer Hackathon, read from a full-page capture
+of #announcements on 2026-NOVEMBER-03 15:47 ET and the channel list after the Builders role.
+
+* Getting in
+- The server is joined through the "Connect Discord" page on the event site (Cerebral Valley connects
+  the Discord account to the registration), then the Builders role is claimed inside Discord: the
+  server name menu at the top left, Linked Roles, Builders, Finish. Until the role is claimed only
+  #welcome and #announcements are visible and channel mentions render as "No Access".
+- Pedro joined 2026-NOVEMBER-03 15:42, role claimed about 15:54. Discord web in Brave; no Discord app
+  on the Mac.
+
+* Channels
+- Start here: welcome. Important: rules, announcements, faqs.
+- Hackathon: intros, general, build-for-your-world, push-the-frontier, team-search, office-hours,
+  questions.
+- Partners: meta, baseten, modal, fireworks, credit-requests. The partner credit forms are pinned in
+  the partner channels; credit questions go to credit-requests.
+
+* #announcements, in order
+- OCTOBER-26: Meta's USD 150 Model API credits through the Google Form (link in
+  emails-2026-10-26.org); a card on the account, a temporary pre-authorization released within a few
+  business days. Partner credits: "fill out the forms in the participant resources". Kickoff 12:00 ET,
+  recording on Vimeo (link in the channel).
+- OCTOBER-27: Meta office hours 10:00 to 11:00 ET on weekdays in office-hours (text). Agents 101,
+  Build a Multimodal AI Agent, Suraj Subramanian: Muse Code signed in with the API key, the
+  meta-models legal-agent-workshop repo, about USD 7 of tokens, macOS or Linux. Recording posted.
+- OCTOBER-28: Agents 102, Best Practices for Verifiable Agents, Yash Khare. Recording posted.
+- OCTOBER-30: Fireworks session, Building Specialized Intelligence on Fireworks: from inference to
+  training with Muse open models, Sinan Ozdemir; GitHub link and deck posted; recording posted.
+- NOVEMBER-02 21:00: two days left, submissions due NOVEMBER-04 21:00 ET. "Spend time on your 3-minute
+  demo video. Showcasing your project well is critical in the judging process." "Ensure your github is
+  open source. This technical detail is mandatory for all projects." "Submit your project early.
+  Waiting until the last minute means rushing and making mistakes that could ruin your chances of
+  winning. Note that the submission form has a decent amount of questions so take some extra time to
+  review those."
+- NOVEMBER-03: office hours as usual; the last full day for submission questions.
+
+* What it changes here
+- The form answers get drafted in this folder before NOVEMBER-04, so the submission is a paste.
+- The video first (hackathon/video-shotlist.org), the public-repo pass second (#5).
+- The Baseten claim (#16) runs through the pinned form in the baseten channel.
