@@ -84,7 +84,9 @@ class MetaReader:
         usual_foods: list[str] | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
-        self.chat = ChatModel(base_url, model, api_key, transport, reasoning_effort="low")
+        # minimal: the read is "name the food, copy the digits"; low took 3.3 to 5.3 s per frame
+        # on 2026-NOVEMBER-02 (muse-spark-1.3)
+        self.chat = ChatModel(base_url, model, api_key, transport, reasoning_effort="minimal")
         self.usual_foods = list(usual_foods or [])
 
     async def read_entry(self, jpeg: bytes) -> EntryRead:

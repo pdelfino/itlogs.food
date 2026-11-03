@@ -139,8 +139,9 @@ async def feed(s, t0, n, step=1500):
 
 
 async def test_quiet_weighing_logs_settled_foods_and_reads_the_list_back_at_the_end():
-    # changing, then apple 113 settles (two reads), still apple, then rice settles
-    reads = [UNREADABLE, RICE_87, APPLE_113, APPLE_113, APPLE_113, UNREADABLE, RICE_87, RICE_87]
+    # empty, then apple 113 on a still scene (one confident read logs it), still apple (not
+    # logged again), empty, then rice
+    reads = [UNREADABLE, APPLE_113, APPLE_113, APPLE_113, UNREADABLE, RICE_87, RICE_87, RICE_87]
     s = Session(FakeVision(reads), FakeLLM())
     out = await s.on_voice("I am weighing my food", 0)
     assert s.watching and said(out) == ["Weighing. One moment, the camera is starting."]
@@ -159,8 +160,18 @@ async def test_quiet_weighing_logs_settled_foods_and_reads_the_list_back_at_the_
     ]
 
 
+async def test_a_doubtful_read_waits_for_a_second_that_agrees():
+    doubtful = EntryRead(food="apple", grams=113.0, confidence=0.5)
+    s = Session(FakeVision([doubtful, RICE_81, APPLE_113, APPLE_113]), FakeLLM())
+    s.set_watching(True)
+    await feed(s, 0, 2)
+    assert s.entries == []  # 0.5 then a different value: nothing yet
+    await feed(s, 3000, 2)
+    assert [(e.food, e.grams) for e in s.entries] == [("apple", 113.0)]
+
+
 async def test_ask_mode_asks_after_the_display_settles_and_yes_confirms():
-    s = Session(FakeVision([UNREADABLE, RICE_87, APPLE_113, APPLE_113, APPLE_113]), FakeLLM())
+    s = Session(FakeVision([UNREADABLE, APPLE_113, APPLE_113, APPLE_113]), FakeLLM())
     s.set_watching(True, ask=True)
     out = await feed(s, 0, 4)
     assert said(out) == ["Ready. Put the first food on the scale.", "113 grams of apple, right?"]

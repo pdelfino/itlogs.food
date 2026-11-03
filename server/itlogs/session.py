@@ -56,6 +56,11 @@ class Session:
     _last_read_thumb: list[int] | None = None  # the scene the reader last saw (weighing mode)
     _ready_said: bool = False  # "Ready" is said on the first frame after Start, not at Start
     max_wait_ms: int = 4000  # weighing mode: read anyway after this long without a still second
+    # weighing mode logs on one confident read of a still scene: the model takes 3 to 5 s per read
+    # and at a normal pace the food is gone before a second look (19:18, "red apple 112 g" read
+    # once, then the empty scale). A read taken without stillness still needs a second that agrees.
+    single_read_confidence: float = 0.8
+    _last_read_still: bool = False
     _last_frame_ms: int | None = None
     _watch_started_ms: int = -1_000_000
 
@@ -108,6 +113,7 @@ class Session:
                 return []  # the same scene the logged value came from: no new model call
             self._last_watch_ms = t_ms
             self._last_read_thumb = thumb
+            self._last_read_still = self.settle.still(t_ms)
             read = await self.vision.read_entry(best)
             return [ServerMessage(kind="read", read=read), *self._watch(read, t_ms)]
         return []
@@ -172,14 +178,17 @@ class Session:
             return []
         if self._watch_logged is not None and self._agree(read, self._watch_logged):
             return []  # still showing what was already asked about
-        if prev is None or not prev.readable or not self._agree(read, prev):
-            return []  # the display is still changing; wait for two reads in a row
+        confident_still = self._last_read_still and read.confidence >= self.single_read_confidence
+        agrees_with_prev = prev is not None and prev.readable and self._agree(read, prev)
+        if not confident_still and not agrees_with_prev:
+            return []  # the display may still be changing; wait for two reads in a row
         self._watch_logged = read
         if self.ask:
             return self._ask(read, read, t_ms, confirm_only=True)
         assert read.grams is not None
         # quiet: log it, the phone ticks, the list is read back at the end
-        return self._log(read.food, read.grams, "auto", [prev, read], t_ms, speak=False)
+        reads = [read] if prev is None or not prev.readable else [prev, read]
+        return self._log(read.food, read.grams, "auto", reads, t_ms, speak=False)
 
     def _agree(self, a: EntryRead, b: EntryRead) -> bool:
         return (
