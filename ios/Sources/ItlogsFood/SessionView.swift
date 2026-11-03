@@ -19,6 +19,17 @@ struct SessionView: View {
                         Text("This phone").tag(false)
                     }
                     .pickerStyle(.segmented)
+                    if !session.useGlasses {
+                        Label("Prop the phone on a stand or a tripod so the camera sees the scale's display with the grams, and keep this app open. The preview below shows what it sees.", systemImage: "camera.on.rectangle")
+                            .font(.footnote).foregroundStyle(.secondary)
+                    }
+                    if let img = session.preview {
+                        Image(uiImage: img)
+                            .resizable().scaledToFit()
+                            .frame(maxHeight: 180)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .frame(maxWidth: .infinity)
+                    }
                     Button("Connect this app to the glasses (once)") { Task { await session.registerGlasses() } }
                     Button("Forget and reconnect the glasses (re-register)") { Task { await session.reconnectGlasses() } }
                     // always visible: the toolkit app on the glasses can be stale without the session saying so (#2)

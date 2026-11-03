@@ -3,6 +3,7 @@ import AudioToolbox
 import Foundation
 import MWDATCore
 import Observation
+import UIKit
 import os
 
 /// Glue: frames and voice up, server messages into view state and the speaker.
@@ -77,6 +78,10 @@ final class SessionController {
     /// The first frame has reached the phone: before this, weighing is pointless (the stream takes
     /// about six seconds to start; on 2026-NOVEMBER-02 19:12 the foods went on before it did).
     var cameraLive = false
+    /// The latest frame, a few times a second, so the wearer (or the phone-on-a-stand user) can
+    /// see that the display with the grams is in the picture.
+    var preview: UIImage?
+    private var lastPreviewAt = Date.distantPast
 
     private let log = Logger(subsystem: "food.itlogs", category: "session")
     private let client = StreamClient()
@@ -129,7 +134,7 @@ final class SessionController {
         do {
             do {
                 try await source.start { [weak self, client] jpeg, meta in
-                    Task { @MainActor in self?.cameraLive = true }
+                    Task { @MainActor in self?.showFrame(jpeg) }
                     Task { try? await client.send(frame: jpeg, meta: meta) }
                 }
             } catch let e as NSError where e.domain == "food.itlogs" && e.code == 13 {
@@ -139,7 +144,7 @@ final class SessionController {
                 source = PhoneCameraSource()
                 self.source = source
                 try await source.start { [weak self, client] jpeg, meta in
-                    Task { @MainActor in self?.cameraLive = true }
+                    Task { @MainActor in self?.showFrame(jpeg) }
                     Task { try? await client.send(frame: jpeg, meta: meta) }
                 }
             }
@@ -178,6 +183,14 @@ final class SessionController {
             Diag.send("start failed: \(String(describing: error))")
             Telemetry.error(error, ["where": "start"])
         }
+    }
+
+    private func showFrame(_ jpeg: Data) {
+        cameraLive = true
+        let now = Date()
+        guard now.timeIntervalSince(lastPreviewAt) >= 0.4 else { return }  // about 2 a second
+        lastPreviewAt = now
+        preview = UIImage(data: jpeg)
     }
 
     /// The deliberate trigger: read the scale now (in stills mode, take a still first).
@@ -271,6 +284,7 @@ final class SessionController {
         watching = false
         finishing = false
         cameraLive = false
+        preview = nil
         startedAt = nil
         reviewing = !entries.isEmpty  // the table comes up; Confirm sends it to Apple Health
     }
