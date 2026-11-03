@@ -38,7 +38,9 @@ final class SessionController {
     /// run cannot end before the loop had a still second to read (runs of 5 to 12 s on
     /// 2026-NOVEMBER-02 all ended with "Nothing logged").
     var startedAt: Date?
-    let stopAfterSeconds: TimeInterval = 20
+    let stopAfterSeconds: TimeInterval = 3  // only against an accidental tap; the loop no longer needs waiting (#12)
+    /// Stop was tapped and the server is finishing the last read before it reads the list back.
+    var finishing = false
 
     private let log = Logger(subsystem: "food.itlogs", category: "session")
     private let client = StreamClient()
@@ -201,17 +203,26 @@ final class SessionController {
 
     func stop() async {
         Diag.send("stop tapped after \(nowMs() / 1000) s; entries=\(entries.count)")
+        finishing = true
+        lastSaid = "Finishing the last reading…"
         voice.stopListening()
         audio.stop()
         await source?.stop()
+        finalStateArrived = false
         try? await client.endSession()
-        // the server answers with the list to read back; give it a moment before closing
-        try? await Task.sleep(for: .seconds(2))
+        // the server finishes the read in flight, then answers with the list to read back (#12)
+        for _ in 0..<100 where !finalStateArrived {  // up to 10 s
+            try? await Task.sleep(for: .milliseconds(100))
+        }
+        try? await Task.sleep(for: .milliseconds(500))  // let the last "say" land before the socket closes
         await client.disconnect()
         running = false
         watching = false
+        finishing = false
         startedAt = nil
     }
+
+    private var finalStateArrived = false
 
     func handle(_ msg: ServerMessage) {
         switch msg.kind {
@@ -227,6 +238,7 @@ final class SessionController {
         case "state":
             entries = msg.entries ?? entries
             if let w = msg.watching { watching = w }
+            if finishing { finalStateArrived = true }
         default: break
         }
     }

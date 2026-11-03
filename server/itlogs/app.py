@@ -11,6 +11,7 @@ from __future__ import annotations
 import asyncio
 import time
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
@@ -117,6 +118,34 @@ async def ws_session(ws: WebSocket) -> None:
         keep(out)
         await send_all(out)
 
+    # The model call runs in the background, one at a time, so frames keep arriving (and the
+    # still detector keeps seeing them) while the reader thinks (#12 option A).
+    thinking: asyncio.Task[None] | None = None
+
+    async def think(coro: Any, t_ms: int) -> None:
+        t0 = time.perf_counter()
+        out = await coro
+        took_ms = int((time.perf_counter() - t0) * 1000)
+        if any(m.kind == "read" for m in out):
+            print(f"READ took {took_ms} ms (frame t={t_ms})", flush=True)
+            if recorder:
+                recorder.event("read_latency", {"t_ms": t_ms, "ms": took_ms})
+        keep(out)
+        await send_all(out)
+
+    def start_thinking(coro: Any, t_ms: int) -> None:
+        nonlocal thinking
+        thinking = asyncio.create_task(think(coro, t_ms))
+
+    async def settle_thinking(timeout: float = 8.0) -> None:
+        nonlocal thinking
+        if thinking is not None and not thinking.done():
+            try:
+                await asyncio.wait_for(asyncio.shield(thinking), timeout)
+            except TimeoutError:
+                thinking.cancel()
+        thinking = None
+
     try:
         while True:
             msg = ClientMessage.model_validate_json(await ws.receive_text())
@@ -126,13 +155,10 @@ async def ws_session(ws: WebSocket) -> None:
                 frames += 1
                 if frames == 1 or frames % 100 == 0:
                     print(f"FRAMES {frames} ({len(jpeg)} bytes, t={msg.frame.t_ms} ms)", flush=True)
-                t0 = time.perf_counter()
-                out = await session.on_frame(jpeg, msg.frame.t_ms)
-                took_ms = int((time.perf_counter() - t0) * 1000)
-                if any(m.kind == "read" for m in out):
-                    print(f"READ took {took_ms} ms (frame t={msg.frame.t_ms})", flush=True)
-                    if recorder:
-                        recorder.event("read_latency", {"t_ms": msg.frame.t_ms, "ms": took_ms})
+                session.observe(jpeg, msg.frame.t_ms)
+                out = []
+                if thinking is None or thinking.done():
+                    start_thinking(session.decide(jpeg, msg.frame.t_ms), msg.frame.t_ms)
                 if recorder and frames % 7 == 1:
                     # about once a second: how much the picture moved and whether it counts as still
                     recorder.event(
@@ -155,13 +181,16 @@ async def ws_session(ws: WebSocket) -> None:
                     recorder.event("voice", {"t_ms": msg.voice.t_ms, "text": msg.voice.text})
                 out = await session.on_voice(msg.voice.text, msg.voice.t_ms)
             elif msg.kind == "capture" and msg.capture:
-                out = await session.capture(msg.capture.t_ms)
+                await settle_thinking()
+                start_thinking(session.capture(msg.capture.t_ms), msg.capture.t_ms)
+                out = []
             elif msg.kind == "watch" and msg.watch:
                 out = session.set_watching(msg.watch.on, msg.watch.t_ms, ask=msg.watch.ask)
             else:
                 if transcriber is not None:
                     await transcriber.close()
                     transcriber = None
+                await settle_thinking()  # the last read lands before the list is read back
                 out = await session.end_session()
                 await send_all(out)
                 if recorder:
@@ -173,4 +202,5 @@ async def ws_session(ws: WebSocket) -> None:
     except WebSocketDisconnect:
         if transcriber is not None:
             await transcriber.close()
+        await settle_thinking(0.0)
         return

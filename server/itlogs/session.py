@@ -20,7 +20,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from itlogs import nutrients
-from itlogs.frames import Settle
+from itlogs.frames import Settle, difference, thumbnail
 from itlogs.models import Entry, EntryRead, Question, Reply, ServerMessage
 from itlogs.providers.base import LLMProvider, VisionProvider
 
@@ -53,11 +53,22 @@ class Session:
     _watch_prev: EntryRead | None = None  # the previous read in weighing mode
     _watch_logged: EntryRead | None = None  # what the display showed when last asked
     _said_negative: bool = False  # the tare hint, once per session
+    _last_read_thumb: list[int] | None = None  # the scene the reader last saw (weighing mode)
 
     # frames
 
     async def on_frame(self, jpeg: bytes, t_ms: int) -> list[ServerMessage]:
+        """Observe the frame, then decide; one call, as the tests and evals drive it."""
+        self.observe(jpeg, t_ms)
+        return await self.decide(jpeg, t_ms)
+
+    def observe(self, jpeg: bytes, t_ms: int) -> None:
+        """Cheap, for every frame: keeps the recent frames and whether the scene is still."""
         self.settle.observe(jpeg, t_ms)
+
+    async def decide(self, jpeg: bytes, t_ms: int) -> list[ServerMessage]:
+        """The model call, when one is due. The app runs this in the background, one at a time,
+        so the frames keep flowing while the reader thinks (#12)."""
         if self._first is not None:
             first, first_ms = self._first
             if t_ms - first_ms < self.second_read_after_ms:
@@ -71,9 +82,18 @@ class Session:
                 return []
             if not self.settle.still(t_ms):
                 return []  # a hand, a moving plate: not worth a model call
-            self._last_watch_ms = t_ms
             since = max(self.settle.still_since() or t_ms, t_ms - 1000)
             _, best = self.settle.sharpest(since, t_ms) or (t_ms, jpeg)
+            thumb = thumbnail(best)
+            if (
+                self._watch_logged is not None
+                and thumb is not None
+                and self._last_read_thumb is not None
+                and difference(self._last_read_thumb, thumb) <= self.settle.move
+            ):
+                return []  # the same scene the logged value came from: no new model call
+            self._last_watch_ms = t_ms
+            self._last_read_thumb = thumb
             read = await self.vision.read_entry(best)
             return [ServerMessage(kind="read", read=read), *self._watch(read, t_ms)]
         return []

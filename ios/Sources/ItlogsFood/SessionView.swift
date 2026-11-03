@@ -27,7 +27,11 @@ struct SessionView: View {
                     if let r = session.lastRead {
                         LabeledContent("Read", value: r.grams.map { "\(r.food) · \($0.formatted()) g" } ?? r.food)
                     }
-                    if session.watching { Text("Weighing: watching the scale. Stop to hear the list.").foregroundStyle(.orange) }
+                    if session.finishing {
+                        Text("Finishing the last reading…").foregroundStyle(.orange)
+                    } else if session.watching {
+                        Text("Weighing: watching the scale. Stop to hear the list.").foregroundStyle(.orange)
+                    }
                     if let q = session.question { Text(q.text).bold() }
                     if !session.lastHeard.isEmpty { Text("Heard: \(session.lastHeard)").foregroundStyle(.secondary) }
                     if !session.lastSaid.isEmpty { Text("Said: \(session.lastSaid)").italic() }
@@ -39,7 +43,10 @@ struct SessionView: View {
                             Text("\(e.index). \(e.food)")
                             Spacer()
                             Text("\(e.grams, format: .number) g").monospacedDigit()
-                            if let n = e.nutrients { Text("· \(Int(n.kcal)) kcal").foregroundStyle(.secondary) }
+                            if let n = e.nutrients {
+                                Text("· \(Int(n.kcal)) kcal · P \(Int(n.protein_g.rounded())) C \(Int(n.carbs_g.rounded())) F \(Int(n.fat_g.rounded()))")
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
                             Text(e.status).font(.caption).foregroundStyle(.secondary)
                         }
                     }
