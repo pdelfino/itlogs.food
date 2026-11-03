@@ -118,9 +118,10 @@ async def ws_session(ws: WebSocket) -> None:
         keep(out)
         await send_all(out)
 
-    # The model call runs in the background, one at a time, so frames keep arriving (and the
-    # still detector keeps seeing them) while the reader thinks (#12 option A).
-    thinking: asyncio.Task[None] | None = None
+    # The model call runs in the background, two at a time at most, so frames keep arriving (and
+    # the still detector keeps seeing them) while the reader thinks (#12 option A).
+    thinking: set[asyncio.Task[None]] = set()
+    MAX_IN_FLIGHT = 2
 
     async def think(coro: Any, t_ms: int) -> None:
         t0 = time.perf_counter()
@@ -134,17 +135,20 @@ async def ws_session(ws: WebSocket) -> None:
         await send_all(out)
 
     def start_thinking(coro: Any, t_ms: int) -> None:
-        nonlocal thinking
-        thinking = asyncio.create_task(think(coro, t_ms))
+        task = asyncio.create_task(think(coro, t_ms))
+        thinking.add(task)
+        task.add_done_callback(thinking.discard)
+
+    def busy() -> int:
+        return sum(1 for t in thinking if not t.done())
 
     async def settle_thinking(timeout: float = 8.0) -> None:
-        nonlocal thinking
-        if thinking is not None and not thinking.done():
-            try:
-                await asyncio.wait_for(asyncio.shield(thinking), timeout)
-            except TimeoutError:
-                thinking.cancel()
-        thinking = None
+        pending = [t for t in thinking if not t.done()]
+        if pending:
+            done, still = await asyncio.wait(pending, timeout=timeout)
+            for t in still:
+                t.cancel()
+        thinking.clear()
 
     try:
         while True:
@@ -157,7 +161,7 @@ async def ws_session(ws: WebSocket) -> None:
                     print(f"FRAMES {frames} ({len(jpeg)} bytes, t={msg.frame.t_ms} ms)", flush=True)
                 session.observe(jpeg, msg.frame.t_ms)
                 out = session.ready()  # "Ready..." once, on the first frame after Start
-                if thinking is None or thinking.done():
+                if busy() < MAX_IN_FLIGHT:
                     start_thinking(session.decide(jpeg, msg.frame.t_ms), msg.frame.t_ms)
                 if recorder and frames % 7 == 1:
                     # about once a second: how much the picture moved and whether it counts as still
@@ -190,7 +194,10 @@ async def ws_session(ws: WebSocket) -> None:
                 if transcriber is not None:
                     await transcriber.close()
                     transcriber = None
-                await settle_thinking()  # the last read lands before the list is read back
+                await settle_thinking()  # the reads in flight land first
+                out = await session.final_look()  # then whatever is on the scale now
+                keep(out)
+                await send_all(out)
                 out = await session.end_session()
                 await send_all(out)
                 if recorder:

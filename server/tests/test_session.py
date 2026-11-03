@@ -215,3 +215,15 @@ async def test_done_reads_the_list_after_entries():
     assert said(out) == [
         "Done. 1 food. cooked white rice, 87 grams. 113 calories, 2 grams of protein."
     ]
+
+
+async def test_stop_takes_a_final_look_at_what_is_on_the_scale():
+    s = Session(FakeVision([UNREADABLE, APPLE_113]), FakeLLM())
+    s.set_watching(True)
+    await feed(s, 0, 1)  # the empty scale
+    assert s.entries == []
+    out = await s.final_look(3000)  # Stop with the apple on
+    assert kinds(out) == ["read", "entry"]
+    assert (s.entries[0].food, s.entries[0].status) == ("apple", "auto")
+    out = await s.end_session(3100)
+    assert said(out) == ["Done. 1 food. apple, 113 grams."]

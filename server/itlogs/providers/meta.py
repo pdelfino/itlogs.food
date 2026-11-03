@@ -10,7 +10,10 @@ those train on the content, and the content is Pedro's kitchen).
 
 from __future__ import annotations
 
+import io
+
 import httpx
+from PIL import Image
 
 from itlogs.config import settings
 from itlogs.models import EntryRead, Reply
@@ -72,6 +75,26 @@ REPLY_SYSTEM = (
 
 TO_GRAMS = {"g": 1.0, "kg": 1000.0, "oz": 28.349523125, "lb": 453.59237, "ml": 1.0}
 
+MODEL_LONG_SIDE = 1024  # the digits of a scale display are large; fewer image tokens, faster reads
+
+
+def shrink(jpeg: bytes) -> bytes:
+    """The copy the model sees: at most MODEL_LONG_SIDE on the long side. The recording keeps the
+    original. Bytes that are not an image (tests) pass through."""
+    try:
+        im = Image.open(io.BytesIO(jpeg))
+        im.load()
+    except Exception:
+        return jpeg
+    w, h = im.size
+    if max(w, h) <= MODEL_LONG_SIDE:
+        return jpeg
+    scale = MODEL_LONG_SIDE / max(w, h)
+    im = im.convert("RGB").resize((round(w * scale), round(h * scale)))
+    out = io.BytesIO()
+    im.save(out, format="JPEG", quality=85)
+    return out.getvalue()
+
 
 class MetaReader:
     """VisionProvider on any OpenAI-compatible vision endpoint (Muse Spark or Muse Glimmer)."""
@@ -90,6 +113,7 @@ class MetaReader:
         self.usual_foods = list(usual_foods or [])
 
     async def read_entry(self, jpeg: bytes) -> EntryRead:
+        jpeg = shrink(jpeg)
         user = "Read the scale."
         if self.usual_foods:
             user += " Foods this person logs often, check these first: " + ", ".join(

@@ -316,6 +316,26 @@ class Session:
         protein = round(sum(k.protein_g for k in known))
         return f"{head} {kcal} calories, {protein} grams of protein."
 
+    async def final_look(self, t_ms: int = 0) -> list[ServerMessage]:
+        """At Stop: read whatever is on the scale now, so the last food is never lost to the
+        reader's latency (19:18: the second food went on after the apple and Stop came first)."""
+        if not self.watching or self.settle.latest is None or self._question is not None:
+            return []
+        latest_ms = self.settle.latest[0]
+        _, best = self.settle.sharpest(latest_ms - 2000, latest_ms) or self.settle.latest
+        thumb = thumbnail(best)
+        if (
+            self._watch_logged is not None
+            and thumb is not None
+            and self._last_read_thumb is not None
+            and difference(self._last_read_thumb, thumb) <= self.settle.move
+        ):
+            return []  # the same scene the last logged value came from
+        self._last_read_thumb = thumb
+        self._last_read_still = True  # the wearer is done moving; one confident read is enough
+        read = await self.vision.read_entry(best)
+        return [ServerMessage(kind="read", read=read), *self._watch(read, t_ms or latest_ms)]
+
     async def end_session(self, t_ms: int = 0) -> list[ServerMessage]:
         self._first = None
         self._question = None
