@@ -69,10 +69,11 @@ struct SessionView: View {
                         Button("Log it") { session.capture() }.buttonStyle(.bordered)
                         Spacer()
                         let left = max(0, Int((session.stopAfterSeconds - now.timeIntervalSince(session.startedAt ?? now)).rounded(.up)))
-                        Button(left > 0 ? "Stop (\(left))" : "Stop") { Task { await session.stop() } }
-                            .buttonStyle(.borderedProminent).tint(.orange).disabled(left > 0)
+                        Button(session.finishing ? "Finishing…" : (left > 0 ? "Stop (\(left))" : "Stop")) { Task { await session.stop() } }
+                            .buttonStyle(.borderedProminent).tint(.orange).disabled(left > 0 || session.finishing)
                     } else {
-                        Button("Start") { Task { await session.start() } }
+                        Button(session.starting ? "Starting…" : "Start") { Task { await session.start() } }
+                            .disabled(session.starting)
                     }
                 }
             }

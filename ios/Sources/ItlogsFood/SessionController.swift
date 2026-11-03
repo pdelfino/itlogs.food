@@ -34,6 +34,9 @@ final class SessionController {
     var error: String?
     var running = false
     var watching = false
+    /// Start was tapped and the glasses session and stream are coming up (about six seconds);
+    /// a second tap meanwhile made the toolkit throw sessionAlreadyExists (19:33, three times).
+    var starting = false
     /// When Start was tapped; the Stop button stays disabled for `stopAfterSeconds` from here, so a
     /// run cannot end before the loop had a still second to read (runs of 5 to 12 s on
     /// 2026-NOVEMBER-02 all ended with "Nothing logged").
@@ -62,6 +65,9 @@ final class SessionController {
     }
 
     func start() async {
+        guard !starting && !running else { Diag.send("start tapped while \(starting ? "starting" : "running"); ignored"); return }
+        starting = true
+        defer { starting = false }
         error = nil
         started = Date()
         cameraLive = false
@@ -208,6 +214,7 @@ final class SessionController {
     }
 
     func stop() async {
+        guard !finishing else { Diag.send("stop tapped again while finishing; ignored"); return }
         Diag.send("stop tapped after \(nowMs() / 1000) s; entries=\(entries.count)")
         finishing = true
         lastSaid = "Finishing the last reading…"
@@ -217,9 +224,11 @@ final class SessionController {
         finalStateArrived = false
         try? await client.endSession()
         // the server finishes the read in flight, then answers with the list to read back (#12)
-        for _ in 0..<100 where !finalStateArrived {  // up to 10 s
+        let waited = Date()
+        for _ in 0..<80 where !finalStateArrived {  // up to 8 s: reads in flight, then the final look
             try? await Task.sleep(for: .milliseconds(100))
         }
+        Diag.send("stop: final state \(finalStateArrived ? "arrived" : "never came") after \(Int(Date().timeIntervalSince(waited) * 1000)) ms; entries=\(entries.count)")
         try? await Task.sleep(for: .milliseconds(500))  // let the last "say" land before the socket closes
         await client.disconnect()
         running = false
