@@ -81,9 +81,7 @@ final class SessionController {
             healthToday = "Apple Health today, from this app: \(today.foods) \(today.foods == 1 ? "food" : "foods"), \(Int(today.kcal.rounded())) kcal" + (today.names.isEmpty ? "" : " (\(today.names.joined(separator: ", ")))")
             voice.say(saved)
         } catch {
-            healthMessage = "Apple Health refused: \(error.localizedDescription)"
-            Diag.send("health: save threw \(String(describing: error))")
-            Telemetry.error(error, ["where": "health"])
+            healthMessage = UserFacingError.report(.healthRefused, error)
         }
     }
 
@@ -193,12 +191,10 @@ final class SessionController {
             // Start means weighing: the server watches the scale from here until Stop
             try? await client.watch(on: true, tMs: nowMs(), ask: askEachFood)
         } catch {
-            let why = (error as? LocalizedError)?.errorDescription ?? String(describing: error)
-            self.error = "Start failed: \(why)"
-            Diag.send("start failed: \(why)")
+            let kind: UserFacingError = error is StreamClient.Failure ? .serverUnreachable : .startFailed
+            self.error = UserFacingError.report(kind, error)
             await source.stop()
             await client.disconnect()
-            Telemetry.error(error, ["where": "start"])
         }
     }
 
@@ -245,8 +241,7 @@ final class SessionController {
             self.error = nil
             self.lastSaid = "Reconnecting to the glasses through Meta AI."
         } catch {
-            self.error = "Reconnect failed: \(String(describing: error))"
-            Diag.send("startRegistration threw: \(String(describing: error))")
+            self.error = UserFacingError.report(.reconnectFailed, error)
         }
     }
 
@@ -254,8 +249,7 @@ final class SessionController {
     func updateGlassesApp() async {
         Diag.send("update glasses app tapped")
         do { try await Wearables.shared.openDATGlassesAppUpdate() } catch {
-            self.error = "Glasses app update: \(String(describing: error))"
-            Diag.send("openDATGlassesAppUpdate threw: \(String(describing: error))")
+            self.error = UserFacingError.report(.glassesUpdate, error)
         }
     }
 
@@ -272,10 +266,7 @@ final class SessionController {
             try await GlassesSource.register()
             Diag.send("startRegistration returned without error")
         } catch {
-            let detail = String(describing: error)
-            self.error = "Pair failed: \(detail)"
-            Diag.send("startRegistration threw: \(detail) / \(error.localizedDescription)")
-            Telemetry.error(error, ["where": "registration"])
+            self.error = UserFacingError.report(.pairFailed, error)
         }
     }
 

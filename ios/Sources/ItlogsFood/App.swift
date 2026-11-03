@@ -41,8 +41,7 @@ struct ItlogsFoodApp: App {
                             let handled = try await Wearables.shared.handleUrl(url)
                             Diag.send("callback handled=\(handled)")
                         } catch {
-                            session.error = "Glasses callback: \(String(describing: error))"
-                            Diag.send("callback threw: \(String(describing: error))")
+                            session.error = UserFacingError.report(.glassesCallback, error)
                         }
                     }
                 }
