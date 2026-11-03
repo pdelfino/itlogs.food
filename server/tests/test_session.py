@@ -64,7 +64,8 @@ async def test_disagreeing_food_asks_then_yes_confirms_the_first_read():
 async def test_a_food_name_corrects_the_food():
     s, _ = await run([RICE_87, QUINOA_87])
     await s.on_voice("quinoa", 3000)
-    assert (s.entries[0].food, s.entries[0].status) == ("quinoa", "corrected")
+    # the spoken "quinoa" lands under its curated name, like "rice" does
+    assert (s.entries[0].food, s.entries[0].status) == ("cooked quinoa", "corrected")
     assert s.entries[0].nutrients is None  # not in the placeholder table
 
 

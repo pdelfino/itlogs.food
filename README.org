@@ -15,7 +15,7 @@ Meta Global AI Developer Hackathon entry, Indie track, Build for Your World. Eve
 2. "Log it" (voice) or the button: the latest frame is read by Muse Spark (Meta Model API) as structured output: =food=, =display_value=, =unit=, =confidence=. Foods you log often are checked first.
 3. About 1.5 s later the next frame is read again. Two reads that agree (same food, grams within 1 g) log the entry as *agreed* and the ear hears "87 grams of cooked white rice, logged." Two reads also prove the scale had settled.
 4. Reads that disagree become a question in the ear: "cooked white rice: 81 or 87 grams?" The answer ("87", "yes", "quinoa", "no") is heard by Muse Voice Transcribe and parsed by Muse Spark into confirm, correct or cancel. The entry is logged as *confirmed* or *corrected*.
-5. Grams × a per-100 g table give kcal, protein, carbs, fat, fiber and sodium (the Canadian Nutrient File, issue #3; a placeholder table until then). Salt is weighed like everything else: 1 g of salt is about 390 mg of sodium, and no camera sees salt.
+5. Grams × a per-100 g row give kcal, protein, carbs, fat, fiber and sodium. The rows come from the Canadian Nutrient File (Health Canada, 5,690 foods, open licence): a curated map for what people weigh most, a careful name search for the rest, and "?" when a food is not there. Salt is weighed like everything else: 1 g of salt is about 390 mg of sodium, and no camera sees salt.
 6. Every entry carries the label the loop produced (agreed, confirmed, corrected). Those labels are the eval set and the recalibration data for the open-weight reader, Muse Glimmer on the Mac (issue #4).
 
 * Engineering
