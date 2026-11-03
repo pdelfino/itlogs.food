@@ -50,6 +50,7 @@ final class SessionController {
     var healthSaved = false
     var healthMessage: String?
     private let health = Health()
+    private let chime = Chime()
 
     func saveToHealth() async {
         healthSaving = true
@@ -285,7 +286,7 @@ final class SessionController {
                     entries[i] = e  // the server corrected a row (same food read again)
                 } else {
                     entries.append(e)
-                    AudioServicesPlaySystemSound(1057)  // a short tick per new entry
+                    chime.play()  // the "checked" sound: move on to the next food
                 }
             }
             question = nil

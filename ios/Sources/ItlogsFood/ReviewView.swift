@@ -16,7 +16,7 @@ struct ReviewView: View {
                     Grid(alignment: .trailing, horizontalSpacing: 10, verticalSpacing: 8) {
                         GridRow {
                             Text("Food").gridColumnAlignment(.leading)
-                            Text("g"); Text("P"); Text("C"); Text("F"); Text("kcal"); Text("Na mg")
+                            Text("g"); Text("P"); Text("C"); Text("F"); Text("kcal")
                         }
                         .font(.caption).foregroundStyle(.secondary)
                         Divider()
@@ -29,9 +29,8 @@ struct ReviewView: View {
                                     Text(n.carbs_g, format: .number.precision(.fractionLength(1)))
                                     Text(n.fat_g, format: .number.precision(.fractionLength(1)))
                                     Text(n.kcal, format: .number.precision(.fractionLength(0)))
-                                    Text(n.sodium_mg, format: .number.precision(.fractionLength(0)))
                                 } else {
-                                    Text("?"); Text("?"); Text("?"); Text("?"); Text("?")
+                                    Text("?"); Text("?"); Text("?"); Text("?")
                                 }
                             }
                             .font(.callout.monospacedDigit())
@@ -45,7 +44,6 @@ struct ReviewView: View {
                                 Text(t.carbs_g, format: .number.precision(.fractionLength(1)))
                                 Text(t.fat_g, format: .number.precision(.fractionLength(1)))
                                 Text(t.kcal, format: .number.precision(.fractionLength(0)))
-                                Text(t.sodium_mg, format: .number.precision(.fractionLength(0)))
                             }
                             .font(.callout.monospacedDigit()).bold()
                         }
@@ -53,7 +51,7 @@ struct ReviewView: View {
                 } header: {
                     Text("This meal")
                 } footer: {
-                    Text("P protein, C carbs, F fat, in grams for the portion. ? means the food is not in the nutrient table yet; its grams are still logged.")
+                    Text("P protein, C carbs, F fat, in grams for the portion; sodium goes to Health without a column. ? means the food is not in the nutrient table yet; its grams are still logged.")
                 }
                 Section {
                     if let msg = session.healthMessage { Text(msg).foregroundStyle(session.healthSaved ? .green : .orange) }

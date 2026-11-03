@@ -64,6 +64,8 @@ class Session:
     _said_negative: bool = False  # the tare hint, once per session
     _last_read_thumb: list[int] | None = None  # the scene the reader last saw (weighing mode)
     _emptied: bool = True  # the scale read empty since the last logged food (a new food can come)
+    _empty_streak: int = 0  # consecutive empty reads; one alone can be a hand over the display
+    same_again_ms: int = 30000  # the same food at the same grams within this: one item, not two
     _ready_said: bool = False  # "Ready" is said on the first frame after Start, not at Start
     max_wait_ms: int = 4000  # weighing mode: read anyway after this long without a still second
     # weighing mode logs on one confident read of a still scene: the model takes 3 to 5 s per read
@@ -179,16 +181,24 @@ class Session:
     def _watch(self, read: EntryRead, t_ms: int) -> list[ServerMessage]:
         prev, self._watch_prev = self._watch_prev, read
         if not read.readable:
-            # the scale is empty or tared: the next value, even the same one, is a new food
-            self._watch_logged = None
-            self._emptied = True
+            # the scale is empty or tared: the next value, even the same one, is a new food.
+            # Two empties in a row, though: one alone was a hand over the display (19:57, the
+            # banana logged twice around a single "0 g").
+            self._empty_streak += 1
+            if self._empty_streak >= 2:
+                self._watch_logged = None
+                self._emptied = True
             if read.grams is not None and read.grams < 0 and not self._said_negative:
                 self._said_negative = True
                 hint = "The scale shows a negative number. Lift everything off and tare it."
                 return [ServerMessage(kind="say", say=hint)]
             return []
+        self._empty_streak = 0
         if self._watch_logged is not None and self._agree(read, self._watch_logged):
             return []  # still showing what was already asked about
+        if self.entries and self._same_item_again(read, t_ms):
+            self._watch_logged = read
+            return []  # the banana again, same grams, seconds later: one banana
         confident_still = self._last_read_still and read.confidence >= self.single_read_confidence
         agrees_with_prev = prev is not None and prev.readable and self._agree(read, prev)
         if not confident_still and not agrees_with_prev:
@@ -206,6 +216,15 @@ class Session:
         # quiet: log it, the phone ticks, the list is read back at the end
         reads = [read] if prev is None or not prev.readable else [prev, read]
         return self._log(read.food, read.grams, "auto", reads, t_ms, speak=False)
+
+    def _same_item_again(self, read: EntryRead, t_ms: int) -> bool:
+        last = self.entries[-1]
+        return (
+            read.grams is not None
+            and same_item(read.food, last.food)
+            and abs(read.grams - last.grams) <= self.grams_tolerance_g
+            and t_ms - last.t_ms < self.same_again_ms
+        )
 
     def _correct_last(self, read: EntryRead, t_ms: int) -> list[ServerMessage]:
         last = self.entries[-1]

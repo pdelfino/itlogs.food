@@ -182,14 +182,16 @@ async def test_ask_mode_asks_after_the_display_settles_and_yes_confirms():
     assert all(m.kind == "read" for m in await feed(s, 8000, 2))
 
 
-async def test_weighing_mode_same_value_again_after_the_scale_was_emptied():
-    s = Session(FakeVision([APPLE_113, APPLE_113, UNREADABLE, APPLE_113, APPLE_113]), FakeLLM())
+async def test_weighing_mode_another_apple_after_the_scale_was_emptied():
+    apple_120 = EntryRead(food="apple", grams=120.0, confidence=0.9)
+    reads = [APPLE_113, APPLE_113, UNREADABLE, UNREADABLE, apple_120, apple_120]
+    s = Session(FakeVision(reads), FakeLLM())
     s.set_watching(True, ask=True)
     out = await feed(s, 0, 2)
     assert said(out) == ["Ready. Put the first food on the scale.", "113 grams of apple, right?"]
     await s.on_voice("yes", 3000)
-    out = await feed(s, 4000, 3)
-    assert said(out) == ["113 grams of apple, right?"]  # a second apple
+    out = await feed(s, 4000, 4)  # two empty reads (one alone is a hand), then a second apple
+    assert said(out) == ["120 grams of apple, right?"]
 
 
 async def test_ask_mode_no_skips_and_done_speaks_the_summary():
@@ -231,11 +233,27 @@ async def test_stop_takes_a_final_look_at_what_is_on_the_scale():
 
 async def test_the_same_food_read_again_corrects_the_row_until_the_scale_empties():
     apple_108 = EntryRead(food="red apple", grams=108.0, confidence=0.9)
-    reads = [APPLE_113, apple_108, UNREADABLE, APPLE_113]
+    reads = [APPLE_113, apple_108, UNREADABLE, UNREADABLE, APPLE_113]
     s = Session(FakeVision(reads), FakeLLM())
     s.set_watching(True)
-    out = await feed(s, 0, 4)
+    out = await feed(s, 0, 5)
     entries = [m.entry for m in out if m.kind == "entry"]
     assert [(e.index, e.grams) for e in entries] == [(1, 113.0), (1, 108.0), (2, 113.0)]
     assert [(e.food, e.grams) for e in s.entries] == [("apple", 108.0), ("apple", 113.0)]
     assert len(s.entries[0].reads) == 2
+
+
+async def test_one_empty_read_between_two_looks_at_the_same_banana_is_not_a_second_banana():
+    banana = EntryRead(food="whole banana", grams=128.0, confidence=0.95)
+    s = Session(FakeVision([banana, UNREADABLE, banana, banana]), FakeLLM())
+    s.set_watching(True)
+    await feed(s, 0, 4)
+    assert [(e.food, e.grams) for e in s.entries] == [("banana", 128.0)]
+
+
+async def test_two_empty_reads_then_the_same_food_is_a_second_item():
+    banana = EntryRead(food="banana", grams=128.0, confidence=0.95)
+    s = Session(FakeVision([banana, UNREADABLE, UNREADABLE, banana]), FakeLLM(), same_again_ms=0)
+    s.set_watching(True)
+    await feed(s, 0, 4)
+    assert [(e.food, e.grams) for e in s.entries] == [("banana", 128.0), ("banana", 128.0)]
