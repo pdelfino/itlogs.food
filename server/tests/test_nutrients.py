@@ -47,7 +47,8 @@ def test_search_finds_plain_cnf_names_and_refuses_containers():
     assert hit is not None and "cantaloupe" in hit.name.lower()  # Melon, cantaloupe, raw
     assert nutrients.search("ceramic bowl") is None
     assert nutrients.search("bowl") is None
-    assert nutrients.search("oil") is None  # one word must head the name
+    assert nutrients.search("spoon") is None  # one word must head the name
+    assert nutrients.canonical("oil") == "olive oil"  # the kitchen default
     assert nutrients.for_grams("cherries", 100) is not None  # plural tried in the singular
 
 

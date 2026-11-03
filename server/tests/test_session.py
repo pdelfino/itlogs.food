@@ -66,7 +66,7 @@ async def test_a_food_name_corrects_the_food():
     await s.on_voice("quinoa", 3000)
     # the spoken "quinoa" lands under its curated name, like "rice" does
     assert (s.entries[0].food, s.entries[0].status) == ("cooked quinoa", "corrected")
-    assert s.entries[0].nutrients is None  # not in the placeholder table
+    assert s.entries[0].nutrients is not None  # the CNF has quinoa; the row follows the name
 
 
 async def test_no_cancels_the_question():

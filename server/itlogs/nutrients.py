@@ -200,6 +200,8 @@ ALIASES = {
     "table salt": "salt",
     "sea salt": "salt",
     "mayo": "mayonnaise",
+    "oil": "olive oil",
+    "cooking oil": "olive oil",
 }
 
 
