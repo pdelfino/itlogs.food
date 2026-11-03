@@ -181,12 +181,22 @@ class MetaParser:
 
 
 def make_reader() -> MetaReader:
-    """ITLOGS_VISION: meta (Muse Spark on the Meta Model API) or local (Glimmer on llama-server)."""
+    """ITLOGS_VISION: meta (Muse Spark on the Meta Model API), baseten (Muse Spark Open on
+    Baseten, the open-weight model on partner inference, #16) or local (Glimmer on llama-server)."""
     if settings.vision == "local":
         return MetaReader(
             settings.llm_local_base,
             settings.llm_local_model,
             settings.llm_local_key,
+            settings.usual_food_list,
+        )
+    if settings.vision == "baseten":
+        if not settings.baseten_api_key:
+            raise RuntimeError("BASETEN_API_KEY (or ITLOGS_BASETEN_API_KEY) must be set")
+        return MetaReader(
+            settings.baseten_base,
+            settings.baseten_model,
+            settings.baseten_api_key,
             settings.usual_food_list,
         )
     if not settings.meta_api_key:

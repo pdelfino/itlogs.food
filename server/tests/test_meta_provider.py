@@ -3,6 +3,7 @@
 import json
 
 import httpx
+import pytest
 
 from itlogs.providers.meta import MetaParser, MetaReader
 
@@ -84,3 +85,19 @@ def test_reader_prompt_tells_containers_from_food():
     from itlogs.providers.meta import ENTRY_SYSTEM
 
     assert "container" in ENTRY_SYSTEM and "name the food" in ENTRY_SYSTEM
+
+
+def test_make_reader_on_baseten_needs_its_key_and_uses_the_open_model(monkeypatch):
+    """#16: ITLOGS_VISION=baseten puts Muse Spark Open (partner inference) behind the same
+    reader; no key, no reader."""
+    from itlogs.config import settings
+    from itlogs.providers.meta import MetaReader, make_reader
+
+    monkeypatch.setattr(settings, "vision", "baseten")
+    monkeypatch.setattr(settings, "baseten_api_key", "")
+    with pytest.raises(RuntimeError, match="BASETEN"):
+        make_reader()
+    monkeypatch.setattr(settings, "baseten_api_key", "k")
+    reader = make_reader()
+    assert isinstance(reader, MetaReader)
+    assert reader.chat.model == settings.baseten_model
