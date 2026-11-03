@@ -103,6 +103,9 @@ final class SessionController {
         reviewing = false
         healthSaved = false
         healthMessage = nil
+        entries = []  // a run is one meal; the review and the Health write cover this run only
+        lastRead = nil
+        question = nil
         Diag.send("start tapped; glasses=\(useGlasses) server=\(serverURL.absoluteString)")
         await client.connect(url: serverURL) { [weak self] msg in
             Task { @MainActor in self?.handle(msg) }
@@ -277,9 +280,15 @@ final class SessionController {
         switch msg.kind {
         case "read": lastRead = msg.read
         case "entry":
-            if let e = msg.entry { entries.append(e) }
+            if let e = msg.entry {
+                if let i = entries.firstIndex(where: { $0.index == e.index }) {
+                    entries[i] = e  // the server corrected a row (same food read again)
+                } else {
+                    entries.append(e)
+                    AudioServicesPlaySystemSound(1057)  // a short tick per new entry
+                }
+            }
             question = nil
-            AudioServicesPlaySystemSound(1057)  // a short tick per logged entry
         case "ask": question = msg.ask
         case "say":
             if let text = msg.say { lastSaid = text; voice.say(text) }

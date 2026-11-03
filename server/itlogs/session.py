@@ -33,6 +33,15 @@ def same_food(a: str, b: str) -> bool:
     return nutrients.canonical(a) == nutrients.canonical(b)
 
 
+def same_item(a: str, b: str) -> bool:
+    """The same thing on the scale under two names: "banana" and "whole banana", "apple" and
+    "red apple". Canonical names equal, or one name's words inside the other's."""
+    if same_food(a, b):
+        return True
+    wa, wb = set(nutrients.canonical(a).split()), set(nutrients.canonical(b).split())
+    return bool(wa) and bool(wb) and (wa <= wb or wb <= wa)
+
+
 @dataclass
 class Session:
     vision: VisionProvider
@@ -54,6 +63,7 @@ class Session:
     _watch_logged: EntryRead | None = None  # what the display showed when last asked
     _said_negative: bool = False  # the tare hint, once per session
     _last_read_thumb: list[int] | None = None  # the scene the reader last saw (weighing mode)
+    _emptied: bool = True  # the scale read empty since the last logged food (a new food can come)
     _ready_said: bool = False  # "Ready" is said on the first frame after Start, not at Start
     max_wait_ms: int = 4000  # weighing mode: read anyway after this long without a still second
     # weighing mode logs on one confident read of a still scene: the model takes 3 to 5 s per read
@@ -171,6 +181,7 @@ class Session:
         if not read.readable:
             # the scale is empty or tared: the next value, even the same one, is a new food
             self._watch_logged = None
+            self._emptied = True
             if read.grams is not None and read.grams < 0 and not self._said_negative:
                 self._said_negative = True
                 hint = "The scale shows a negative number. Lift everything off and tare it."
@@ -182,13 +193,37 @@ class Session:
         agrees_with_prev = prev is not None and prev.readable and self._agree(read, prev)
         if not confident_still and not agrees_with_prev:
             return []  # the display may still be changing; wait for two reads in a row
+        if not self._emptied and self.entries and same_item(read.food, self.entries[-1].food):
+            # the same food, still on the scale, read again with another number or another name
+            # (19:51: "apple 108" then "apple 112", "banana 128" then "whole banana 128"):
+            # this corrects the last row instead of adding one
+            return self._correct_last(read, t_ms)
         self._watch_logged = read
+        self._emptied = False
         if self.ask:
             return self._ask(read, read, t_ms, confirm_only=True)
         assert read.grams is not None
         # quiet: log it, the phone ticks, the list is read back at the end
         reads = [read] if prev is None or not prev.readable else [prev, read]
         return self._log(read.food, read.grams, "auto", reads, t_ms, speak=False)
+
+    def _correct_last(self, read: EntryRead, t_ms: int) -> list[ServerMessage]:
+        last = self.entries[-1]
+        if last.status != "auto" or read.grams is None:
+            return []  # the wearer's word stands; only quiet entries are corrected quietly
+        keep_name = nutrients.lookup(last.food) or not nutrients.lookup(read.food)
+        food = nutrients.canonical(last.food if keep_name else read.food)
+        corrected = last.model_copy(
+            update={
+                "food": food,
+                "grams": read.grams,
+                "reads": [*last.reads, read],
+                "nutrients": nutrients.for_grams(food, read.grams),
+            }
+        )
+        self.entries[-1] = corrected
+        self._watch_logged = read
+        return [ServerMessage(kind="entry", entry=corrected)]  # same index: the phone replaces
 
     def _agree(self, a: EntryRead, b: EntryRead) -> bool:
         return (
@@ -295,6 +330,7 @@ class Session:
             t_ms=t_ms,
         )
         self.entries.append(entry)
+        self._emptied = False
         out = [ServerMessage(kind="entry", entry=entry)]
         if speak:
             line = f"{fmt_grams(grams)} grams of {food}, logged."

@@ -227,3 +227,15 @@ async def test_stop_takes_a_final_look_at_what_is_on_the_scale():
     assert (s.entries[0].food, s.entries[0].status) == ("apple", "auto")
     out = await s.end_session(3100)
     assert said(out) == ["Done. 1 food. apple, 113 grams. 59 calories, 0 grams of protein."]
+
+
+async def test_the_same_food_read_again_corrects_the_row_until_the_scale_empties():
+    apple_108 = EntryRead(food="red apple", grams=108.0, confidence=0.9)
+    reads = [APPLE_113, apple_108, UNREADABLE, APPLE_113]
+    s = Session(FakeVision(reads), FakeLLM())
+    s.set_watching(True)
+    out = await feed(s, 0, 4)
+    entries = [m.entry for m in out if m.kind == "entry"]
+    assert [(e.index, e.grams) for e in entries] == [(1, 113.0), (1, 108.0), (2, 113.0)]
+    assert [(e.food, e.grams) for e in s.entries] == [("apple", 108.0), ("apple", 113.0)]
+    assert len(s.entries[0].reads) == 2

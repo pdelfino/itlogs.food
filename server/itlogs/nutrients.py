@@ -56,6 +56,8 @@ ALIASES = {
     "table salt": "salt",
     "sea salt": "salt",
     "red apple": "apple",
+    "whole apple": "apple",
+    "whole banana": "banana",
     "green apple": "apple",
     "apples": "apple",
     "bananas": "banana",
