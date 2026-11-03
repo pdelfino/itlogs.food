@@ -31,3 +31,5 @@ site/img/candidates/
 
 # the example env file is documentation, not a secret
 !server/.env.example
+
+ios/build-sim/
