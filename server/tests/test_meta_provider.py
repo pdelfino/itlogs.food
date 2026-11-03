@@ -101,3 +101,41 @@ def test_make_reader_on_baseten_needs_its_key_and_uses_the_open_model(monkeypatc
     reader = make_reader()
     assert isinstance(reader, MetaReader)
     assert reader.chat.model == settings.baseten_model
+
+
+async def test_reader_goes_plain_when_the_endpoint_refuses_structured_output():
+    """Baseten's docs: Muse Spark Open has no structured-output mode. The first 400 switches
+    the client to plain mode (schema in the prompt, JSON cut out of the text) and retries."""
+    seen: list = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        seen.append(body)
+        if "response_format" in body:
+            return httpx.Response(400, json={"error": "response_format is not supported"})
+        text = (
+            "Here is the reading:\n```json\n"
+            + json.dumps({"food": "banana", "display_value": 127, "unit": "g", "confidence": 0.9})
+            + "\n```"
+        )
+        return httpx.Response(200, json={"choices": [{"message": {"content": text}}]})
+
+    r = MetaReader("https://x.test/v1", "m", transport=httpx.MockTransport(handler))
+    read = await r.read_entry(b"jpeg")
+    assert (read.food, read.grams) == ("banana", 127.0)
+    assert len(seen) == 2
+    assert "response_format" not in seen[1] and "reasoning_effort" not in seen[1]
+    assert "schema" in seen[1]["messages"][0]["content"]
+    assert r.chat.plain
+    # the second read goes straight to plain: one request, not two
+    await r.read_entry(b"jpeg")
+    assert len(seen) == 3
+
+
+def test_json_object_is_cut_out_of_prose_or_a_fence():
+    from itlogs.providers.chat import json_object
+
+    assert json_object('{"a": 1}') == {"a": 1}
+    assert json_object('Sure.\n```json\n{"a": 1}\n```\nDone.') == {"a": 1}
+    assert json_object("no json here") is None
+    assert json_object("[1, 2]") is None
