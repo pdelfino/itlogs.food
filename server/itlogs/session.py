@@ -357,19 +357,17 @@ class Session:
         return out
 
     def summary(self) -> str:
-        """What the ear hears at the end: every food with its grams, then the totals."""
+        """What the ear hears at the end: the count and the calories. The list itself is on the
+        phone (the review table); reading it out was too much (Pedro, 2026-NOVEMBER-02)."""
         n = len(self.entries)
         if n == 0:
             return "Done. Nothing logged."
-        items = ". ".join(f"{e.food}, {fmt_grams(e.grams)} grams" for e in self.entries)
         known = [e.nutrients for e in self.entries if e.nutrients]
         foods = "food" if n == 1 else "foods"
-        head = f"Done. {n} {foods}. {items}."
         if not known:
-            return head
+            return f"Done. {n} {foods}."
         kcal = round(sum(k.kcal for k in known))
-        protein = round(sum(k.protein_g for k in known))
-        return f"{head} {kcal} calories, {protein} grams of protein."
+        return f"Done. {n} {foods}, {kcal} calories."
 
     async def final_look(self, t_ms: int = 0) -> list[ServerMessage]:
         """At Stop: read whatever is on the scale now, so the last food is never lost to the
