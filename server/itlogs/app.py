@@ -156,7 +156,7 @@ async def ws_session(ws: WebSocket) -> None:
                 if frames == 1 or frames % 100 == 0:
                     print(f"FRAMES {frames} ({len(jpeg)} bytes, t={msg.frame.t_ms} ms)", flush=True)
                 session.observe(jpeg, msg.frame.t_ms)
-                out = []
+                out = session.ready()  # "Ready..." once, on the first frame after Start
                 if thinking is None or thinking.done():
                     start_thinking(session.decide(jpeg, msg.frame.t_ms), msg.frame.t_ms)
                 if recorder and frames % 7 == 1:

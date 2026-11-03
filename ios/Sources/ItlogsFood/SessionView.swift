@@ -29,8 +29,10 @@ struct SessionView: View {
                     }
                     if session.finishing {
                         Text("Finishing the last reading…").foregroundStyle(.orange)
+                    } else if session.running && !session.cameraLive {
+                        Text("Camera starting… wait for \"Ready\" before the first food.").foregroundStyle(.orange)
                     } else if session.watching {
-                        Text("Weighing: watching the scale. Stop to hear the list.").foregroundStyle(.orange)
+                        Text("Watching the scale. Weigh at your pace; Stop to hear the list.").foregroundStyle(.green)
                     }
                     if let q = session.question { Text(q.text).bold() }
                     if !session.lastHeard.isEmpty { Text("Heard: \(session.lastHeard)").foregroundStyle(.secondary) }

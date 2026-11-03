@@ -41,6 +41,9 @@ final class SessionController {
     let stopAfterSeconds: TimeInterval = 3  // only against an accidental tap; the loop no longer needs waiting (#12)
     /// Stop was tapped and the server is finishing the last read before it reads the list back.
     var finishing = false
+    /// The first frame has reached the phone: before this, weighing is pointless (the stream takes
+    /// about six seconds to start; on 2026-NOVEMBER-02 19:12 the foods went on before it did).
+    var cameraLive = false
 
     private let log = Logger(subsystem: "food.itlogs", category: "session")
     private let client = StreamClient()
@@ -61,6 +64,7 @@ final class SessionController {
     func start() async {
         error = nil
         started = Date()
+        cameraLive = false
         Diag.send("start tapped; glasses=\(useGlasses) server=\(serverURL.absoluteString)")
         await client.connect(url: serverURL) { [weak self] msg in
             Task { @MainActor in self?.handle(msg) }
@@ -82,7 +86,8 @@ final class SessionController {
         self.source = source
         do {
             do {
-                try await source.start { [client] jpeg, meta in
+                try await source.start { [weak self, client] jpeg, meta in
+                    Task { @MainActor in self?.cameraLive = true }
                     Task { try? await client.send(frame: jpeg, meta: meta) }
                 }
             } catch let e as NSError where e.domain == "food.itlogs" && e.code == 13 {
@@ -91,7 +96,8 @@ final class SessionController {
                 Diag.send("falling back to the phone camera: \(e.localizedDescription)")
                 source = PhoneCameraSource()
                 self.source = source
-                try await source.start { [client] jpeg, meta in
+                try await source.start { [weak self, client] jpeg, meta in
+                    Task { @MainActor in self?.cameraLive = true }
                     Task { try? await client.send(frame: jpeg, meta: meta) }
                 }
             }
@@ -219,6 +225,7 @@ final class SessionController {
         running = false
         watching = false
         finishing = false
+        cameraLive = false
         startedAt = nil
     }
 

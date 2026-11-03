@@ -54,6 +54,10 @@ class Session:
     _watch_logged: EntryRead | None = None  # what the display showed when last asked
     _said_negative: bool = False  # the tare hint, once per session
     _last_read_thumb: list[int] | None = None  # the scene the reader last saw (weighing mode)
+    _ready_said: bool = False  # "Ready" is said on the first frame after Start, not at Start
+    max_wait_ms: int = 4000  # weighing mode: read anyway after this long without a still second
+    _last_frame_ms: int | None = None
+    _watch_started_ms: int = -1_000_000
 
     # frames
 
@@ -65,6 +69,15 @@ class Session:
     def observe(self, jpeg: bytes, t_ms: int) -> None:
         """Cheap, for every frame: keeps the recent frames and whether the scene is still."""
         self.settle.observe(jpeg, t_ms)
+        self._last_frame_ms = t_ms
+
+    def ready(self) -> list[ServerMessage]:
+        """Said once, on the first frame after Start: the stream takes about six seconds to begin,
+        and on 2026-NOVEMBER-02 19:12 the weighing was done before the camera was on."""
+        if self._ready_said or not self.watching:
+            return []
+        self._ready_said = True
+        return [ServerMessage(kind="say", say="Ready. Put the first food on the scale.")]
 
     async def decide(self, jpeg: bytes, t_ms: int) -> list[ServerMessage]:
         """The model call, when one is due. The app runs this in the background, one at a time,
@@ -80,8 +93,9 @@ class Session:
         if self.watching and self._question is None:
             if t_ms - self._last_watch_ms < self.watch_every_ms:
                 return []
-            if not self.settle.still(t_ms):
-                return []  # a hand, a moving plate: not worth a model call
+            waited = t_ms - max(self._last_watch_ms, self._watch_started_ms)
+            if not self.settle.still(t_ms) and waited < self.max_wait_ms:
+                return []  # a hand, a moving plate: not worth a model call (but never wait forever)
             since = max(self.settle.still_since() or t_ms, t_ms - 1000)
             _, best = self.settle.sharpest(since, t_ms) or (t_ms, jpeg)
             thumb = thumbnail(best)
@@ -127,10 +141,16 @@ class Session:
             self._watch_prev = None
             self._watch_logged = None
             self._last_watch_ms = -1_000_000
-            return [
-                ServerMessage(kind="state", entries=list(self.entries), watching=True),
-                ServerMessage(kind="say", say="Weighing. Put the first food on the scale."),
-            ]
+            self._watch_started_ms = t_ms
+            self._ready_said = False
+            out = [ServerMessage(kind="state", entries=list(self.entries), watching=True)]
+            if self._last_frame_ms is None:
+                out.append(
+                    ServerMessage(kind="say", say="Weighing. One moment, the camera is starting.")
+                )
+            else:
+                out.extend(self.ready())
+            return out
         if not on and self.watching:
             self.watching = False
             self._question = None

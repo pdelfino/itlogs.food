@@ -58,8 +58,8 @@ class Settle:
     that are not images (tests) are still from the start.
     """
 
-    move: float = 6.0
-    still_ms: int = 800
+    move: float = 10.0  # head-worn camera: 18 to 35 while placing food, single digits when looking
+    still_ms: int = 600
     last_diff: float = 0.0  # the last frame-to-frame difference, for tuning `move` on real runs
     _prev: list[int] | None = None
     _still_since_ms: int | None = None
