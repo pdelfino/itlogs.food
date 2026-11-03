@@ -54,6 +54,7 @@ struct ReviewView: View {
                     Text("P protein, C carbs, F fat, in grams for the portion; sodium goes to Health without a column. ? means the food is not in the nutrient table yet; its grams are still logged.")
                 }
                 Section {
+                    if let today = session.healthToday { Text(today).font(.footnote).foregroundStyle(.secondary) }
                     if let msg = session.healthMessage { Text(msg).foregroundStyle(session.healthSaved ? .green : .orange) }
                     Button(session.healthSaved ? "Saved to Apple Health" : "OK, send to Apple Health") {
                         Task { await session.saveToHealth() }
@@ -63,6 +64,7 @@ struct ReviewView: View {
                 }
             }
             .navigationTitle("Check the meal")
+            .task { await session.refreshHealthToday() }
         }
     }
 }

@@ -53,6 +53,15 @@ final class SessionController {
     private let health = Health()
     private let chime = Chime()
 
+    /// The line under the table: what Health holds from this app today (read back on open).
+    var healthToday: String?
+
+    func refreshHealthToday() async {
+        guard Health.available, await health.authorize() else { return }
+        let t = await health.todayFromThisApp()
+        healthToday = "Apple Health today, from this app: \(t.foods) \(t.foods == 1 ? "food" : "foods"), \(Int(t.kcal.rounded())) kcal" + (t.names.isEmpty ? "" : " (\(t.names.joined(separator: ", ")))")
+    }
+
     func saveToHealth() async {
         healthSaving = true
         defer { healthSaving = false }
@@ -64,10 +73,13 @@ final class SessionController {
         do {
             let n = try await health.save(entries)
             healthSaved = n > 0
-            healthMessage = n == entries.count
+            let today = await health.todayFromThisApp()
+            let saved = n == entries.count
                 ? "Saved \(n) \(n == 1 ? "food" : "foods") to Apple Health."
                 : "Saved \(n) of \(entries.count): foods without a nutrient row have nothing to write yet."
-            voice.say(healthMessage ?? "")
+            healthMessage = saved
+            healthToday = "Apple Health today, from this app: \(today.foods) \(today.foods == 1 ? "food" : "foods"), \(Int(today.kcal.rounded())) kcal" + (today.names.isEmpty ? "" : " (\(today.names.joined(separator: ", ")))")
+            voice.say(saved)
         } catch {
             healthMessage = "Apple Health refused: \(error.localizedDescription)"
             Diag.send("health: save threw \(String(describing: error))")
