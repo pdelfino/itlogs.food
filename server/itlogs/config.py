@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     llm_local_model: str = "muse-glimmer"
     llm_local_key: str = ""
     baseten_base: str = "https://inference.baseten.co/v1"
-    baseten_model: str = "meta-models/muse-spark-open-1026"
+    baseten_model: str = "meta-models/muse-spark-open"
     baseten_api_key: str = Field(
         default="", validation_alias=AliasChoices("ITLOGS_BASETEN_API_KEY", "BASETEN_API_KEY")
     )

@@ -50,7 +50,7 @@ Allowed. The Official Rules: the judging criteria "apply only to projects submit
 "AI Nutrition Coach" and "Simple Image Analyzers" are on the guide's anti-project list. itlogs.food is neither if it stays a *hands-free logger*: a wearable sensor that writes down what was weighed. Words to use: log, record, read, weigh, hands-free, check. Words never to use, in code, README, video or Discord: coach, advice, diet plan, what to eat, healthy.
 
 * Models named by the guide
-Meta Model API: Muse Spark series, Muse Wonder, Muse Image, Muse Voice Transcribe, SAM 3.1. Open weights: Muse Glimmer, Muse Spark Open (Baseten id =meta-models/muse-spark-open-1026=, Modal, Fireworks). Here: Muse Spark reads the photo and parses the replies; Muse Voice Transcribe hears the wearer; Muse Glimmer on the Mac is the open-weight reader (=ITLOGS_VISION=local=).
+Meta Model API: Muse Spark series, Muse Wonder, Muse Image, Muse Voice Transcribe, SAM 3.1. Open weights: Muse Glimmer, Muse Spark Open (Baseten id =meta-models/muse-spark-open=, confirmed from the account's model list on 2026-NOVEMBER-03; Modal, Fireworks). Here: Muse Spark reads the photo and parses the replies; Muse Voice Transcribe hears the wearer; Muse Glimmer on the Mac is the open-weight reader (=ITLOGS_VISION=local=).
 
 * What the rules mean for itlogs
 - Pedro keeps the IP. Organizers and partners get a perpetual, irrevocable, non-exclusive, royalty-free license to the submission "for any purpose", and to anything shared during the event (Discord, pitches, feedback): nothing is confidential.

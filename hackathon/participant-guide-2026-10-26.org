@@ -41,7 +41,7 @@ Discord (join link on the details page): #intros, #team-search (max team 4), #qu
 - On-demand sessions: the multimodal intelligence of Muse Spark; building with Muse Spark and Muse Code; the superintelligence blueprint.
 
 * 6. Inference partners ("credits are not guaranteed")
-- *Baseten*: USD 100 plus a 2M TPM rate limit for up to 2,000 participants, reviewed by use case, per individual. Chat completions, reasoning output, vision and audio with Muse Spark Open. For the hackathon use the model id =meta-models/muse-spark-open-1026= (the docs say =muse-spark-open=). Baseten channel on Discord.
+- *Baseten*: USD 100 plus a 2M TPM rate limit for up to 2,000 participants, reviewed by use case, per individual. Chat completions, reasoning output, vision and audio with Muse Spark Open. The guide said to use the model id =meta-models/muse-spark-open-1026=, but the account lists only =meta-models/muse-spark-open= (2026-NOVEMBER-03, the dated id answers 404), so that is the one in config.py. Baseten channel on Discord.
 - *Modal*: USD 100 to the first 1,000 participants, for open-weight models through Endpoints, serverless GPUs, sandboxes, training tools.
 - *Fireworks*: USD 25 to a shortlist of teams, by email.
 
