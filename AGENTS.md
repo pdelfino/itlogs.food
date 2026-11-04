@@ -16,13 +16,13 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 
 | File | What it holds | Start at |
 |---|---|---|
-| `server/itlogs/session.py` | The loop: weighing mode, bowls, wrappers, "log it", voice. One `Session` per socket | `decide`, `_watch`, `_bowl_step`, `identify`, `look_up`, `final_look` |
+| `server/itlogs/session.py` | The loop: weighing mode, bowls, wrappers, "log it", voice. One `Session` per socket | `decide`, `_watch`, `_bowl_step`, `identify`, `look_up`, `look_up_typical`, `final_look` |
 | `server/itlogs/app.py` | FastAPI, `/ws/session`, `/health`, `/log`. Pairs JSON meta with binary frames; at most two reads in flight | `ws_session`, `think` |
 | `server/itlogs/frames.py` | Which frame is worth a model call: stillness and sharpness, pixel math on thumbnails | `Stillness` |
 | `server/itlogs/models.py` | Pydantic types for the wire and the domain | `EntryRead`, `Entry`, `ServerMessage` |
 | `server/itlogs/nutrients.py` | Grams to nutrients from the Canadian Nutrient File: curated map, aliases, careful search | `lookup`, `search` |
 | `server/itlogs/providers/base.py` | The seam: `VisionProvider`, `LLMProvider` | both protocols |
-| `server/itlogs/providers/meta.py` | Reader and parser on any OpenAI-compatible endpoint; prompts and schemas | `ENTRY_SYSTEM`, `read_entry`, `read_addition`, `read_wrapper`, `find_facts`, `make_reader` |
+| `server/itlogs/providers/meta.py` | Reader and parser on any OpenAI-compatible endpoint; prompts and schemas | `ENTRY_SYSTEM`, `read_entry`, `read_addition`, `read_wrapper`, `find_facts`, `find_typical`, `make_reader` |
 | `server/itlogs/providers/chat.py` | One chat client with JSON-schema output and a plain-mode fallback, and the Responses API call with `web_search` | `structured`, `grounded` |
 | `server/itlogs/providers/fake.py` | Deterministic providers for tests and replay | `FakeVision` |
 | `server/itlogs/facts_cache.py` | A product's label once found, kept out of git | `key` |
@@ -63,6 +63,7 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 | A failed name never loses a row | `test_failed_naming_keeps_the_row` |
 | Web numbers that disagree with the wrapper or with themselves are refused | `test_numbers_that_cannot_be_trusted_are_refused` |
 | The protein printed on the wrapper wins | `test_the_protein_printed_on_the_wrapper_wins` |
+| A food with no row and no wrapper gets typical values and its usual name | `test_a_food_with_no_wrapper_gets_typical_values_and_its_usual_name` |
 | A product is searched for only once | `test_the_same_product_is_found_only_once` |
 | How a food was cut does not change its nutrients | `test_how_a_food_was_cut_does_not_change_it` |
 | A refused model call at Stop still sends the final state | `test_a_refused_model_call_at_stop_still_sends_the_final_state` |
@@ -79,7 +80,7 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 | The dates, the author, no media or keys, the licences | `make rules-check` | every line `ok` or `info` |
 | The phone holds no model key and calls no model | `grep -rnE 'MODEL_API_KEY\|api\.meta\.ai\|BASETEN' ios/Sources` | no output |
 | Only standard-mode model ids | `grep -rn 'contributor' server/itlogs` | only the comment that rules them out |
-| The latency figures | `make replay`, from `evals/recorded-latency.json` | 254 timed reads, median 3.0 s, 90th percentile 5.0 s |
+| The latency figures | `make replay`, from `evals/recorded-latency.json` | 263 timed reads, median 3.0 s, 90th percentile 5.0 s |
 | How much was carried from before this repo | `make rules-check` | about 400 lines of nearly 7,000 |
 
 Works on real hardware or with a key only, so a clone cannot prove it: the glasses path, the Apple Health write and the web search. The evidence for those is the demo video and the recorded sessions.

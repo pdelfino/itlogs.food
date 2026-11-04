@@ -6,7 +6,7 @@ Checked against the Official Rules accepted on 2026-OCTOBER-25 and the participa
 * The rules
 | Rule | State | Evidence |
 |------+-------+----------|
-| The project must incorporate Meta's models | Met | Muse Spark 1.3 reads the frames the loop selects, reads wrappers, searches the web for their labels with its =web_search= tool, and parses speech (=server/itlogs/providers/meta.py=). 254 timed reads on real runs in =evals/recorded-runs.org=. Wearables Device Access Toolkit for the camera and speech (=ios/Sources/ItlogsFood/GlassesSource.swift=). The README's Meta tooling table says which tools run in the demo and which do not |
+| The project must incorporate Meta's models | Met | Muse Spark 1.3 reads the frames the loop selects, reads wrappers, searches the web for their labels with its =web_search= tool, and parses speech (=server/itlogs/providers/meta.py=). 263 timed reads on real runs in =evals/recorded-runs.org=. Wearables Device Access Toolkit for the camera and speech (=ios/Sources/ItlogsFood/GlassesSource.swift=). The README's Meta tooling table says which tools run in the demo and which do not |
 | One track, one project; fits a problem statement | Met | Indie track, Build for Your World. A personal daily problem: logging food by hand |
 | Team of at most four | Met | Solo. =make rules-check= shows one git author |
 | Repository public and open source | At submission | This repository, public from submission on, under Apache 2.0 (=LICENSE=). An organizers' announcement calls an open-source repository mandatory |

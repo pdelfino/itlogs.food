@@ -40,7 +40,8 @@ Meta Global AI Developer Hackathon entry, Indie track, problem statement "Build 
 | Any digital scale | **Built for any, proven on one so far** | It reads the display and pairs with nothing, so nothing here is specific to one scale. Every recorded run used the same backlit scale |
 | One row per food | **Works**, and old bugs are pinned | `make replay` on real recorded reads |
 | A dim room | **Fails**: the digits wash out | 102 reads, 1 with a weight ([recorded runs](evals/recorded-runs.org)). The screen and the ear say the display is lost |
-| A bowl, one row per ingredient | **Grams proven on real reads; naming not yet run on a real bowl** | Replay gives 104 g where the app had logged 265 g; `server/tests/test_bowl.py` |
+| A bowl, one row per ingredient | **Grams proven on real reads; one real dish named from speech; a full bowl not yet run** | Replay gives 104 g where the app had logged 265 g. An esfiha on a plate logged 117 g, named from what the wearer said |
+| Foods the table does not know | **Works on a real frame; values are typical, not measured** | Muse Spark's web search took "Brazilian Sijah", a misheard word, plus what the camera saw, and returned "esfiha de carne" with typical values, in 32 s. The grams are the scale's; the macros are as good as the source |
 | Packaged food, read off its wrapper | **Works on real frames** | On a live frame from the glasses, Muse Spark read the brand, the flavour, 40 g and 13 g protein. Its web search then found the label: 160 kcal and 7 g fat in both searches, with carbs at 15 and 17 g (the wrapper says 17), in 32 and 56 s, checked against what the wrapper prints. A product once found is instant |
 | Spoken input | **Heard live, commands not exercised live** | The glasses' recognizer delivered speech in real runs. The parser is tested on mocked responses |
 | "Hey Meta, start" launch | **Built, not working yet** | `VoiceInvocations.swift`; needs a Wearables Developer Center release channel |
@@ -65,7 +66,8 @@ This is the path the app uses from Start to Stop.
 5. **A bowl** (`Session._bowl_step`): once the reader sees a vessel, each rise on the scale is one ingredient, with only the grams it added. A tare keeps the count going. One model call names the ingredient from what was said if that names a food, and otherwise by comparing the bowl before and after (`MetaReader.read_addition`).
 6. **Nutrients** (`nutrients.py`): grams times a per-100 g row from the Canadian Nutrient File (5,690 foods), through a curated map and then a careful name search. An unknown food shows "?" and never gets a guessed row.
 7. **A packaged food** the table does not know (`Session.identify`, `look_up`): one Muse Spark call copies what its wrapper prints, and the row takes that name at once. Then Muse Spark's own `web_search` tool finds the printed nutrition facts, in the background so weighing goes on. The numbers only reach the row if the protein agrees with the wrapper and the calories fit the macros (`row_from_facts`), because a wrong number is worse than "?". A wrapped bar counts as its printed net weight, since the scale also weighs the wrapper. Found products are kept, so the next time is instant (`facts_cache.py`).
-8. **Stop** reads the scene one last time, so the last food is not lost to the reader's latency. The ear says "Check the meal", the phone shows the table, and one tap writes the meal to Apple Health.
+8. **A food with no wrapper and no table row** (`Session.look_up_typical`): the web search gets the name and what the reader called it, works out the usual name, which also corrects a misheard word, and returns typical values per 100 g. The ear says "about". The grams stay the scale's.
+9. **Stop** reads the scene one last time, so the last food is not lost to the reader's latency. The ear says "Check the meal", the phone shows the table, and one tap writes the meal to Apple Health.
 
 There is also an older deliberate trigger, "Log it now", which takes two looks about 1.5 s apart and asks by voice when they disagree (`Session.capture`, `_resolve`, `_ask`). The agreed, confirmed and corrected statuses come from that path. Weighing mode writes `auto`.
 
@@ -73,10 +75,11 @@ There is also an older deliberate trigger, "Log it now", which takes two looks a
 
 | Tool | What it does here | Where | In the demo? |
 |---|---|---|---|
-| Muse Spark 1.3, vision | Names the food and reads a third-party display from a head-worn camera, as structured output | `providers/meta.py`, `MetaReader.read_entry` | **Yes**: 254 timed reads on real runs |
+| Muse Spark 1.3, vision | Names the food and reads a third-party display from a head-worn camera, as structured output | `providers/meta.py`, `MetaReader.read_entry` | **Yes**: 263 timed reads on real runs |
 | Muse Spark 1.3, two images plus speech | Names what was added to a bowl: the wearer's words if useful, else before and after pictures | `MetaReader.read_addition` | Built, not yet run on a real bowl |
 | Muse Spark 1.3, reading a wrapper | Copies brand, flavour, net weight and printed protein from a live glasses frame | `MetaReader.read_wrapper` | **Yes** |
 | Muse Spark 1.3 with `web_search` | Finds a product's printed nutrition facts on the live web, on the Responses API, with the pages it used | `MetaReader.find_facts`, `ChatModel.grounded` | **Yes**: right on the real bar, in 32 and 56 s |
+| Muse Spark 1.3 with `web_search`, typical values | Works out what a food with no row is, from a misheard name and what the camera saw, and finds typical values per 100 g | `MetaReader.find_typical` | **Yes**: "esfiha de carne" from "Brazilian Sijah" |
 | Muse Spark 1.3, text | Turns a spoken sentence into start, stop, log, confirm, correct, cancel or none | `MetaParser.parse_reply` | Runs on whatever the glasses hear; the commands themselves have not run live |
 | Wearables Device Access Toolkit | Registration, device session, camera stream | `GlassesSource.swift` | **Yes** |
 | Toolkit speech (`MWDATSpeech`) | Recognizes speech on the glasses; only text reaches the server | `GlassesSource.swift` | **Yes** |
@@ -123,7 +126,7 @@ Three machines, one WebSocket, one seam. The glasses see and hear, the phone car
 
 ## Evidence
 
-All numbers come from [every recorded session](evals/recorded-runs.org): 24 sessions from 2026-NOVEMBER-02 to 04, on real glasses and one real scale. 19 of them have at least one read. Across them there are 268 reads, 103 with a weight. Muse Spark 1.3 took a median of 3.0 s and a 90th percentile of 5.0 s over 254 timed reads ([the raw timings](evals/recorded-latency.json), which `make replay` also summarizes).
+All numbers come from [every recorded session](evals/recorded-runs.org): 25 sessions from 2026-NOVEMBER-02 to 04, on real glasses and one real scale. 20 of them have at least one read. Across them there are 278 reads, 108 with a weight. Muse Spark 1.3 took a median of 3.0 s and a 90th percentile of 5.0 s over 263 timed reads ([the raw timings](evals/recorded-latency.json), which `make replay` also summarizes).
 
 `make replay` feeds the reads of real sessions to today's logic, with no key, no glasses and no network, and fails on any difference. CI runs it. It tests the decisions made from reads, not the reading itself.
 
@@ -137,7 +140,7 @@ All numbers come from [every recorded session](evals/recorded-runs.org): 24 sess
 | 2026-11-04-080057 | A bowl: each rise is one row, and the total is what the scale showed. Replay does not name the rows, since naming takes a model call | four rows, 265 g | five rows of 16, 14, 16, 50 and 8 g: 104 g |
 | 2026-11-03-215802 | The dim kitchen: 102 reads, 1 weight. Still fails | nothing | nothing |
 
-Tests: 111 server tests (`make test`), plus the iOS tests, on fake providers and mocked HTTP.
+Tests: 119 server tests (`make test`), plus the iOS tests, on fake providers and mocked HTTP.
 
 **Known limits**
 - Dim light is unsolved. In one dim kitchen the digits wash out to a white rectangle on the display. We found no flash or exposure control in the toolkit.
@@ -148,6 +151,7 @@ Tests: 111 server tests (`make test`), plus the iOS tests, on fake providers and
 - The first Start after "Forget and reconnect" can lose voice for that run, because the toolkit's microphone permission fails on the second app switch. The next Start works.
 - Barcodes never decoded from the glasses: on the scale a barcode is about 90 px wide, roughly one pixel per bar. `barcode.py` and `providers/openfoodfacts.py` remain, off by default (`ITLOGS_BARCODE_FRAMES`). Reading the wrapper replaced them.
 - Two web searches for one bar agreed on calories and fat but not on carbs: 15 g and 17 g, where the wrapper says 17. A label found on the web can be slightly off, and the check only covers protein and whether the calories fit. A person checked carbs on the row kept for this bar against the wrapper.
+- Typical values for a dish are an average from a web source, and a home recipe can differ a lot. The first esfiha lookup returned 165 kcal per 100 g from a calorie-estimate site. The grams are exact; those macros are not.
 - A first lookup that has not finished when you tap Stop gets up to 15 s more, then the row keeps its name with "?".
 - There is no history screen and no per-row delete yet. Review sends all rows or none, and a row with no nutrient data shows "?" and is left out of the Health write.
 
