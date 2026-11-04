@@ -40,6 +40,7 @@ final class SessionController {
     /// The socket to the Mac died during a run. Nothing else reaches the screen then: at 09:27 and
     /// 20:33 on 2026-NOVEMBER-03 it said "Watching the scale" until Stop ran out of time.
     var connectionLost = false
+    private var socketGone = false
     /// No frame for `noPictureAfterSeconds`: folded glasses, a lost link, a stream that stopped. The
     /// glasses do not restart a session by themselves (19:26, 2026-NOVEMBER-02, six minutes of "live").
     var noPicture = false
@@ -145,6 +146,7 @@ final class SessionController {
         lastRead = nil
         noDisplayReads = 0
         connectionLost = false
+        socketGone = false
         noPicture = false
         lastFrameAt = nil
         lastSaid = ""
@@ -238,10 +240,12 @@ final class SessionController {
     }
 
     private func socketClosed() {
-        guard running, !connectionLost else { return }
+        socketGone = true
+        // the server closes the socket itself after the final state, so during Stop this is normal
+        guard running, !finishing, !connectionLost else { return }
         connectionLost = true
         Diag.send("socket lost during the run; entries=\(entries.count)")
-        if !finishing { voice.say("Lost the Mac. Tap Stop.") }
+        voice.say("Lost the Mac. Tap Stop.")
     }
 
     private func watchFrames() {
@@ -383,7 +387,7 @@ final class SessionController {
         // up to 30 s: the server can spend 8 s on reads in flight, then a model call on the final
         // look (a real Stop took 7.7 s on 2026-NOVEMBER-03, and 8 s lost the last food). Ends at once
         // when the state arrives or the socket is gone.
-        for _ in 0..<300 where !finalStateArrived && !connectionLost {
+        for _ in 0..<300 where !finalStateArrived && !socketGone {
             try? await Task.sleep(for: .milliseconds(100))
         }
         Diag.send("stop: final state \(finalStateArrived ? "arrived" : "never came") after \(Int(Date().timeIntervalSince(waited) * 1000)) ms; entries=\(entries.count)")
