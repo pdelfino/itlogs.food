@@ -154,15 +154,12 @@
     <section class="gallery wrap">
       <div class="head reveal">
         <p class="eyebrow">In the kitchen</p>
-        <h2>Glasses on. Scale on. That's the setup.</h2>
+        <h2>Glasses. Scale. That's the setup.</h2>
       </div>
-      <!-- STORY: the six-frame strip replaces this bento once site/img/story-1..6.webp exist (hero.py --story). -->
       <div class="bento">
-        <figure class="reveal big"><img src="img/hero.webp" width="1920" height="1280" loading="lazy" alt="A man in Ray-Ban Meta glasses sets a bowl of rice on a kitchen scale; the display is lit."></figure>
-        <figure class="reveal"><img src="img/still.webp" width="1920" height="1280" loading="lazy" alt="Ray-Ban Meta glasses beside a white kitchen scale holding a bowl of oats, and a clementine."></figure>
+        <figure class="reveal big"><img src="img/real-setup.jpg" width="1600" height="1067" loading="lazy" alt="Ray-Ban Meta glasses and their case on a glass table, beside a white digital kitchen scale with a banana on it and an apple behind."></figure>
         <figure class="reveal quote"><blockquote>“Every other health stream fills itself: the ring, the watch, the body scale. Food was the one log still typed by hand. The typing is what kills the habit.”</blockquote><figcaption>Why this exists</figcaption></figure>
       </div>
-      <p class="fine reveal">Pictures generated with Muse Image, Meta's image model.</p>
     </section>
 
     <section class="built wrap" id="built">
@@ -174,7 +171,6 @@
         <div class="chip reveal"><b>Ray-Ban Meta</b><span>The glasses, through the Wearables Device Access Toolkit: the camera stream, and speech recognized on the glasses.</span></div>
         <div class="chip reveal"><b>Muse Spark</b><span>Reads the frame: the food, the number on the display, and how sure it is, as structured output. For a packaged food, it reads the wrapper, then its web search finds the printed numbers.</span></div>
         <div class="chip reveal"><b>Muse Voice Transcribe</b><span>The fallback for speech when the glasses are not recognizing it. Realtime, 24 kHz.</span></div>
-        <div class="chip reveal"><b>Muse Image</b><span>Made the kitchen pictures on this page from a text prompt and one reference frame.</span></div>
         <div class="chip reveal"><b>Muse Spark Open</b><span>The open-weight path: the same reader on Baseten, one setting away. It read the apple right at 20 s a read, too slow for live use, so Muse Spark runs the demo.</span></div>
         <div class="chip reveal"><b>FastAPI + Swift</b><span>A thin phone client streams frames up a WebSocket; one Python loop does the rest. Open source under Apache 2.0.</span></div>
       </div>

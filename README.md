@@ -87,9 +87,8 @@ There is also an older deliberate trigger, "Log it now", which takes two looks a
 | Muse Spark Open on Baseten | The same reader on open weights, one environment variable away (`ITLOGS_VISION=baseten`) | `make_reader` | Ran live: apple 112 g at 0.95 confidence, at 20 to 24 s per read. Too slow for live use |
 | Muse Glimmer on llama-server | The same reader on this Mac (`ITLOGS_VISION=local`) | `make_reader` | Wired, not measured |
 | Muse Voice Transcribe | Server-side speech, used only when the glasses' recognizer is unavailable | `asr.py` | Fallback, not in the demo |
-| Muse Image | The pictures on the site | `site/tools/hero.py` | Site only |
 
-Not used: SAM 3.1, Muse Wonder, the toolkit's motion capability. No model is trained here.
+Not used: SAM 3.1, Muse Wonder, Muse Image, the toolkit's motion capability. No model is trained here.
 
 ## Architecture
 
