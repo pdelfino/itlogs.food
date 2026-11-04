@@ -6,12 +6,16 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from itlogs.models import EntryRead, Reply
+from itlogs.models import Addition, EntryRead, Reply
 
 
 class VisionProvider(Protocol):
     async def read_entry(self, jpeg: bytes) -> EntryRead:
         """Name the food on the scale and read the number on its display, from one frame."""
+        ...
+
+    async def read_addition(self, before: bytes | None, after: bytes, speech: str) -> Addition:
+        """Name what was added to a bowl: from the speech if it names a food, else the images."""
         ...
 
 

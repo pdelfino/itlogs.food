@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from itlogs.models import EntryRead, Reply
+from itlogs.models import Addition, EntryRead, Reply
 
 WORD_NUMBERS = {
     "zero": 0,
@@ -28,11 +28,17 @@ class FakeVision:
         default = EntryRead(food="cooked white rice", grams=87.0, confidence=0.9)
         self.reads = list(reads or [default])
         self.calls = 0
+        self.additions: list[Addition] = []
+        self.addition_calls: list[tuple[bytes | None, bytes, str]] = []
 
     async def read_entry(self, jpeg: bytes) -> EntryRead:
         read = self.reads[min(self.calls, len(self.reads) - 1)]
         self.calls += 1
         return read
+
+    async def read_addition(self, before: bytes | None, after: bytes, speech: str) -> Addition:
+        self.addition_calls.append((before, after, speech))
+        return self.additions.pop(0) if self.additions else Addition()
 
 
 class FakeLLM:

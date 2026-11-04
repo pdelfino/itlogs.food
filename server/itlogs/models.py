@@ -69,12 +69,22 @@ class EntryRead(BaseModel):
     grams: float | None = Field(default=None, description="the display, converted to grams")
     confidence: float = Field(ge=0, le=1)
     raw: str | None = Field(default=None, description="what the model said, e.g. '113 unknown'")
+    container: bool = Field(default=False, description="the food sits in a bowl, plate or cup")
 
     @property
     def readable(self) -> bool:
         # 0 is an empty or tared scale; a negative number is a scale tared with food on it
         # (2026-NOVEMBER-02 18:36, the apple as the tare): neither is a weight to log
         return self.food != "none" and self.grams is not None and self.grams > 0
+
+
+class Addition(BaseModel):
+    """What went into a bowl between two looks (#22). ``source`` says what named it: speech when
+    the wearer said something useful, image when the two pictures did, none when neither did."""
+
+    food: str = "unknown"
+    source: Literal["speech", "image", "none"] = "none"
+    confidence: float = Field(default=0.0, ge=0, le=1)
 
 
 class Nutrients(BaseModel):

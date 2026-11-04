@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     # the reader (food + display): meta (Muse Spark) or local (Muse Glimmer on llama-server)
     vision: str = "meta"
     vision_model: str = "muse-spark-1.3"
+    bowl: bool = True  # ITLOGS_BOWL=0: bowls take the bare-food path (#22)
     # the reply parser: meta (Muse Spark), baseten (Muse Spark Open), local (llama-server)
     llm: str = "meta"
     llm_local_base: str = "http://127.0.0.1:8080/v1"

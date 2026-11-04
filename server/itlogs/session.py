@@ -20,8 +20,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from itlogs import nutrients
+from itlogs.config import settings
 from itlogs.frames import Settle, difference, thumbnail
-from itlogs.models import Entry, EntryRead, Question, Reply, ServerMessage
+from itlogs.models import Addition, Entry, EntryRead, Question, Reply, ServerMessage
 from itlogs.providers.base import LLMProvider, VisionProvider
 from itlogs.providers.openfoodfacts import Product
 
@@ -89,6 +90,94 @@ class Session:
     _product_ms: int = 0
     _last_product: Product | None = None
     product_ttl_ms: int = 60_000  # a scan nobody weighs must not name a food much later
+
+    # a bowl being built (#22): each rise on the scale is the next ingredient
+    _bowl_active: bool = False
+    _bowl_base: float = 0.0  # the last settled weight
+    _bowl_frame: bytes | None = None  # the picture at that weight
+    _bowl_last: float | None = None  # the newest weight, until a second read agrees
+    _bowl_last_frame: bytes | None = None
+    _bowl_rows: int = 0
+    _bowl_t: int = -1
+    _heard: list[str] = field(default_factory=list)  # said since the last bowl row
+
+    async def _bowl_step(
+        self, read: EntryRead, frame: bytes, t_ms: int, final: bool = False
+    ) -> list[ServerMessage] | None:
+        """None: not a bowl, the bare-food path decides and nothing here changed. Starts on a read
+        that sees a vessel, ends when the scale is empty. Two reads must agree on the grams, since
+        the display wobbled 59 to 66 g on real reads (2026-NOVEMBER-04 08:01); a tare or Stop
+        commits what has not settled, so a quick tare loses nothing."""
+        if not settings.bowl or read.grams is None:
+            return None
+        if read.grams > 0 and read.container:
+            self._bowl_active = True
+        if not self._bowl_active:
+            if read.grams == 0:
+                self._bowl_frame = frame  # the picture a first rise is compared with
+            return None
+        if t_ms < self._bowl_t:
+            return []  # an older read that finished late
+        self._bowl_t = t_ms
+        self._no_display_reads = 0
+        tol = self.grams_tolerance_g
+        g = read.grams
+        if g <= 0:
+            last, last_frame, base, before = (
+                self._bowl_last,
+                self._bowl_last_frame,
+                self._bowl_base,
+                self._bowl_frame,
+            )
+            self._bowl_base, self._bowl_frame = 0.0, frame
+            self._bowl_last, self._bowl_last_frame = None, None
+            if read.food == "none" and not read.container:
+                self._bowl_active, self._bowl_rows = False, 0
+            out: list[ServerMessage] = []
+            if last is not None and last - base > tol:
+                out = await self._bowl_add(last - base, before, last_frame or frame, read, t_ms)
+            return [*out, *self._watch(read, t_ms)]
+        if read.food == "none" and read.container and self._bowl_rows == 0:
+            self._bowl_base, self._bowl_frame = g, frame  # the empty bowl: where the rises start
+            self._bowl_last, self._bowl_last_frame = None, None
+            return []
+        settled = final or (self._bowl_last is not None and abs(g - self._bowl_last) <= tol)
+        if not settled:
+            self._bowl_last, self._bowl_last_frame = g, frame
+            return []
+        self._bowl_last, self._bowl_last_frame = None, None
+        rise, before = g - self._bowl_base, self._bowl_frame
+        self._bowl_frame = frame
+        if abs(rise) <= tol:
+            return []
+        # the state moves before the model call: a read landing during it must not count this twice
+        self._bowl_base = g
+        if rise < 0:
+            return []  # something came out; rows already logged stand
+        return await self._bowl_add(rise, before, frame, read, t_ms)
+
+    async def _bowl_add(
+        self, grams: float, before: bytes | None, after: bytes, read: EntryRead, t_ms: int
+    ) -> list[ServerMessage]:
+        speech = " ".join(self._heard)
+        self._heard.clear()
+        self._bowl_rows += 1
+        try:
+            add = await self.vision.read_addition(before, after, speech)
+        except Exception as e:  # the grams are good; a failed name must not lose the row
+            print(f"ADDITION failed: {e!r}", flush=True)
+            add = Addition()
+        name = add.food
+        if name in ("unknown", "none", ""):
+            name = read.food if read.food != "none" else "added food"
+        note = EntryRead(
+            food=name,
+            grams=grams,
+            confidence=add.confidence,
+            raw=f"bowl {add.source}; display {read.grams}; said {speech!r}",
+            container=True,
+        )
+        return self._log(name, grams, "auto", [read, note], t_ms, speak=False)
 
     # a barcode
 
@@ -187,7 +276,9 @@ class Session:
             self._last_read_thumb = thumb
             self._last_read_still = self.settle.still(t_ms)
             read = await self.vision.read_entry(best)
-            return [ServerMessage(kind="read", read=read), *self._watch(read, t_ms)]
+            bowl = await self._bowl_step(read, best, t_ms)
+            rest = self._watch(read, t_ms) if bowl is None else bowl
+            return [ServerMessage(kind="read", read=read), *rest]
         return []
 
     # the trigger
@@ -345,6 +436,7 @@ class Session:
     # voice
 
     async def on_voice(self, text: str, t_ms: int = 0) -> list[ServerMessage]:
+        self._heard = [*self._heard, text][-6:]  # what the next bowl row may be named from
         context = self._question[0].text if self._question else ""
         reply = await self.llm.parse_reply(text, context)
         if reply.action == "start":
@@ -480,7 +572,10 @@ class Session:
         self._last_read_still = True  # the wearer is done moving; one confident read is enough
         self._last_hint_ms = t_ms or latest_ms  # no instruction once the wearer pressed Stop
         read = await self.vision.read_entry(best)
-        return [ServerMessage(kind="read", read=read), *self._watch(read, t_ms or latest_ms)]
+        at = t_ms or latest_ms
+        bowl = await self._bowl_step(read, best, at, final=True)
+        rest = self._watch(read, at) if bowl is None else bowl
+        return [ServerMessage(kind="read", read=read), *rest]
 
     async def end_session(self, t_ms: int = 0) -> list[ServerMessage]:
         self._first = None

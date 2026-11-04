@@ -94,13 +94,14 @@ class ChatModel:
         system: str,
         user: str,
         schema: dict,
-        jpeg: bytes | None = None,
+        jpeg: bytes | list[bytes] | None = None,
         max_tokens: int = 1500,
     ) -> dict | None:
         """One call, one JSON object back (None when the model returned nothing usable)."""
         content: list[dict] = [{"type": "text", "text": user}]
-        if jpeg is not None:
-            content.append({"type": "image_url", "image_url": {"url": data_url(jpeg)}})
+        images = [jpeg] if isinstance(jpeg, bytes) else (jpeg or [])
+        for image in images:
+            content.append({"type": "image_url", "image_url": {"url": data_url(image)}})
         t0 = time.perf_counter()
         r = await self._http.post(
             "/chat/completions", json=self._body(system, content, schema, max_tokens)

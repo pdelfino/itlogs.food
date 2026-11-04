@@ -17,7 +17,7 @@ import httpx
 from PIL import Image
 
 from itlogs.config import settings
-from itlogs.models import EntryRead, Reply
+from itlogs.models import Addition, EntryRead, Reply
 from itlogs.providers.chat import ChatModel
 
 ENTRY_SCHEMA = {
@@ -29,8 +29,9 @@ ENTRY_SCHEMA = {
             "display_value": {"type": ["number", "null"]},
             "unit": {"type": "string", "enum": ["g", "kg", "oz", "lb", "ml", "unknown"]},
             "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+            "container": {"type": "boolean"},
         },
-        "required": ["food", "display_value", "unit", "confidence"],
+        "required": ["food", "display_value", "unit", "confidence", "container"],
     },
 }
 
@@ -44,7 +45,8 @@ ENTRY_SYSTEM = (
     "is not readable (glare, out of frame, blurred, mid-change), display_value is null and "
     "confidence is 0. "
     'A plate, bowl, cup or container with nothing in it is "none": the container is never the '
-    "food; when it holds food, name the food. "
+    "food; when it holds food, name the food. container is true when a bowl, plate, cup or other "
+    "vessel sits on the scale, and false when the food sits directly on it. "
     "Never guess a weight from the look of the food. Answer only with the JSON object."
 )
 
@@ -99,6 +101,29 @@ def shrink(jpeg: bytes) -> bytes:
     return out.getvalue()
 
 
+ADDITION_SCHEMA = {
+    "name": "addition",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "food": {"type": "string"},
+            "source": {"type": "string", "enum": ["speech", "image", "none"]},
+            "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        },
+        "required": ["food", "source", "confidence"],
+    },
+}
+
+ADDITION_SYSTEM = (
+    "A person is building a bowl of food on a kitchen scale, one ingredient at a time, wearing a "
+    "head-worn camera. Name the one ingredient just added, in one to three plain lowercase words. "
+    "If what the person said names a food, use that name and source is speech. Speech may be empty "
+    "or about something else; then ignore it. Otherwise compare the photos, name what is new in "
+    "the bowl, and source is image. Jars and packages beside the scale are not in the bowl. If you "
+    "cannot tell, food is unknown and source is none. Answer only with the JSON object."
+)
+
+
 class MetaReader:
     """VisionProvider on any OpenAI-compatible vision endpoint (Muse Spark or Muse Glimmer)."""
 
@@ -139,7 +164,23 @@ class MetaReader:
             grams=grams,
             confidence=min(1.0, max(0.0, float(d.get("confidence", 0)))),
             raw=raw,
+            container=bool(d.get("container", False)),
         )
+
+    async def read_addition(self, before: bytes | None, after: bytes, speech: str) -> Addition:
+        """One call for #22: the speech if it names a food, otherwise the two pictures."""
+        said = speech.strip() or "(nothing)"
+        images = [shrink(before), shrink(after)] if before else [shrink(after)]
+        which = "The first photo is BEFORE, the second is AFTER." if before else "One photo: AFTER."
+        user = f"{which} What the person said meanwhile: {said}"
+        d = await self.chat.structured(ADDITION_SYSTEM, user, ADDITION_SCHEMA, images)
+        if not d:
+            return Addition()
+        food = (d.get("food") or "unknown").strip().lower() or "unknown"
+        source = d.get("source") if d.get("source") in ("speech", "image") else "none"
+        conf = min(1.0, max(0.0, float(d.get("confidence", 0) or 0)))
+        print(f"MODEL addition={food!r} source={source} conf={conf} said={said!r}", flush=True)
+        return Addition(food=food, source=source, confidence=conf)
 
     async def aclose(self) -> None:
         await self.chat.aclose()

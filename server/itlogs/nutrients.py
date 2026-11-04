@@ -142,6 +142,9 @@ ALIASES = {
     "spaghetti": "cooked pasta",
     "rolled oats": "oats",
     "oatmeal": "oats",
+    # plain "cashews" matched the CNF's cashew drink, 23 kcal per 100 g (2026-NOVEMBER-04)
+    "cashew": "cashew nuts",
+    "cashews": "cashew nuts",
     "porridge": "cooked oatmeal",
     "bread": "white bread",
     "chicken": "chicken breast",

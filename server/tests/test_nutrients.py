@@ -69,3 +69,19 @@ def test_packaged_names_get_no_generic_row():
     assert n.lookup("granola bar") is None
     assert n.for_grams("chips", 30) is None
     assert n.lookup("banana") is not None  # the table still answers for real foods
+
+
+def test_nuts_of_a_real_bowl_get_nut_rows():
+    """Plain "cashews" matched a cashew drink at 23 kcal per 100 g."""
+    from itlogs import nutrients as n
+
+    for food, low, high in [
+        ("cashews", 500, 620),
+        ("cashew", 500, 620),
+        ("macadamia", 650, 780),
+        ("pumpkin seeds", 500, 620),
+        ("walnuts", 600, 700),
+        ("almonds", 550, 650),
+    ]:
+        row = n.lookup(food)
+        assert row is not None and low <= row[0] <= high, (food, row)
