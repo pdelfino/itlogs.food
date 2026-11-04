@@ -1,5 +1,7 @@
 # itlogs.food
 
+**Site:** https://www.itlogs.food · **Demo, 2:50:** https://www.youtube.com/watch?v=JwRrb7FgCuk
+
 **The pain:** logging food means typing every meal, and the typing kills the habit. Photo apps skip the typing but guess the portion: four popular ones logged calories and fat about one-third too low across about 100 meals ([study led by an NIH fellow, presented at the American Society for Nutrition's annual meeting](https://www.westnewsmagazine.com/health/ai-calorie-tracking-apps-may-be-inaccurate-tests-find/article_fd5c470b-6cc5-5240-bdaf-c38366e01239.html)).
 
 **The fix:** wear Ray-Ban Meta glasses and put the food on any digital scale. The glasses read the grams off the display, Muse Spark names the food, and the meal goes to Apple Health with its calories and macros. No typing, hands free, nothing to pair with the scale.
@@ -12,7 +14,7 @@
 
 *A real frame from the glasses during a run, cropped. The app and the scale both say 112 g.*
 
-Meta Global AI Developer Hackathon entry, Indie track, problem statement "Build for Your World". Site: https://itlogs.food
+Meta Global AI Developer Hackathon entry, Indie track, problem statement "Build for Your World".
 
 ![CI](https://github.com/pdelfino/itlogs.food/actions/workflows/ci.yml/badge.svg)
 
