@@ -75,7 +75,7 @@ There is also an older deliberate trigger, "Log it now", which takes two looks a
 
 | Tool | What it does here | Where | In the demo? |
 |---|---|---|---|
-| Muse Spark 1.3, vision | Names the food and reads a third-party display from a head-worn camera, as structured output | `providers/meta.py`, `MetaReader.read_entry` | **Yes**: 263 timed reads on real runs |
+| Muse Spark 1.3, vision | Names the food and reads a third-party display from a head-worn camera, as structured output | `providers/meta.py`, `MetaReader.read_entry` | **Yes**: 294 timed reads on real runs |
 | Muse Spark 1.3, two images plus speech | Names what was added to a bowl: the wearer's words if useful, else before and after pictures | `MetaReader.read_addition` | Built, not yet run on a real bowl |
 | Muse Spark 1.3, reading a wrapper | Copies brand, flavour, net weight and printed protein from a live glasses frame | `MetaReader.read_wrapper` | **Yes** |
 | Muse Spark 1.3 with `web_search` | Finds a product's printed nutrition facts on the live web, on the Responses API, with the pages it used | `MetaReader.find_facts`, `ChatModel.grounded` | **Yes**: right on the real bar, in 32 and 56 s |
@@ -125,7 +125,7 @@ Three machines, one WebSocket, one seam. The glasses see and hear, the phone car
 
 ## Evidence
 
-All numbers come from [every recorded session](evals/recorded-runs.org): 25 sessions from 2026-NOVEMBER-02 to 04, on real glasses and one real scale. 20 of them have at least one read. Across them there are 278 reads, 108 with a weight. Muse Spark 1.3 took a median of 3.0 s and a 90th percentile of 5.0 s over 263 timed reads ([the raw timings](evals/recorded-latency.json), which `make replay` also summarizes).
+All numbers come from [every recorded session](evals/recorded-runs.org): 27 sessions from 2026-NOVEMBER-02 to 04, on real glasses and one real scale. 22 of them have at least one read. Across them there are 311 reads, 125 with a weight. Muse Spark 1.3 took a median of 3.0 s and a 90th percentile of 5.0 s over 294 timed reads ([the raw timings](evals/recorded-latency.json), which `make replay` also summarizes). The run in the demo video is session `2026-11-04-164307`, and its esfiha is `2026-11-04-135208`.
 
 `make replay` feeds the reads of real sessions to today's logic, with no key, no glasses and no network, and fails on any difference. CI runs it. It tests the decisions made from reads, not the reading itself.
 
@@ -139,7 +139,7 @@ All numbers come from [every recorded session](evals/recorded-runs.org): 25 sess
 | 2026-11-04-080057 | A bowl: each rise is one row, and the total is what the scale showed. Replay does not name the rows, since naming takes a model call | four rows, 265 g | five rows of 16, 14, 16, 50 and 8 g: 104 g |
 | 2026-11-03-215802 | The dim kitchen: 102 reads, 1 weight. Still fails | nothing | nothing |
 
-Tests: 119 server tests (`make test`), plus the iOS tests, on fake providers and mocked HTTP.
+Tests: 121 server tests (`make test`), plus the iOS tests, on fake providers and mocked HTTP.
 
 **Known limits**
 - Dim light is unsolved. In one dim kitchen the digits wash out to a white rectangle on the display. We found no flash or exposure control in the toolkit.

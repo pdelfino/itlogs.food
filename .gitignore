@@ -43,3 +43,7 @@ server/.cache/
 
 # Pedro's script for the video
 demo-pitch*
+
+# Emacs lock and autosave files
+\#*#
+.#*

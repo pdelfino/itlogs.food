@@ -82,7 +82,7 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 | The dates, the author, no media or keys, the licences | `make rules-check` | every line `ok` or `info` |
 | The phone holds no model key and calls no model | `grep -rnE 'MODEL_API_KEY\|api\.meta\.ai\|BASETEN' ios/Sources` | no output |
 | Only standard-mode model ids | `grep -rn 'contributor' server/itlogs` | only the comment that rules them out |
-| The latency figures | `make replay`, from `evals/recorded-latency.json` | 263 timed reads, median 3.0 s, 90th percentile 5.0 s |
+| The latency figures | `make replay`, from `evals/recorded-latency.json` | 294 timed reads, median 3.0 s, 90th percentile 5.0 s |
 | How much was carried from before this repo | `make rules-check` | about 400 lines of nearly 7,000 |
 
 Works on real hardware or with a key only, so a clone cannot prove it: the glasses path, the Apple Health write and the web search. The evidence for those is the demo video and the recorded sessions.
