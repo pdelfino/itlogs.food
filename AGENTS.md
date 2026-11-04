@@ -88,4 +88,4 @@ Model training or recalibration. A history screen. Per-row delete on the review 
 - A change to what `_watch` or `_bowl_step` logs shows up as a `DIFF` in replay. If the new rows are right, update `expect_now` in that trace and say why in the commit.
 - Keep `models.py` and `Protocol.swift` in step: the phone decodes strictly.
 - Models are reached only through `providers/`. Nothing else knows an endpoint.
-- Do not add a recommendation path, and never commit photos, recordings or keys. The one exception is `site/img/real-frame.jpg`, a single frame approved by hand.
+- Do not add a recommendation path, and never commit photos, recordings or keys. The one exception is a single frame approved by hand: `site/img/real-frame.jpg` and its link-preview crop `site/img/og-real-frame.jpg`.
