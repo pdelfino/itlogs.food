@@ -291,6 +291,11 @@ def for_grams(food: str, grams: float) -> Nutrients | None:
     row = lookup(food)
     if row is None:
         return None
+    return scale(row, grams)
+
+
+def scale(row: Row, grams: float) -> Nutrients:
+    """A per-100 g row (the CNF's or a product label's) at the grams on the scale."""
     k = grams / 100.0
     kcal, protein, carbs, fat, fiber, sodium = row
     return Nutrients(

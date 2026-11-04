@@ -28,13 +28,19 @@ struct WatchMeta: Codable, Sendable {
     var ask: Bool = false
 }
 
+struct BarcodeMeta: Codable, Sendable {
+    var t_ms: Int
+    var code: String
+}
+
 struct ClientMessage: Codable, Sendable {
-    var kind: String  // frame | audio | voice | capture | watch | end_session
+    var kind: String  // frame | audio | voice | capture | watch | barcode | end_session
     var frame: FrameMeta? = nil
     var audio: AudioMeta? = nil
     var voice: VoiceText? = nil
     var capture: CaptureMeta? = nil
     var watch: WatchMeta? = nil
+    var barcode: BarcodeMeta? = nil
 }
 
 struct EntryRead: Codable, Sendable, Equatable {
@@ -60,6 +66,7 @@ struct Entry: Codable, Sendable, Equatable, Identifiable {
     var reads: [EntryRead] = []
     var nutrients: Nutrients?
     var t_ms: Int
+    var product: String? = nil  // the barcode the name and nutrients came from (#13)
     var id: Int { index }
 }
 

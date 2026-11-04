@@ -23,6 +23,7 @@ from itlogs.asr import Transcriber, make_transcriber
 from itlogs.config import settings
 from itlogs.models import ClientMessage, ServerMessage
 from itlogs.providers import make_providers
+from itlogs.providers.openfoodfacts import lookup as lookup_product
 from itlogs.record import Recorder
 from itlogs.session import Session
 
@@ -260,6 +261,20 @@ async def ws_session(ws: WebSocket) -> None:
                 out = []
             elif msg.kind == "watch" and msg.watch:
                 out = session.set_watching(msg.watch.on, msg.watch.t_ms, ask=msg.watch.ask)
+            elif msg.kind == "barcode" and msg.barcode:
+                code = msg.barcode.code
+                product = await lookup_product(code)
+                print(f"BARCODE {code} -> {product.name if product else 'unknown'}", flush=True)
+                if recorder:
+                    recorder.event(
+                        "barcode",
+                        {
+                            "t_ms": msg.barcode.t_ms,
+                            "code": code,
+                            "product": product.name if product else None,
+                        },
+                    )
+                out = session.set_product(product, code)
             else:
                 if transcriber is not None:
                     await transcriber.close()

@@ -45,13 +45,21 @@ class WatchMeta(BaseModel):
     ask: bool = False
 
 
+class BarcodeMeta(BaseModel):
+    """A barcode the phone decoded (#13): the product it names is the next food on the scale."""
+
+    t_ms: int
+    code: str
+
+
 class ClientMessage(BaseModel):
-    kind: Literal["frame", "audio", "voice", "capture", "watch", "end_session"]
+    kind: Literal["frame", "audio", "voice", "capture", "watch", "barcode", "end_session"]
     frame: FrameMeta | None = None
     audio: AudioMeta | None = None
     voice: VoiceText | None = None  # text recognized on the phone (fallback path)
     capture: CaptureMeta | None = None
     watch: WatchMeta | None = None
+    barcode: BarcodeMeta | None = None
 
 
 class EntryRead(BaseModel):
@@ -94,6 +102,9 @@ class Entry(BaseModel):
     reads: list[EntryRead] = Field(default_factory=list)
     nutrients: Nutrients | None = None
     t_ms: int
+    product: str | None = Field(
+        default=None, description="the barcode (EAN) the name and nutrients came from (#13)"
+    )
 
 
 class Question(BaseModel):

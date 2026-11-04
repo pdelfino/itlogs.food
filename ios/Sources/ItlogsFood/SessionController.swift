@@ -216,6 +216,27 @@ final class SessionController {
     }
 
     /// The deliberate trigger: read the scale now (in stills mode, take a still first).
+    /// The phone read a barcode (#13): the server names the product and holds it for the next
+    /// food on the scale.
+    func scanned(_ code: String) {
+        lastSaid = "Looking up the barcode…"
+        Task { try? await client.send(barcode: code, tMs: nowMs()) }
+    }
+
+    /// The previous meal is still on the screen after Stop; Clear empties it without starting.
+    func clear() {
+        guard !running && !starting else { return }
+        Diag.send("clear tapped; entries=\(entries.count)")
+        entries = []
+        lastRead = nil
+        question = nil
+        lastHeard = ""
+        lastSaid = ""
+        error = nil
+        healthSaved = false
+        healthMessage = nil
+    }
+
     func capture() {
         (source as? GlassesSource)?.takePhoto()
         Task { try? await client.capture(tMs: nowMs()) }

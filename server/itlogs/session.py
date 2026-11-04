@@ -23,6 +23,7 @@ from itlogs import nutrients
 from itlogs.frames import Settle, difference, thumbnail
 from itlogs.models import Entry, EntryRead, Question, Reply, ServerMessage
 from itlogs.providers.base import LLMProvider, VisionProvider
+from itlogs.providers.openfoodfacts import Product
 
 
 def fmt_grams(g: float) -> str:
@@ -75,6 +76,21 @@ class Session:
     _last_read_still: bool = False
     _last_frame_ms: int | None = None
     _watch_started_ms: int = -1_000_000
+    # a scanned product (#13): names the next food and brings the label's nutrients; the reads
+    # then only have to agree on the grams. _last_product keeps the row for a quiet correction.
+    _product: Product | None = None
+    _last_product: Product | None = None
+
+    # a barcode
+
+    def set_product(self, product: Product | None, code: str = "") -> list[ServerMessage]:
+        """The phone decoded a barcode. Known: the product is the next food on the scale.
+        Unknown: say so; the scale and the reader go on as usual."""
+        if product is None:
+            return [ServerMessage(kind="say", say="I don't know that barcode.")]
+        self._product = product
+        self._emptied = True  # the product is a new food even if the scale never read empty
+        return [ServerMessage(kind="say", say=f"{product.name}. Put it on the scale.")]
 
     # frames
 
@@ -230,14 +246,20 @@ class Session:
         last = self.entries[-1]
         if last.status != "auto" or read.grams is None:
             return []  # the wearer's word stands; only quiet entries are corrected quietly
-        keep_name = nutrients.lookup(last.food) or not nutrients.lookup(read.food)
-        food = nutrients.canonical(last.food if keep_name else read.food)
+        if last.product and self._last_product is not None:
+            # a scanned product keeps its name and its label's row, at the new grams
+            food = last.food
+            row = nutrients.scale(self._last_product.per100g, read.grams)
+        else:
+            keep_name = nutrients.lookup(last.food) or not nutrients.lookup(read.food)
+            food = nutrients.canonical(last.food if keep_name else read.food)
+            row = nutrients.for_grams(food, read.grams)
         corrected = last.model_copy(
             update={
                 "food": food,
                 "grams": read.grams,
                 "reads": [*last.reads, read],
-                "nutrients": nutrients.for_grams(food, read.grams),
+                "nutrients": row,
             }
         )
         self.entries[-1] = corrected
@@ -245,8 +267,10 @@ class Session:
         return [ServerMessage(kind="entry", entry=corrected)]  # same index: the phone replaces
 
     def _agree(self, a: EntryRead, b: EntryRead) -> bool:
+        # with a scanned product the name is known: the reads only have to agree on the grams
+        # (a wrapper read as "protein bar" then "granola bar", 2026-NOVEMBER-03 21:09)
         return (
-            same_food(a.food, b.food)
+            (self._product is not None or same_food(a.food, b.food))
             and a.grams is not None
             and b.grams is not None
             and abs(a.grams - b.grams) <= self.grams_tolerance_g
@@ -338,15 +362,23 @@ class Session:
         t_ms: int,
         speak: bool = True,
     ) -> list[ServerMessage]:
-        food = nutrients.canonical(food)
+        product, self._product = self._product, None
+        self._last_product = product
+        if product is not None:
+            food = product.name  # the label's name, as printed
+            row = nutrients.scale(product.per100g, grams)
+        else:
+            food = nutrients.canonical(food)
+            row = nutrients.for_grams(food, grams)
         entry = Entry(
             index=len(self.entries) + 1,
             food=food,
             grams=grams,
             status=status,  # type: ignore[arg-type]
             reads=reads,
-            nutrients=nutrients.for_grams(food, grams),
+            nutrients=row,
             t_ms=t_ms,
+            product=product.ean if product else None,
         )
         self.entries.append(entry)
         self._emptied = False
