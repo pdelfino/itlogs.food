@@ -4,7 +4,7 @@
 Runs from Pedro's terminal with MODEL_API_KEY in the environment; the key never
 enters the repo or an agent's context. USD 0.01 per image.
 
-    source ~/.secure_env_vars && python3 site/tools/hero.py            # hero candidates: 4 prompts x 5
+    python3 site/tools/hero.py            # hero candidates: 4 prompts x 5
     python3 site/tools/hero.py --n 3 --only 2                           # 3 images of hero prompt 2
     python3 site/tools/hero.py --prompt "..." --n 5                     # your own prompt
 
@@ -277,7 +277,7 @@ def main() -> None:
 
     key = os.environ.get("MODEL_API_KEY") or os.environ.get("ITLOGS_META_API_KEY")
     if not key:
-        sys.exit("MODEL_API_KEY is not set: run `source ~/.secure_env_vars` first, in your own terminal")
+        sys.exit("MODEL_API_KEY is not set: export it first, in your own terminal")
     if args.n is None:
         args.n = 4 if args.story else 5
     if not 1 <= args.n <= 10:

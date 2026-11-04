@@ -12,7 +12,7 @@ Meta Global AI Developer Hackathon entry, Indie track, problem statement "Build 
 
 | Capability | State | Evidence |
 |---|---|---|
-| Start, weigh single foods, Stop, review, send to Apple Health | **Works on real glasses in decent light** | Best run, tag `best-run-2026-11-03`: apple 112 g, banana 124 g, 37 s from Start to the end, both foods in Health |
+| Start, weigh single foods, Stop, review, send to Apple Health | **Works on real glasses in good light** | Best run, tag `best-run-2026-11-03`: apple 112 g, banana 124 g, 37 s from Start to the end, both foods in Health |
 | One row per food | **Works**, and old bugs are pinned | `make replay` on real recorded reads |
 | A dim room | **Fails**: the digits wash out | 102 reads, 1 with a weight ([recorded runs](evals/recorded-runs.org)). The screen and the ear say the display is lost |
 | A bowl, one row per ingredient | **Grams proven on real reads; naming not yet run on a real bowl** | Replay gives 104 g where the app had logged 265 g; `server/tests/test_bowl.py` |
