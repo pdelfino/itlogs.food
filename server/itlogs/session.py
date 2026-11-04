@@ -83,6 +83,11 @@ class Session:
 
     # a barcode
 
+    @property
+    def product_pending(self) -> bool:
+        """A scanned product is waiting for its food to land on the scale."""
+        return self._product is not None
+
     def set_product(self, product: Product | None, code: str = "") -> list[ServerMessage]:
         """The phone decoded a barcode. Known: the product is the next food on the scale.
         Unknown: say so; the scale and the reader go on as usual."""

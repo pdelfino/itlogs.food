@@ -20,6 +20,7 @@ from pydantic import BaseModel
 
 from itlogs import telemetry
 from itlogs.asr import Transcriber, make_transcriber
+from itlogs.barcode import decode as decode_barcode
 from itlogs.config import settings
 from itlogs.models import ClientMessage, ServerMessage
 from itlogs.providers import make_providers
@@ -182,14 +183,39 @@ async def ws_session(ws: WebSocket) -> None:
                 t.cancel()
         thinking.clear()
 
+    last_code: tuple[str, int] | None = None  # the barcode last decoded and when: not twice
+
+    async def on_barcode(code: str, t_ms: int) -> list[ServerMessage]:
+        """A barcode, from the phone's scanner or from a glasses frame: the product it names
+        is the next food on the scale (#13)."""
+        product = await lookup_product(code)
+        print(f"BARCODE {code} -> {product.name if product else 'unknown'}", flush=True)
+        if recorder:
+            recorder.event(
+                "barcode",
+                {"t_ms": t_ms, "code": code, "product": product.name if product else None},
+            )
+        return session.set_product(product, code)
+
     async def on_frame(meta: Any, jpeg: bytes) -> list[ServerMessage]:
-        nonlocal last_frame, frames
+        nonlocal last_frame, frames, last_code
         last_frame = (meta.t_ms, jpeg)
         frames += 1
         if frames == 1 or frames % 100 == 0:
             print(f"FRAMES {frames} ({len(jpeg)} bytes, t={meta.t_ms} ms)", flush=True)
         session.observe(jpeg, meta.t_ms)
         out = session.ready()  # "Ready..." once, on the first frame after Start
+        # hands free (#13, option A): every third frame is searched for a barcode, a few ms on
+        # the Mac, while no product is waiting; the same code is not taken twice in 15 s
+        if (
+            frames % 3 == 1
+            and not session.product_pending
+            and (last_code is None or meta.t_ms - last_code[1] > 15000)
+        ):
+            code = await asyncio.to_thread(decode_barcode, jpeg)
+            if code:
+                last_code = (code, meta.t_ms)
+                out = [*out, *await on_barcode(code, meta.t_ms)]
         if busy() < MAX_IN_FLIGHT:
             start_thinking(session.decide(jpeg, meta.t_ms), meta.t_ms)
         if recorder and frames % 7 == 1:
@@ -262,19 +288,7 @@ async def ws_session(ws: WebSocket) -> None:
             elif msg.kind == "watch" and msg.watch:
                 out = session.set_watching(msg.watch.on, msg.watch.t_ms, ask=msg.watch.ask)
             elif msg.kind == "barcode" and msg.barcode:
-                code = msg.barcode.code
-                product = await lookup_product(code)
-                print(f"BARCODE {code} -> {product.name if product else 'unknown'}", flush=True)
-                if recorder:
-                    recorder.event(
-                        "barcode",
-                        {
-                            "t_ms": msg.barcode.t_ms,
-                            "code": code,
-                            "product": product.name if product else None,
-                        },
-                    )
-                out = session.set_product(product, code)
+                out = await on_barcode(msg.barcode.code, msg.barcode.t_ms)
             else:
                 if transcriber is not None:
                     await transcriber.close()

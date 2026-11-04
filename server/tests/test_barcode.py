@@ -135,3 +135,47 @@ def test_ws_barcode_message_is_looked_up_and_said(monkeypatch):
 @pytest.mark.parametrize("code", ["", "abc"])
 async def test_lookup_without_digits_is_none(code):
     assert await off.lookup(code) is None
+
+
+def test_decode_reads_an_ean13_from_a_jpeg_and_ignores_other_bytes():
+    """Option A: the barcode is decoded from the frame itself, on the Mac."""
+    from itlogs import barcode
+
+    jpeg = barcode.encode_for_test("0888849000104")
+    assert barcode.decode(jpeg) == "0888849000104"
+    assert barcode.decode(b"not a jpeg") is None
+    # the frame the glasses send: the code somewhere in a 720 x 1280 picture, a bit tilted
+    from PIL import Image
+
+    page = Image.new("L", (720, 1280), 235)
+    code = Image.open(__import__("io").BytesIO(jpeg)).rotate(6, expand=True, fillcolor=235)
+    page.paste(code, (150, 500))
+    buf = __import__("io").BytesIO()
+    page.save(buf, format="JPEG", quality=85)
+    assert barcode.decode(buf.getvalue()) == "0888849000104"
+
+
+def test_ws_frame_with_a_barcode_names_the_next_food(monkeypatch):
+    """Hands free: a frame that shows the wrapper sets the product, the ear says its name."""
+    from fastapi.testclient import TestClient
+
+    from itlogs import app as app_module
+    from itlogs.app import app
+    from itlogs.barcode import encode_for_test
+
+    async def fake_lookup(code, **kw):
+        return off.parse(code, QUEST) if code == "0888849000104" else None
+
+    monkeypatch.setattr(app_module, "lookup_product", fake_lookup)
+    with TestClient(app).websocket_connect("/ws/session") as ws:
+        meta = {"width": 720, "height": 1280}
+        ws.send_text(json.dumps({"kind": "watch", "watch": {"on": True, "t_ms": 0}}))
+        ws.send_text(json.dumps({"kind": "frame", "frame": {"t_ms": 100, **meta}}))
+        ws.send_bytes(encode_for_test("0888849000104"))
+        kinds = []
+        while True:
+            m = json.loads(ws.receive_text())
+            kinds.append(m["kind"])
+            if m["kind"] == "say" and m["say"].startswith("Quest Protein Bar"):
+                break
+            assert len(kinds) < 8, kinds
