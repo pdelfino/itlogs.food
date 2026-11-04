@@ -24,7 +24,7 @@ Meta's feature answers what was eaten, and estimates how much. Four popular phot
 | An iOS app by one developer, https://apps.apple.com/app/id6759910137 | reads the grams off the display from a phone photo | no | writes meals | the closest idea we found; it needs hands for the phone |
 | SnapTrack: Camera Scale Reader (iOS) | reads a body scale's display | no | writes weight | no food |
 | Qalzy, https://qalzy.com | yes, its own scale with a camera on a stalk | no | yes, by its site | on sale; you press a button on the scale to scan; read 2026-NOVEMBER-04 |
-| Smart nutrition scales (Etekcity, Renpho, Greater Goods) | yes, by Bluetooth | no | some | the food is picked by hand in the app |
+| Smart nutrition scales (Etekcity, Renpho) | yes, by Bluetooth | no | some | the food is picked by hand in the app |
 | Nutrition5k (Google, 2021) | a dataset of weighed ingredients | no | no | research |
 
 We did not find glasses, any scale's display and Apple Health in one hands-free loop. The pieces exist on their own.
