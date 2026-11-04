@@ -16,7 +16,7 @@ Every other health stream fills itself (ring, watch, phone, body scale, screen t
 
 * Rules
 - Wordmark: JetBrains Mono SemiBold, lowercase, "itlogs" in ink or paper, ".food" and the cursor in orange.
-- Colours: ink =#111111=, paper =#fafaf7=, orange =#ff5a1f=. Nothing else.
+- Colours: ink =#17173a=, paper =#f4f3fb=, accent (blueberry) =#5848e5=; identity v2 of 2026-NOVEMBER-03 (#20), the orange =#ff5a1f= is retired. Nothing else.
 - The cursor is a block, 30 x 52 at a 64 px wordmark (about half an em wide, the cap height tall), one space after "d". On the web it may blink (1.1 s); in print it does not.
 - Family: every itlogs product shares the wordmark and the cursor; only the suffix changes colour.
 - Tagline: "Your food, weighed and logged, hands free."

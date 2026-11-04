@@ -16,16 +16,17 @@ struct ReviewView: View {
             Theme.card.ignoresSafeArea()
             VStack(alignment: .leading, spacing: 0) {
                 Text("Check the meal")
-                    .font(.system(size: 22, weight: .semibold))
+                    .font(Theme.sentence(22, weight: .semibold))
+                    .foregroundStyle(Theme.ink)
                     .padding(.top, 22)
                     .padding(.bottom, 14)
                 table
                 Spacer(minLength: 16)
                 if let today = session.healthToday {
-                    Text(today).font(.system(size: 12)).foregroundStyle(Theme.mute).padding(.bottom, 8)
+                    Text(today).font(Theme.body(12)).foregroundStyle(Theme.mute).padding(.bottom, 8)
                 }
                 if let msg = session.healthMessage {
-                    Text(msg).font(.system(size: 13)).foregroundStyle(session.healthSaved ? .green : Theme.orange).padding(.bottom, 8)
+                    Text(msg).font(Theme.sentence(14)).foregroundStyle(session.healthSaved ? .green : Theme.accent).padding(.bottom, 8)
                 }
                 Button {
                     Task { await session.saveToHealth() }
@@ -35,7 +36,7 @@ struct ReviewView: View {
                 .buttonStyle(PillButtonStyle(fill: session.healthSaved ? Theme.mute : Theme.ink))
                 .disabled(session.healthSaved || session.healthSaving)
                 Button("Not now") { dismiss() }
-                    .font(.system(size: 14)).foregroundStyle(Theme.mute)
+                    .font(Theme.body(14)).foregroundStyle(Theme.mute)
                     .frame(maxWidth: .infinity)
                     .padding(.top, 12)
                     .padding(.bottom, 6)
@@ -54,12 +55,12 @@ struct ReviewView: View {
                 Text("Food").gridColumnAlignment(.leading)
                 Text("g"); Text("P"); Text("C"); Text("F"); Text("kcal")
             }
-            .font(.system(size: 11)).foregroundStyle(Theme.mute)
+            .font(Theme.body(11)).foregroundStyle(Theme.mute)
             .padding(.bottom, 6)
             ForEach(session.entries) { e in
                 Rectangle().fill(Theme.line).frame(height: 1).gridCellColumns(6)
                 GridRow {
-                    Text(e.food).font(.system(size: 14)).gridColumnAlignment(.leading).lineLimit(2)
+                    Text(e.food).font(Theme.body(14)).gridColumnAlignment(.leading).lineLimit(2)
                     Text(e.grams, format: fmt0).font(Theme.digits(13, weight: .regular))
                     if let n = e.nutrients {
                         Text(n.protein_g, format: fmt1).font(Theme.digits(13, weight: .regular))
@@ -75,12 +76,12 @@ struct ReviewView: View {
             if let t = totals {
                 Rectangle().fill(Theme.ink).frame(height: 2).gridCellColumns(6)
                 GridRow {
-                    Text("Total").font(.system(size: 14, weight: .semibold)).gridColumnAlignment(.leading)
-                    Text(session.entries.reduce(0) { $0 + $1.grams }, format: fmt0).font(Theme.digits(13))
-                    Text(t.protein_g, format: fmt1).font(Theme.digits(13))
-                    Text(t.carbs_g, format: fmt1).font(Theme.digits(13))
-                    Text(t.fat_g, format: fmt1).font(Theme.digits(13))
-                    Text(t.kcal, format: fmt0).font(Theme.digits(13))
+                    Text("Total").font(Theme.body(14, weight: .semibold)).gridColumnAlignment(.leading)
+                    Text(session.entries.reduce(0) { $0 + $1.grams }, format: fmt0).font(Theme.digits(13, weight: .semibold))
+                    Text(t.protein_g, format: fmt1).font(Theme.digits(13, weight: .semibold))
+                    Text(t.carbs_g, format: fmt1).font(Theme.digits(13, weight: .semibold))
+                    Text(t.fat_g, format: fmt1).font(Theme.digits(13, weight: .semibold))
+                    Text(t.kcal, format: fmt0).font(Theme.digits(13, weight: .semibold))
                 }
                 .padding(.vertical, 9)
             }
