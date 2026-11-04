@@ -41,7 +41,7 @@ Meta Global AI Developer Hackathon entry, Indie track, problem statement "Build 
 | One row per food | **Works**, and old bugs are pinned | `make replay` on real recorded reads |
 | A dim room | **Fails**: the digits wash out | 102 reads, 1 with a weight ([recorded runs](evals/recorded-runs.org)). The screen and the ear say the display is lost |
 | A bowl, one row per ingredient | **Grams proven on real reads; naming not yet run on a real bowl** | Replay gives 104 g where the app had logged 265 g; `server/tests/test_bowl.py` |
-| Packaged food, read off its wrapper | **Works on real frames** | On a live frame from the glasses, Muse Spark read the brand, the flavour, 40 g and 13 g protein. Its web search then found the label: 160 kcal and 7 g fat in both searches, with carbs at 15 and 17 g, in 32 and 56 s, checked against what the wrapper prints. A product once found is instant |
+| Packaged food, read off its wrapper | **Works on real frames** | On a live frame from the glasses, Muse Spark read the brand, the flavour, 40 g and 13 g protein. Its web search then found the label: 160 kcal and 7 g fat in both searches, with carbs at 15 and 17 g (the wrapper says 17), in 32 and 56 s, checked against what the wrapper prints. A product once found is instant |
 | Spoken input | **Heard live, commands not exercised live** | The glasses' recognizer delivered speech in real runs. The parser is tested on mocked responses |
 | "Hey Meta, start" launch | **Built, not working yet** | `VoiceInvocations.swift`; needs a Wearables Developer Center release channel |
 | Accuracy against ground truth | **Not measured yet** | `evals/sets/` is empty, so `make eval` reports no sets |
@@ -147,7 +147,7 @@ Tests: 111 server tests (`make test`), plus the iOS tests, on fake providers and
 - One socket is one run. If the socket dies, the phone keeps what was logged, says so and asks you to tap Stop; there is no reconnect within a run.
 - The first Start after "Forget and reconnect" can lose voice for that run, because the toolkit's microphone permission fails on the second app switch. The next Start works.
 - Barcodes never decoded from the glasses: on the scale a barcode is about 90 px wide, roughly one pixel per bar. `barcode.py` and `providers/openfoodfacts.py` remain, off by default (`ITLOGS_BARCODE_FRAMES`). Reading the wrapper replaced them.
-- Two web searches for one bar agreed on calories and fat but not on carbs (15 and 17 g), so a label found on the web can be slightly off. A person checked the row kept for this bar against the wrapper.
+- Two web searches for one bar agreed on calories and fat but not on carbs: 15 g and 17 g, where the wrapper says 17. A label found on the web can be slightly off, and the check only covers protein and whether the calories fit. A person checked carbs on the row kept for this bar against the wrapper.
 - A first lookup that has not finished when you tap Stop gets up to 15 s more, then the row keeps its name with "?".
 - There is no history screen and no per-row delete yet. Review sends all rows or none, and a row with no nutrient data shows "?" and is left out of the Health write.
 
