@@ -133,6 +133,8 @@ class Session:
     max_label_tries: int = 2
     _label_tries: dict[int, int] = field(default_factory=dict)
     _label_queue: list[tuple[int, bytes]] = field(default_factory=list)
+    _labels_running: set[int] = field(default_factory=set)  # one look at a wrapper at a time
+    _lookup_queue: list[tuple[int, WrapperLabel]] = field(default_factory=list)
     _last_net: float | None = (
         None  # the bar's printed net weight; the scale also weighs the wrapper
     )
@@ -238,6 +240,9 @@ class Session:
         tries = self._label_tries.get(last.index, 0)
         if abs(read.grams - last.grams) > self.grams_tolerance_g or tries >= self.max_label_tries:
             return
+        if last.index in self._labels_running:
+            return  # 12:48: a later read queued a second look while the first was still out
+        self._labels_running.add(last.index)
         self._label_tries[last.index] = tries + 1
         self._label_queue.append((last.index, frame))
 
@@ -246,22 +251,37 @@ class Session:
         queue, self._label_queue = self._label_queue, []
         return queue
 
+    def take_lookups(self) -> list[tuple[int, WrapperLabel]]:
+        """The wrappers read and waiting for their search."""
+        queue, self._lookup_queue = self._lookup_queue, []
+        return queue
+
     def _edible(self, grams: float) -> float:
         """A whole wrapped bar counts as its printed net weight: the wrapper is not food."""
         net = self._last_net
         return net if net and net <= grams <= net * 1.2 else grams
 
     async def identify(self, index: int, frame: bytes, t_ms: int = 0) -> list[ServerMessage]:
-        """Read the wrapper, then let Muse Spark's web search find its printed facts. Any failure
-        leaves the row as it was: a name with "?" still beats a guess."""
+        """Read the wrapper: the row takes the printed name at once, because the search can take
+        much longer (12:48: over 20 s with no answer, and Stop cancelled it). Any failure leaves
+        the row as it was."""
         try:
             label = await self.vision.read_wrapper(frame)
         except Exception as e:
             print(f"WRAPPER failed: {e!r}", flush=True)
             return []
+        finally:
+            self._labels_running.discard(index)
         if not label.brand:
             return []  # nothing legible on this side; another look may see the front
         self._label_tries[index] = self.max_label_tries
+        self._lookup_queue.append((index, label))
+        renamed = self.entries[index - 1].model_copy(update={"food": label.name})
+        self.entries[index - 1] = renamed
+        return [ServerMessage(kind="entry", entry=renamed)]
+
+    async def look_up(self, index: int, label: WrapperLabel) -> list[ServerMessage]:
+        """Muse Spark's web search finds the printed facts. A name with "?" beats a guess."""
         facts: LabelFacts | None = None
         try:
             facts = await self.vision.find_facts(label)
@@ -272,9 +292,7 @@ class Session:
         is_last = index == len(self.entries)
         if row is None:
             print(f"FACTS not trusted for {label.name!r}: {facts}", flush=True)
-            renamed = entry.model_copy(update={"food": label.name})
-            self.entries[index - 1] = renamed
-            return [ServerMessage(kind="entry", entry=renamed)]
+            return []
         net = label.net_grams
         eaten = net if net and net <= entry.grams <= net * 1.2 else entry.grams
         found = nutrients.scale(row, eaten)

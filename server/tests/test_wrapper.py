@@ -43,6 +43,16 @@ def weighing(*reads, wrappers=(BAR,), facts=FACTS):
     return s, vision
 
 
+async def settle(s):
+    """Runs what the app would run in the background: wrapper reads, then their searches."""
+    out = []
+    for index, frame in s.take_labels():
+        out += await s.identify(index, frame)
+    for index, label in s.take_lookups():
+        out += await s.look_up(index, label)
+    return out
+
+
 def bar(grams=42.0):
     return EntryRead(food="protein bar", grams=grams, confidence=0.95)
 
@@ -53,7 +63,11 @@ async def test_the_wrapper_names_the_row_and_brings_the_label():
     assert [(e.food, e.nutrients) for e in s.entries] == [("protein bar", None)]
     [(index, frame)] = s.take_labels()
     assert (index, frame) == (1, b"frame")
-    out = await s.identify(index, frame)
+    first = await s.identify(index, frame)
+    assert first[0].entry.food == "Simply Protein Crispy Dark Chocolate Almond"
+    assert first[0].entry.nutrients is None  # the name lands now, the search takes longer
+    [(index, label)] = s.take_lookups()
+    out = await s.look_up(index, label)
     entry = s.entries[0]
     assert entry.food == "Simply Protein Crispy Dark Chocolate Almond"
     assert entry.grams == 42.0  # the row keeps what the scale showed
@@ -68,7 +82,7 @@ async def test_the_wrapper_names_the_row_and_brings_the_label():
 async def test_a_food_part_of_a_pack_counts_what_is_on_the_scale():
     s, _ = weighing(bar(20.0))
     await s.on_frame(b"frame", 1000)
-    await s.identify(*s.take_labels()[0])
+    await settle(s)
     assert s.entries[0].nutrients.kcal == 80.0
 
 
@@ -96,10 +110,10 @@ def test_numbers_that_cannot_be_trusted_are_refused(facts):
 async def test_refused_numbers_keep_the_name_and_the_question_mark():
     s, _ = weighing(bar(), facts=FACTS.model_copy(update={"protein_g": 15.0}))
     await s.on_frame(b"frame", 1000)
-    out = await s.identify(*s.take_labels()[0])
+    out = await settle(s)
     assert s.entries[0].food == "Simply Protein Crispy Dark Chocolate Almond"
     assert s.entries[0].nutrients is None
-    assert [m.kind for m in out] == ["entry"]
+    assert [m.kind for m in out] == ["entry"]  # the name, and no numbers after it
 
 
 async def test_a_failed_search_keeps_the_row():
@@ -110,7 +124,7 @@ async def test_a_failed_search_keeps_the_row():
 
     vision.find_facts = boom
     await s.on_frame(b"frame", 1000)
-    await s.identify(*s.take_labels()[0])
+    await settle(s)
     assert (s.entries[0].grams, s.entries[0].nutrients) == (42.0, None)
 
 
@@ -131,9 +145,8 @@ async def test_the_back_of_the_wrapper_gets_one_more_look():
     await s.on_frame(b"back", 1000)
     assert await s.identify(*s.take_labels()[0]) == []
     await s.on_frame(b"front", 3000)  # the wrapper was turned over: a new scene, a new read
-    [(index, frame)] = s.take_labels()
-    assert frame == b"front"
-    await s.identify(index, frame)
+    assert s._label_queue[0][1] == b"front"
+    await settle(s)
     assert s.entries[0].nutrients.kcal == 160.0
     await s.on_frame(b"again", 5000)
     assert s.take_labels() == []
@@ -142,7 +155,7 @@ async def test_the_back_of_the_wrapper_gets_one_more_look():
 async def test_a_new_reading_of_the_bar_keeps_the_label():
     s, _ = weighing(bar(42.0), bar(45.0))
     await s.on_frame(b"frame", 1000)
-    await s.identify(*s.take_labels()[0])
+    await settle(s)
     await s.on_frame(b"frame2", 3000)
     assert len(s.entries) == 1  # the reader still says "protein bar": the same row
     assert s.entries[0].grams == 45.0
@@ -164,8 +177,22 @@ async def test_a_lookup_that_lands_after_the_next_food_finds_its_own_row():
         await s.on_frame(b"x", t)
     assert [e.food for e in s.entries] == ["protein bar", "apple"]
     await s.identify(*queued)
+    await s.look_up(*s.take_lookups()[0])
     assert s.entries[0].food.startswith("Simply Protein")
     assert s.entries[1].food == "apple"
+
+
+async def test_a_look_still_running_is_not_queued_again():
+    """12:48: a later read of the same bar started a second look and a second search."""
+    s, vision = weighing(bar(), bar())
+    await s.on_frame(b"one", 1000)
+    queued = s.take_labels()
+    s._last_watch_ms = -1_000_000
+    await s.on_frame(b"two", 3000)
+    assert s.take_labels() == []
+    await s.identify(*queued[0])
+    assert len(s.take_lookups()) == 1
+    assert len(vision.wrapper_calls) == 1
 
 
 async def test_the_switch_turns_it_off(monkeypatch):

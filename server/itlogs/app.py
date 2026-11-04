@@ -185,17 +185,26 @@ async def ws_session(ws: WebSocket) -> None:
         slots: the next food can land while the last one is being looked up."""
         for index, frame in session.take_labels():
             start_thinking(session.identify(index, frame, t_ms), t_ms, "label")
+        for index, label in session.take_lookups():
+            start_thinking(session.look_up(index, label), t_ms, "label")
 
     def busy() -> int:
         return sum(1 for t in thinking if not t.done() and t.get_name() == "read")
 
     async def finish_thinking(timeout: float = 8.0, labels: bool = False) -> None:
-        pending = [t for t in thinking if not t.done() and (labels or t.get_name() != "label")]
-        if pending:
-            done, still = await asyncio.wait(pending, timeout=timeout)
-            for t in still:
-                t.cancel()
-        thinking.difference_update(pending)
+        """Waits for what is running, and for what those start: a wrapper's read starts its search.
+        Reads only, unless labels: Stop gives those their own, separate wait."""
+        deadline = time.monotonic() + timeout
+        while True:
+            pending = [t for t in thinking if not t.done() and (labels or t.get_name() != "label")]
+            left = deadline - time.monotonic()
+            if not pending:
+                return
+            if left <= 0:
+                for t in pending:
+                    t.cancel()
+                return
+            await asyncio.wait(pending, timeout=left, return_when=asyncio.FIRST_COMPLETED)
 
     last_code: tuple[str, int] | None = None  # the barcode last decoded and when: not twice
 
