@@ -1,15 +1,17 @@
 import SwiftUI
 
-/// After Stop, direction A: a white sheet, the meal as a table (grams, protein, carbs, fat, kcal),
-/// a totals row, one ink button that sends it to Apple Health. Nothing reaches Health without
-/// that tap (#3). Sodium goes to Health without a column.
+/// After Stop, direction A: a white sheet, the meal as a table in the order of a US Nutrition Facts
+/// label (calories, fat, carbs, protein), in whole grams as that label does, a totals row, one ink
+/// button that sends it to Apple Health. Nothing reaches Health without that tap (#3). Sodium goes
+/// to Health without a column.
 struct ReviewView: View {
     @Bindable var session: SessionController
     @Environment(\.dismiss) private var dismiss
 
     private var totals: Nutrients? { session.totals }
     private let fmt0: FloatingPointFormatStyle<Double> = .number.precision(.fractionLength(0))
-    private let fmt1: FloatingPointFormatStyle<Double> = .number.precision(.fractionLength(1))
+
+    private func grams(_ value: Double) -> String { "\(value.formatted(fmt0)) g" }
 
     var body: some View {
         ZStack {
@@ -50,41 +52,46 @@ struct ReviewView: View {
     }
 
     private var table: some View {
-        Grid(alignment: .trailing, horizontalSpacing: 10, verticalSpacing: 0) {
-            GridRow {
-                Text("Food").gridColumnAlignment(.leading)
-                Text("g"); Text("P"); Text("C"); Text("F"); Text("kcal")
-            }
-            .font(Theme.body(11)).foregroundStyle(Theme.mute)
-            .padding(.bottom, 6)
-            ForEach(session.entries) { e in
-                Rectangle().fill(Theme.line).frame(height: 1).gridCellColumns(6)
+        VStack(alignment: .leading, spacing: 8) {
+            Grid(alignment: .trailing, horizontalSpacing: 10, verticalSpacing: 0) {
                 GridRow {
-                    Text(e.food).font(Theme.body(14)).gridColumnAlignment(.leading).lineLimit(2)
-                    Text(e.grams, format: fmt0).font(Theme.digits(13, weight: .regular))
-                    if let n = e.nutrients {
-                        Text(n.protein_g, format: fmt1).font(Theme.digits(13, weight: .regular))
-                        Text(n.carbs_g, format: fmt1).font(Theme.digits(13, weight: .regular))
-                        Text(n.fat_g, format: fmt1).font(Theme.digits(13, weight: .regular))
-                        Text(n.kcal, format: fmt0).font(Theme.digits(13, weight: .regular))
-                    } else {
-                        ForEach(0..<4, id: \.self) { _ in Text("?").foregroundStyle(Theme.mute) }
+                    Text("Food").gridColumnAlignment(.leading)
+                    Text("Weight"); Text("Calories"); Text("Fat"); Text("Carbs"); Text("Protein")
+                }
+                .font(Theme.body(12, weight: .semibold)).foregroundStyle(Theme.mute)
+                .lineLimit(1)
+                .padding(.bottom, 6)
+                ForEach(session.entries) { e in
+                    Rectangle().fill(Theme.line).frame(height: 1).gridCellColumns(6)
+                    GridRow {
+                        Text(e.food).font(Theme.body(14)).gridColumnAlignment(.leading).lineLimit(3).fixedSize(horizontal: false, vertical: true)
+                        Text(grams(e.grams)).font(Theme.digits(13, weight: .regular))
+                        if let n = e.nutrients {
+                            Text(n.kcal, format: fmt0).font(Theme.digits(13, weight: .regular))
+                            Text(grams(n.fat_g)).font(Theme.digits(13, weight: .regular))
+                            Text(grams(n.carbs_g)).font(Theme.digits(13, weight: .regular))
+                            Text(grams(n.protein_g)).font(Theme.digits(13, weight: .regular))
+                        } else {
+                            ForEach(0..<4, id: \.self) { _ in Text("?").foregroundStyle(Theme.mute) }
+                        }
                     }
+                    .padding(.vertical, 9)
                 }
-                .padding(.vertical, 9)
-            }
-            if let t = totals {
-                Rectangle().fill(Theme.ink).frame(height: 2).gridCellColumns(6)
-                GridRow {
-                    Text("Total").font(Theme.body(14, weight: .semibold)).gridColumnAlignment(.leading)
-                    Text(session.entries.reduce(0) { $0 + $1.grams }, format: fmt0).font(Theme.digits(13, weight: .semibold))
-                    Text(t.protein_g, format: fmt1).font(Theme.digits(13, weight: .semibold))
-                    Text(t.carbs_g, format: fmt1).font(Theme.digits(13, weight: .semibold))
-                    Text(t.fat_g, format: fmt1).font(Theme.digits(13, weight: .semibold))
-                    Text(t.kcal, format: fmt0).font(Theme.digits(13, weight: .semibold))
+                if let t = totals {
+                    Rectangle().fill(Theme.ink).frame(height: 2).gridCellColumns(6)
+                    GridRow {
+                        Text("Total").font(Theme.body(14, weight: .semibold)).gridColumnAlignment(.leading)
+                        Text(grams(session.entries.reduce(0) { $0 + $1.grams })).font(Theme.digits(13, weight: .semibold))
+                        Text(t.kcal, format: fmt0).font(Theme.digits(13, weight: .semibold))
+                        Text(grams(t.fat_g)).font(Theme.digits(13, weight: .semibold))
+                        Text(grams(t.carbs_g)).font(Theme.digits(13, weight: .semibold))
+                        Text(grams(t.protein_g)).font(Theme.digits(13, weight: .semibold))
+                    }
+                    .padding(.vertical, 9)
                 }
-                .padding(.vertical, 9)
             }
+            Text("g = grams. Same order as a US nutrition label.")
+                .font(Theme.body(12)).foregroundStyle(Theme.mute)
         }
     }
 }

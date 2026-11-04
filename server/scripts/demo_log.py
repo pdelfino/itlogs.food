@@ -72,8 +72,8 @@ class View:
             facts = ""
             if row is not None:
                 facts = (
-                    f"   {row.kcal:.0f} kcal, {row.protein_g:.0f} g protein, "
-                    f"{row.carbs_g:.0f} g carbs, {row.fat_g:.0f} g fat"
+                    f"   {row.kcal:.0f} calories, {row.fat_g:.0f} g fat, "
+                    f"{row.carbs_g:.0f} g carbs, {row.protein_g:.0f} g protein"
                 )
             word = "UPDATED" if again else "LOGGED"
             return BOLD + line(word, f"{food}, {grams:g} g{facts}", GREEN)
@@ -92,8 +92,8 @@ class View:
             how = "searched now" if m.group(6) == "searched" else "label saved earlier"
             kcal, protein, carbs, fat = (float(m.group(i)) for i in (2, 3, 4, 5))
             text = (
-                f"{m.group(1)}: {kcal:.0f} kcal, {protein:.0f} g protein, "
-                f"{carbs:.0f} g carbs, {fat:.0f} g fat  ({how})"
+                f"{m.group(1)}: {kcal:.0f} calories, {fat:.0f} g fat, "
+                f"{carbs:.0f} g carbs, {protein:.0f} g protein  ({how})"
             )
             return BOLD + line("LABEL", text, GREEN)
         if m := ADDITION.match(raw):

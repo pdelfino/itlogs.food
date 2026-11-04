@@ -171,7 +171,7 @@ struct SessionView: View {
                         Text("\(e.grams.formatted(.number.precision(.fractionLength(0)))) g")
                             .font(Theme.digits(15, weight: .semibold))
                             .foregroundStyle(Theme.ink)
-                        Text(e.nutrients.map { "\(Int($0.kcal.rounded())) kcal" } ?? "?")
+                        Text(e.nutrients.map { "\(Int($0.kcal.rounded())) cal" } ?? "?")
                             .font(Theme.body(12)).foregroundStyle(Theme.mute)
                             .frame(width: 64, alignment: .trailing)
                     }
@@ -182,7 +182,7 @@ struct SessionView: View {
                     HStack {
                         Text("total").font(Theme.body(13)).foregroundStyle(Theme.mute)
                         Spacer()
-                        Text("\(Int(t.kcal.rounded())) kcal · \(Int(t.protein_g.rounded())) g protein")
+                        Text("\(Int(t.kcal.rounded())) cal · \(Int(t.fat_g.rounded())) g fat · \(Int(t.carbs_g.rounded())) g carbs · \(Int(t.protein_g.rounded())) g protein")
                             .font(Theme.body(13)).foregroundStyle(Theme.mute)
                     }
                     .padding(.vertical, 8)

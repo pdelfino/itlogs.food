@@ -19,12 +19,12 @@ def test_the_real_log_lines_read_plainly():
     assert view.render("READ took 1824 ms (frame t=8862)") is None
     assert "1.8 s   red apple, 111 g, 95% sure" in view.render("READ red apple 111.0 g conf=0.95")
     logged = view.render("ENTRY 1 apple 111 g auto")
-    assert "LOGGED" in logged and "apple, 111 g" in logged and "kcal" in logged
+    assert "LOGGED" in logged and "apple, 111 g" in logged and "calories" in logged
     assert "UPDATED" in view.render("ENTRY 1 apple 112 g auto")
     wrapper = view.render("MODEL wrapper='Simply Protein Crispy' net=40.0 p=13.0")
     assert "Simply Protein Crispy, 40 g, 13 g protein" in wrapper
     label = view.render("LABEL Simply Protein kcal=160 protein=13 carbs=17 fat=7 saved")
-    assert "160 kcal, 13 g protein, 17 g carbs, 7 g fat" in label
+    assert "160 calories, 7 g fat, 17 g carbs, 13 g protein" in label
     assert "scale empty" in view.render("READ none 0.0 g conf=1.00")
     assert view.render('PHONE 08:01:32 glasses: heard "cashews" (confidence 0.66)')
 
