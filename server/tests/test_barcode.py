@@ -182,8 +182,10 @@ def test_decode_reads_an_ean13_from_a_jpeg_and_ignores_other_bytes():
 
 
 def test_ws_frame_with_a_barcode_names_the_next_food(monkeypatch):
-    """Hands free: a frame that shows the wrapper sets the product, the ear says its name."""
+    """With frame decoding on: a frame that shows the wrapper sets the product, the ear says it."""
     from fastapi.testclient import TestClient
+
+    monkeypatch.setattr("itlogs.app.settings.barcode_frames", True)
 
     from itlogs import app as app_module
     from itlogs.app import app

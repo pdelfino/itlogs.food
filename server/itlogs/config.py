@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     vision: str = "meta"
     vision_model: str = "muse-spark-1.3"
     bowl: bool = True  # ITLOGS_BOWL=0: bowls take the bare-food path (#22)
+    # a food the table does not know: read its wrapper, then search for its label (#13)
+    label_search: bool = True  # ITLOGS_LABEL_SEARCH=0: such a row stays "?"
+    # look for a barcode in every frame. Off: from the glasses it has never decoded a real wrapper
+    barcode_frames: bool = False
     # the reply parser: meta (Muse Spark), baseten (Muse Spark Open), local (llama-server)
     llm: str = "meta"
     llm_local_base: str = "http://127.0.0.1:8080/v1"

@@ -26,11 +26,41 @@ from dataclasses import dataclass, field
 from itlogs import nutrients
 from itlogs.config import settings
 from itlogs.frames import Stillness, difference, thumbnail
-from itlogs.models import Addition, Entry, EntryRead, Question, Reply, ServerMessage
+from itlogs.models import (
+    Addition,
+    Entry,
+    EntryRead,
+    LabelFacts,
+    Question,
+    Reply,
+    ServerMessage,
+    WrapperLabel,
+)
 from itlogs.providers.base import LLMProvider, VisionProvider
 from itlogs.providers.openfoodfacts import Product
 
 DISPLAY_HINT = "The display is blocked. Look down at the scale."
+
+
+def row_from_facts(label: WrapperLabel, facts: LabelFacts) -> nutrients.Row | None:
+    """The per-100 g row from what the search found, or None when it cannot be trusted: a wrong
+    number is worse than "?". The protein printed on the wrapper has to match (Open Food Facts
+    held this bar at 150 kcal per 100 g, 2026-NOVEMBER-04, where its label says 160 per 40 g), and
+    the calories have to fit the macros. Fiber and sodium may be missing."""
+    f = facts
+    if not f.serving_g or f.serving_g <= 0:
+        return None
+    if f.kcal is None or f.kcal <= 0 or f.protein_g is None or f.carbs_g is None or f.fat_g is None:
+        return None
+    if label.protein_g is not None and abs(f.protein_g - label.protein_g) > 1.0:
+        return None
+    if not 0.65 <= (4 * f.protein_g + 4 * f.carbs_g + 9 * f.fat_g) / f.kcal <= 1.35:
+        return None
+    k = 100.0 / f.serving_g
+    if f.kcal * k > 900:
+        return None
+    fiber, sodium = f.fiber_g or 0.0, f.sodium_mg or 0.0
+    return (f.kcal * k, f.protein_g * k, f.carbs_g * k, f.fat_g * k, fiber * k, sodium * k)
 
 
 def fmt_grams(g: float) -> str:
@@ -99,6 +129,14 @@ class Session:
     product_ttl_ms: int = 60_000  # a scan nobody weighs must not name a food much later
 
     # a bowl being built (#22): each rise on the scale is the next ingredient
+    # a packaged food the table does not know (#13): read its wrapper, search for its label
+    max_label_tries: int = 2
+    _label_tries: dict[int, int] = field(default_factory=dict)
+    _label_queue: list[tuple[int, bytes]] = field(default_factory=list)
+    _last_net: float | None = (
+        None  # the bar's printed net weight; the scale also weighs the wrapper
+    )
+
     _bowl_active: bool = False
     _bowl_base: float = 0.0  # the last settled weight
     _bowl_frame: bytes | None = None  # the picture at that weight
@@ -186,6 +224,92 @@ class Session:
         )
         return self._log(name, grams, "auto", [read, note], t_ms, speak=False)
 
+    # a wrapper
+
+    def _queue_label(self, read: EntryRead, frame: bytes) -> None:
+        """The last row has no nutrients and this frame still shows it: worth looking at its
+        wrapper. A second try only comes with a new scene, such as the wrapper turned over."""
+        if not settings.label_search or self._bowl_active or not self.entries or not read.readable:
+            return
+        last = self.entries[-1]
+        if last.nutrients is not None or last.product or last.status == "spoken":
+            return
+        assert read.grams is not None
+        tries = self._label_tries.get(last.index, 0)
+        if abs(read.grams - last.grams) > self.grams_tolerance_g or tries >= self.max_label_tries:
+            return
+        self._label_tries[last.index] = tries + 1
+        self._label_queue.append((last.index, frame))
+
+    def take_labels(self) -> list[tuple[int, bytes]]:
+        """The rows to identify; the app runs them in the background, so weighing goes on."""
+        queue, self._label_queue = self._label_queue, []
+        return queue
+
+    def _edible(self, grams: float) -> float:
+        """A whole wrapped bar counts as its printed net weight: the wrapper is not food."""
+        net = self._last_net
+        return net if net and net <= grams <= net * 1.2 else grams
+
+    async def identify(self, index: int, frame: bytes, t_ms: int = 0) -> list[ServerMessage]:
+        """Read the wrapper, then let Muse Spark's web search find its printed facts. Any failure
+        leaves the row as it was: a name with "?" still beats a guess."""
+        try:
+            label = await self.vision.read_wrapper(frame)
+        except Exception as e:
+            print(f"WRAPPER failed: {e!r}", flush=True)
+            return []
+        if not label.brand:
+            return []  # nothing legible on this side; another look may see the front
+        self._label_tries[index] = self.max_label_tries
+        facts: LabelFacts | None = None
+        try:
+            facts = await self.vision.find_facts(label)
+        except Exception as e:
+            print(f"FACTS failed: {e!r}", flush=True)
+        row = row_from_facts(label, facts) if facts else None
+        entry = self.entries[index - 1]
+        is_last = index == len(self.entries)
+        if row is None:
+            print(f"FACTS not trusted for {label.name!r}: {facts}", flush=True)
+            renamed = entry.model_copy(update={"food": label.name})
+            self.entries[index - 1] = renamed
+            return [ServerMessage(kind="entry", entry=renamed)]
+        net = label.net_grams
+        eaten = net if net and net <= entry.grams <= net * 1.2 else entry.grams
+        found = nutrients.scale(row, eaten)
+        note = EntryRead(
+            food=label.name,
+            grams=entry.grams,
+            confidence=1.0,
+            raw=f"wrapper; net {net}; printed protein {label.protein_g}; {facts}",
+        )
+        named = entry.model_copy(
+            update={
+                "food": label.name,
+                "nutrients": found,
+                "product": "wrapper",
+                "source": facts.source if facts else None,
+                "reads": [*entry.reads, note],
+            }
+        )
+        self.entries[index - 1] = named
+        if is_last:
+            self._last_product = Product(
+                ean="",
+                name=label.name,
+                brand=label.brand,
+                per100g=row,
+                serving_g=facts.serving_g if facts else None,
+                source="web_search",
+            )
+            self._last_net = net
+        line = f"{label.name}, {round(found.kcal)} calories."
+        return [
+            ServerMessage(kind="entry", entry=named),  # same index: the phone replaces the row
+            ServerMessage(kind="say", say=line),
+        ]
+
     # a barcode
 
     @property
@@ -269,7 +393,9 @@ class Session:
             self._first = None
             best_ms, best = self.stillness.sharpest(t_ms - 700, t_ms) or (t_ms, jpeg)
             second = await self._read(best, best_ms)
-            return [ServerMessage(kind="read", read=second), *self._resolve(first, second, t_ms)]
+            resolved = self._resolve(first, second, t_ms)
+            self._queue_label(second, best)
+            return [ServerMessage(kind="read", read=second), *resolved]
         if self.watching and self._question is None:
             if t_ms - self._last_watch_ms < self.watch_every_ms:
                 return []
@@ -292,6 +418,7 @@ class Session:
             read = await self._read(best, best_ms)
             bowl = await self._bowl_step(read, best, t_ms)
             rest = self._watch(read, t_ms) if bowl is None else bowl
+            self._queue_label(read, best)
             return [ServerMessage(kind="read", read=read), *rest]
         return []
 
@@ -393,7 +520,7 @@ class Session:
         last = self.entries[-1]
         return (
             read.grams is not None
-            and same_item(read.food, last.food)
+            and self._named_like(read, last)
             and abs(read.grams - last.grams) <= self.grams_tolerance_g
             and t_ms - last.t_ms < self.same_again_ms
         )
@@ -411,9 +538,16 @@ class Session:
         item: under a kindred name, or under any name at the same grams. Two different foods
         cannot show the same weight without the scale passing through empty."""
         last = self.entries[-1]
-        if same_item(read.food, last.food):
+        if self._named_like(read, last):
             return True
         return read.grams is not None and abs(read.grams - last.grams) <= self.grams_tolerance_g
+
+    def _named_like(self, read: EntryRead, entry: Entry) -> bool:
+        """Its name, or a name the reader gave it before its wrapper renamed the row: the reader
+        keeps saying "protein bar" after the row says "Simply Protein Crispy"."""
+        return same_item(read.food, entry.food) or any(
+            same_item(read.food, r.food) for r in entry.reads if r.food != "none"
+        )
 
     def _correct_last(self, read: EntryRead, t_ms: int) -> list[ServerMessage]:
         last = self.entries[-1]
@@ -422,7 +556,7 @@ class Session:
         if last.product and self._last_product is not None:
             # a scanned product keeps its name and its label's row, at the new grams
             food = last.food
-            row = nutrients.scale(self._last_product.per100g, read.grams)
+            row = nutrients.scale(self._last_product.per100g, self._edible(read.grams))
         else:
             keep_name = nutrients.lookup(last.food) or not nutrients.lookup(read.food)
             food = nutrients.canonical(last.food if keep_name else read.food)
@@ -540,6 +674,7 @@ class Session:
     ) -> list[ServerMessage]:
         product, self._product = self._live_product(), None
         self._last_product = product
+        self._last_net = None
         if product is not None:
             food = product.name  # the label's name, as printed
             row = nutrients.scale(product.per100g, grams)
@@ -595,6 +730,7 @@ class Session:
         at = t_ms or latest_ms
         bowl = await self._bowl_step(read, best, at, final=True)
         rest = self._watch(read, at) if bowl is None else bowl
+        self._queue_label(read, best)
         return [ServerMessage(kind="read", read=read), *rest]
 
     async def end_session(self, t_ms: int = 0) -> list[ServerMessage]:

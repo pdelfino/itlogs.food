@@ -155,6 +155,7 @@ async def ws_session(ws: WebSocket) -> None:
         except httpx.HTTPError as e:
             await model_unreachable(e)
             return
+        identify_new(t_ms)
         took_ms = int((time.perf_counter() - t0) * 1000)
         if any(m.kind == "read" for m in out):
             print(f"READ took {took_ms} ms (frame t={t_ms})", flush=True)
@@ -179,16 +180,22 @@ async def ws_session(ws: WebSocket) -> None:
         thinking.add(task)
         task.add_done_callback(retrieved)
 
+    def identify_new(t_ms: int) -> None:
+        """A wrapper's two model calls take seconds, so they run beside the reads, not in their
+        slots: the next food can land while the last one is being looked up."""
+        for index, frame in session.take_labels():
+            start_thinking(session.identify(index, frame, t_ms), t_ms, "label")
+
     def busy() -> int:
         return sum(1 for t in thinking if not t.done() and t.get_name() == "read")
 
-    async def finish_thinking(timeout: float = 8.0) -> None:
-        pending = [t for t in thinking if not t.done()]
+    async def finish_thinking(timeout: float = 8.0, labels: bool = False) -> None:
+        pending = [t for t in thinking if not t.done() and (labels or t.get_name() != "label")]
         if pending:
             done, still = await asyncio.wait(pending, timeout=timeout)
             for t in still:
                 t.cancel()
-        thinking.clear()
+        thinking.difference_update(pending)
 
     last_code: tuple[str, int] | None = None  # the barcode last decoded and when: not twice
 
@@ -214,7 +221,11 @@ async def ws_session(ws: WebSocket) -> None:
         # hands free (#13, option A): every frame is searched for a barcode (18 ms median on the
         # Mac, measured 2026-NOVEMBER-03) while no product is waiting, so a wrapper held up for a
         # second gets seven tries; the same code is not taken twice in 15 s
-        if not session.product_pending and (last_code is None or meta.t_ms - last_code[1] > 15000):
+        if (
+            settings.barcode_frames
+            and not session.product_pending
+            and (last_code is None or meta.t_ms - last_code[1] > 15000)
+        ):
             try:
                 code = await asyncio.to_thread(decode_barcode, jpeg)
             except Exception as e:  # the decoder must never cost a session
@@ -312,6 +323,8 @@ async def ws_session(ws: WebSocket) -> None:
                     out = []
                 keep(out)
                 await send_all(out)
+                identify_new(0)
+                await finish_thinking(15.0, labels=True)  # a wrapper being looked up lands too
                 out = await session.end_session()
                 await send_all(out)
                 if recorder:
@@ -323,7 +336,7 @@ async def ws_session(ws: WebSocket) -> None:
     except WebSocketDisconnect:
         if transcriber is not None:
             await transcriber.close()
-        await finish_thinking(0.0)
+        await finish_thinking(0.0, labels=True)
         if recorder:
             recorder.close([e.model_dump() for e in session.entries])
         return

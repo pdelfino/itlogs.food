@@ -14,13 +14,14 @@ from __future__ import annotations
 
 import asyncio
 import io
+import time
 
 import httpx
 from PIL import Image
 
 from itlogs.config import settings
-from itlogs.models import Addition, EntryRead, Reply
-from itlogs.providers.chat import ChatModel
+from itlogs.models import Addition, EntryRead, LabelFacts, Reply, WrapperLabel
+from itlogs.providers.chat import ChatModel, json_object
 
 ENTRY_SCHEMA = {
     "name": "entry_read",
@@ -134,6 +135,37 @@ ADDITION_SYSTEM = (
 )
 
 
+WRAPPER_SCHEMA = {
+    "name": "wrapper",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "brand": {"type": ["string", "null"]},
+            "product": {"type": ["string", "null"]},
+            "flavour": {"type": ["string", "null"]},
+            "net_grams": {"type": ["number", "null"]},
+            "protein_g": {"type": ["number", "null"]},
+        },
+        "required": ["brand", "product", "flavour", "net_grams", "protein_g"],
+    },
+}
+
+WRAPPER_SYSTEM = (
+    "A packaged food sits on a kitchen scale, seen from a head-worn camera. Copy only what is "
+    "printed on the wrapper: the brand, the product line, the flavour, the net weight in grams "
+    "and the grams of protein if the front states them. Use null for anything you cannot read, "
+    "and for every field when the food has no wrapper or its printed side faces away. Never "
+    "guess, and never fill in from what you know about the brand."
+)
+
+FACTS_PROMPT = (
+    "Find the printed nutrition facts for this exact packaged food: {name}{net}. Answer with one "
+    "JSON object and nothing else, with the values per serving as printed: "
+    '{{"serving_g": 0, "kcal": 0, "protein_g": 0, "carbs_g": 0, "fat_g": 0, "fiber_g": 0, '
+    '"sodium_mg": 0}}. Use null for a value no source gives.'
+)
+
+
 class MetaReader:
     """VisionProvider on any OpenAI-compatible vision endpoint (Muse Spark or Muse Glimmer)."""
 
@@ -191,6 +223,41 @@ class MetaReader:
         conf = min(1.0, max(0.0, number(d.get("confidence")) or 0.0))
         print(f"MODEL addition={food!r} source={source} conf={conf} said={said!r}", flush=True)
         return Addition(food=food, source=source, confidence=conf)
+
+    async def read_wrapper(self, jpeg: bytes) -> WrapperLabel:
+        """The full frame, not the reader's smaller copy: this text is small."""
+        d = await self.chat.structured(WRAPPER_SYSTEM, "Read the wrapper.", WRAPPER_SCHEMA, jpeg)
+        label = WrapperLabel(
+            brand=(d or {}).get("brand"),
+            product=(d or {}).get("product"),
+            flavour=(d or {}).get("flavour"),
+            net_grams=number((d or {}).get("net_grams")),
+            protein_g=number((d or {}).get("protein_g")),
+        )
+        print(f"MODEL wrapper={label.name!r} net={label.net_grams} p={label.protein_g}", flush=True)
+        return label
+
+    async def find_facts(self, label: WrapperLabel) -> LabelFacts | None:
+        """Muse Spark's own web search (#13): the wearer needs no barcode and no other service."""
+        net = f", {label.net_grams:g} g" if label.net_grams else ""
+        prompt = FACTS_PROMPT.format(name=label.name, net=net)
+        t0 = time.perf_counter()
+        text, urls = await self.chat.grounded(prompt)
+        took = time.perf_counter() - t0
+        print(f"MODEL facts in {took:.1f} s: {text[:200]!r} cited={urls[:2]}", flush=True)
+        d = json_object(text)
+        if not d:
+            return None
+        return LabelFacts(
+            serving_g=number(d.get("serving_g")),
+            kcal=number(d.get("kcal")),
+            protein_g=number(d.get("protein_g")),
+            carbs_g=number(d.get("carbs_g")),
+            fat_g=number(d.get("fat_g")),
+            fiber_g=number(d.get("fiber_g")),
+            sodium_mg=number(d.get("sodium_mg")),
+            source=urls[0] if urls else None,
+        )
 
     async def aclose(self) -> None:
         await self.chat.aclose()

@@ -137,5 +137,27 @@ class ChatModel:
             log.warning("structured output is not JSON: %r", raw[:120])
         return d
 
+    async def grounded(self, prompt: str) -> tuple[str, list[str]]:
+        """One call with Muse Spark's web_search tool, which only the Responses API offers: the
+        answer's text and the pages it cited. https://dev.meta.ai/docs/search-grounding"""
+        r = await self._http.post(
+            "/responses",
+            json={"model": self.model, "input": prompt, "tools": [{"type": "web_search"}]},
+        )
+        r.raise_for_status()
+        texts: list[str] = []
+        urls: list[str] = []
+        for item in r.json().get("output") or []:
+            if item.get("type") != "message":
+                continue
+            for part in item.get("content") or []:
+                if part.get("type") != "output_text":
+                    continue
+                texts.append(part.get("text") or "")
+                for note in part.get("annotations") or []:
+                    if note.get("type") == "url_citation" and note.get("url"):
+                        urls.append(note["url"])
+        return "".join(texts), urls
+
     async def aclose(self) -> None:
         await self._http.aclose()

@@ -87,6 +87,41 @@ class Addition(BaseModel):
     confidence: float = Field(default=0.0, ge=0, le=1)
 
 
+class WrapperLabel(BaseModel):
+    """What is printed on a packaged food, read off one frame: only what the wrapper says."""
+
+    brand: str | None = None
+    product: str | None = None
+    flavour: str | None = None
+    net_grams: float | None = None
+    protein_g: float | None = None
+
+    @property
+    def name(self) -> str:
+        """Brand, product and flavour, each word once: "Simply Protein Crispy Dark Chocolate"."""
+        seen: set[str] = set()
+        words = []
+        for part in (self.brand, self.product, self.flavour):
+            for word in (part or "").split():
+                if word.lower() not in seen:
+                    seen.add(word.lower())
+                    words.append(word)
+        return " ".join(words)
+
+
+class LabelFacts(BaseModel):
+    """The printed nutrition facts for one serving, found by Muse Spark's web search."""
+
+    serving_g: float | None = None
+    kcal: float | None = None
+    protein_g: float | None = None
+    carbs_g: float | None = None
+    fat_g: float | None = None
+    fiber_g: float | None = None
+    sodium_mg: float | None = None
+    source: str | None = Field(default=None, description="the page the search cited")
+
+
 class Nutrients(BaseModel):
     """What the grams mean, from a per-100 g table. None when the food is not in the table."""
 
@@ -113,8 +148,10 @@ class Entry(BaseModel):
     nutrients: Nutrients | None = None
     t_ms: int
     product: str | None = Field(
-        default=None, description="the barcode (EAN) the name and nutrients came from (#13)"
+        default=None,
+        description='where the name and nutrients came from: a barcode (EAN), or "wrapper" (#13)',
     )
+    source: str | None = Field(default=None, description="the page a wrapper's numbers came from")
 
 
 class Question(BaseModel):

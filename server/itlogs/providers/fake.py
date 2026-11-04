@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from itlogs.models import Addition, EntryRead, Reply
+from itlogs.models import Addition, EntryRead, LabelFacts, Reply, WrapperLabel
 
 WORD_NUMBERS = {
     "zero": 0,
@@ -30,6 +30,9 @@ class FakeVision:
         self.calls = 0
         self.additions: list[Addition] = []
         self.addition_calls: list[tuple[bytes | None, bytes, str]] = []
+        self.wrappers: list[WrapperLabel] = []
+        self.facts: LabelFacts | None = None
+        self.wrapper_calls: list[bytes] = []
 
     async def read_entry(self, jpeg: bytes) -> EntryRead:
         read = self.reads[min(self.calls, len(self.reads) - 1)]
@@ -39,6 +42,13 @@ class FakeVision:
     async def read_addition(self, before: bytes | None, after: bytes, speech: str) -> Addition:
         self.addition_calls.append((before, after, speech))
         return self.additions.pop(0) if self.additions else Addition()
+
+    async def read_wrapper(self, jpeg: bytes) -> WrapperLabel:
+        self.wrapper_calls.append(jpeg)
+        return self.wrappers.pop(0) if self.wrappers else WrapperLabel()
+
+    async def find_facts(self, label: WrapperLabel) -> LabelFacts | None:
+        return self.facts
 
 
 class FakeLLM:
