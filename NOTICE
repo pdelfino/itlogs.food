@@ -5,7 +5,7 @@ The code in this repository is licensed under the Apache License, Version 2.0 (s
 
 Not covered by that license:
 - The itlogs name and logos, including docs/brand and site/brand.
-- The pictures in site/img.
+- The pictures and the video loop in site/img.
 - site/fonts: SIL Open Font License, with the licenses in that folder.
 - server/itlogs/data/cnf.csv: Canadian Nutrient File, Health Canada. Contains information licensed
   under the Open Government Licence, Canada.

@@ -195,4 +195,4 @@ Nutrients: Canadian Nutrient File, Health Canada, contains information licensed 
 
 ## License
 
-The code is [Apache 2.0](LICENSE). The itlogs name and logos, the pictures in `site/img`, the fonts and the nutrient data are not covered: see [NOTICE](NOTICE).
+The code is [Apache 2.0](LICENSE). The itlogs name and logos, the pictures and the video loop in `site/img`, the fonts and the nutrient data are not covered: see [NOTICE](NOTICE).

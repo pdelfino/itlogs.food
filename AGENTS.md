@@ -101,4 +101,4 @@ The code is Apache 2.0 (`LICENSE`). `NOTICE` lists what it does not cover: the i
 - A change to what `_watch` or `_bowl_step` logs shows up as a `DIFF` in replay. If the new rows are right, update `expect_now` in that trace and say why in the commit.
 - Keep `models.py` and `Protocol.swift` in step: the phone decodes strictly.
 - Models are reached only through `providers/`. Nothing else knows an endpoint.
-- Do not add a recommendation path, and never commit photos, recordings or keys. The one exception is the pictures in `site/img`, each approved by hand and stripped of metadata.
+- Do not add a recommendation path, and never commit photos, recordings or keys. The one exception is the pictures and the short silent loop in `site/img`, each approved by hand and stripped of metadata.

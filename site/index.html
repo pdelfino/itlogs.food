@@ -18,7 +18,7 @@
   <link rel="icon" href="brand/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
   <link rel="preload" href="fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
   <div class="glow" aria-hidden="true"></div>
@@ -158,9 +158,11 @@
         <h2>Glasses. Scale. That's the setup.</h2>
       </div>
       <div class="bento">
-        <figure class="reveal big"><img src="img/real-setup.jpg" width="1600" height="1067" loading="lazy" alt="Ray-Ban Meta glasses and their case on a glass table, beside a white digital kitchen scale with a banana on it and an apple behind."></figure>
+        <figure class="reveal big"><video src="img/real-pour.mp4" poster="img/real-pour.jpg" width="960" height="640" autoplay muted loop playsinline preload="metadata" aria-label="Milk pouring into a bowl on a kitchen scale. The number on the display climbs from 69 to 141 grams, with a phone beside it."></video></figure>
+        <figure class="reveal"><img src="img/real-setup.jpg" width="1600" height="1067" loading="lazy" alt="Ray-Ban Meta glasses and their case on a glass table, beside a white digital kitchen scale with a banana on it and an apple behind."></figure>
         <figure class="reveal quote"><blockquote>“Every other health stream fills itself: the ring, the watch, the body scale. Food was the one log still typed by hand. The typing is what kills the habit.”</blockquote><figcaption>Why this exists</figcaption></figure>
       </div>
+      <p class="fine reveal">Weighing, filmed during a test on 2026-NOVEMBER-03. The log above comes from a later run.</p>
     </section>
 
     <section class="built wrap" id="built">
@@ -204,6 +206,12 @@
     <p class="legal">Built in Montréal. Ray-Ban Meta and Muse are trademarks of their owners. itlogs.food is an independent project, not affiliated with Meta. Nutrients: <a href="https://food-nutrition.canada.ca/cnf-fce/" rel="noopener">Canadian Nutrient File</a>, Health Canada, contains information licensed under the <a href="https://open.canada.ca/en/open-government-licence-canada" rel="noopener">Open Government Licence, Canada</a>. <a href="privacy.html">Privacy</a>.</p>
   </footer>
 
+  <script>
+    // the loop holds still for anyone who asked for less motion
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('video[autoplay]').forEach(function (v) { v.removeAttribute('autoplay'); v.pause(); });
+    }
+  </script>
   <script>
     (function () {
       var els = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
