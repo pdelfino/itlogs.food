@@ -69,3 +69,37 @@ def test_two_metas_back_to_back_do_not_end_the_session():
         send(ws, "end_session")
         _, state = drain_until(ws, "state")
         assert "entries" in state
+
+
+def test_model_out_of_reach_is_said_once_and_stop_still_answers(monkeypatch):
+    """2026-NOVEMBER-03 20:32: four ConnectTimeouts in a row (the Mac lost the model's endpoint,
+    the frames kept arriving), the wearer heard nothing, and Stop crashed the handler on the final
+    look. Now the ear says it once and the final state still comes."""
+    import json
+
+    import httpx
+
+    from itlogs import app as app_module
+    from itlogs.providers.fake import FakeLLM
+
+    class Unreachable:
+        async def read_entry(self, jpeg: bytes):
+            raise httpx.ConnectTimeout("")
+
+    monkeypatch.setattr(app_module, "make_providers", lambda: (Unreachable(), FakeLLM()))
+    with TestClient(app).websocket_connect("/ws/session") as ws:
+        meta = {"width": 720, "height": 1280}
+        send(ws, "frame", "frame", {"t_ms": 0, **meta}, b"jpeg")
+        send(ws, "capture", "capture", {"t_ms": 10})
+        _, said = drain_until(ws, "say")
+        assert "out of reach" in said["say"]
+        send(ws, "capture", "capture", {"t_ms": 20})  # a second failure is not said again
+        send(ws, "end_session")
+        msgs = []
+        while True:
+            m = json.loads(ws.receive_text())
+            msgs.append(m)
+            if m["kind"] == "state":
+                break
+        assert "entries" in msgs[-1]
+        assert not any("out of reach" in m.get("say", "") for m in msgs)

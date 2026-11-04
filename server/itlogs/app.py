@@ -13,6 +13,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+import httpx
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -121,9 +122,30 @@ async def ws_session(ws: WebSocket) -> None:
     thinking: set[asyncio.Task[None]] = set()
     MAX_IN_FLIGHT = 2
 
+    unreachable_said = False
+
+    async def model_unreachable(e: Exception) -> None:
+        # the Mac lost the model's endpoint (20:32, 2026-NOVEMBER-03: four ConnectTimeouts in a
+        # row while the frames kept arriving): say it once, so the wearer knows it is not the loop
+        nonlocal unreachable_said
+        print(f"MODEL unreachable: {type(e).__name__} {e}", flush=True)
+        if unreachable_said:
+            return
+        unreachable_said = True
+        msg = ServerMessage(kind="say", say="The model is out of reach. Check the Mac's internet.")
+        keep([msg])
+        try:
+            await send_all([msg])
+        except (WebSocketDisconnect, RuntimeError):
+            pass
+
     async def think(coro: Any, t_ms: int) -> None:
         t0 = time.perf_counter()
-        out = await coro
+        try:
+            out = await coro
+        except httpx.TransportError as e:
+            await model_unreachable(e)
+            return
         took_ms = int((time.perf_counter() - t0) * 1000)
         if any(m.kind == "read" for m in out):
             print(f"READ took {took_ms} ms (frame t={t_ms})", flush=True)
@@ -243,7 +265,11 @@ async def ws_session(ws: WebSocket) -> None:
                     await transcriber.close()
                     transcriber = None
                 await settle_thinking()  # the reads in flight land first
-                out = await session.final_look()  # then whatever is on the scale now
+                try:
+                    out = await session.final_look()  # then whatever is on the scale now
+                except httpx.TransportError as e:
+                    await model_unreachable(e)  # the final state still goes out below
+                    out = []
                 keep(out)
                 await send_all(out)
                 out = await session.end_session()
