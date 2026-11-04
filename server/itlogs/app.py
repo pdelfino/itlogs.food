@@ -130,12 +130,23 @@ async def ws_session(ws: WebSocket) -> None:
             if recorder:
                 recorder.event("read_latency", {"t_ms": t_ms, "ms": took_ms})
         keep(out)
-        await send_all(out)
+        try:
+            await send_all(out)
+        except (WebSocketDisconnect, RuntimeError) as e:
+            # the phone stopped before a slow read came back (20 s on Muse Spark Open, Baseten,
+            # 2026-NOVEMBER-03): the read and its entry are already in the recording, the socket
+            # is gone, that is all
+            print(f"READ after the socket closed, not sent ({type(e).__name__})", flush=True)
+
+    def retrieved(task: asyncio.Task[None]) -> None:
+        thinking.discard(task)
+        if not task.cancelled() and task.exception() is not None:
+            print(f"THINK failed: {task.exception()!r}", flush=True)
 
     def start_thinking(coro: Any, t_ms: int, kind: str = "read") -> None:
         task = asyncio.create_task(think(coro, t_ms), name=kind)
         thinking.add(task)
-        task.add_done_callback(thinking.discard)
+        task.add_done_callback(retrieved)
 
     def busy() -> int:
         return sum(1 for t in thinking if not t.done() and t.get_name() == "read")
