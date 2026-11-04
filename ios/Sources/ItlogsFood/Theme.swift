@@ -12,6 +12,7 @@ enum Theme {
     static let mute = Color(red: 0.463, green: 0.463, blue: 0.596)    // #767698
     static let line = Color(red: 0.090, green: 0.090, blue: 0.227).opacity(0.10)
     static let accent = Color(red: 0.345, green: 0.282, blue: 0.898)  // #5848e5
+    static let warn = Color(red: 0.898, green: 0.282, blue: 0.302)    // #e5484d, the display is blocked
     static let card = Color.white
 
     /// The digital face for numbers: rounded, bold, tabular digits.

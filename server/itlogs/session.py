@@ -25,7 +25,7 @@ from itlogs.models import Entry, EntryRead, Question, Reply, ServerMessage
 from itlogs.providers.base import LLMProvider, VisionProvider
 from itlogs.providers.openfoodfacts import Product
 
-DISPLAY_HINT = "I can see the food but not the display. Look down at the scale."
+DISPLAY_HINT = "The display is blocked. Look down at the scale."
 
 
 def fmt_grams(g: float) -> str:

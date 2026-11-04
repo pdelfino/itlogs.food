@@ -97,9 +97,18 @@ struct SessionView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.top, 10)
-            Text(foodLine)
-                .font(Theme.sentence(22, weight: .semibold))
-                .foregroundStyle(Theme.ink)
+            if session.running && session.lostDisplay {
+                Label("Display is blocked", systemImage: "eye.slash.fill")
+                    .font(Theme.sentence(19, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 10)
+                    .background(Theme.warn, in: Capsule())
+            } else {
+                Text(foodLine)
+                    .font(Theme.sentence(22, weight: .semibold))
+                    .foregroundStyle(Theme.ink)
+            }
             // the instruction: the second thing read after the number (was 13 pt, #20)
             Text(stateLine)
                 .font(Theme.sentence(17))
@@ -132,7 +141,7 @@ struct SessionView: View {
         if session.finishing { return "Finishing the last reading…" }
         if session.starting { return "Starting…" }
         if session.running && !session.cameraLive { return "The camera is starting. Wait for \"Ready\"." }
-        if session.running && session.lostDisplay { return "I can see the food but not the display. Look down at the scale." }
+        if session.running && session.lostDisplay { return "Look down at the scale." }
         if session.watching { return "Watching the scale. Weigh at your pace." }
         if session.running { return "Ready." }
         if !session.entries.isEmpty { return "Meal weighed. Check it below, or start again." }

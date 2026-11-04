@@ -283,7 +283,7 @@ def test_food_named_without_a_weight_is_said_once_per_half_minute():
     assert s._watch(oats, 1000) == []  # one alone: a hand over the display
     assert s._watch(empty, 2000) == []
     said = s._watch(oats, 3000)
-    hint = "I can see the food but not the display. Look down at the scale."
+    hint = "The display is blocked. Look down at the scale."
     assert [m.say for m in said] == [hint]
     assert s._watch(oats, 10_000) == []  # not again so soon
     assert len(s._watch(oats, 34_000)) == 1  # half a minute later, still lost
