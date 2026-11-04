@@ -187,6 +187,8 @@ final class SessionController {
                 Telemetry.error(error, ["where": "audio"])
             }
             running = true
+            // the phone sits on a stand while weighing: no auto-lock until Stop
+            UIApplication.shared.isIdleTimerDisabled = true
             startedAt = Date()
             // Start means weighing: the server watches the scale from here until Stop
             try? await client.watch(on: true, tMs: nowMs(), ask: askEachFood)
@@ -307,6 +309,7 @@ final class SessionController {
         try? await Task.sleep(for: .milliseconds(500))  // let the last "say" land before the socket closes
         await client.disconnect()
         running = false
+        UIApplication.shared.isIdleTimerDisabled = false
         watching = false
         finishing = false
         cameraLive = false
