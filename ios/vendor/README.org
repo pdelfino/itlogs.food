@@ -1,3 +1,3 @@
-#+TITLE: ios/vendor · the Meta Wearables Device Access Toolkit, not committed
+#+TITLE: ios/vendor · optional, not committed
 
-Put the toolkit SDK (Swift package or xcframework) and Meta's sample app here after registering on the Meta Wearables developer center (itlogs.food#1). The folder is gitignored so the SDK license is respected and so Claude Code reads the real API from source instead of guessing names. Then point =ios/project.yml= at the package and replace =GlassesSource= in =Sources/ItlogsFood/FrameSource.swift=.
+The build does not need this folder: =ios/project.yml= fetches the Wearables Device Access Toolkit with Swift Package Manager. A clone of Meta's SDK repository and its sample app can go here to read the API from source; the folder is gitignored so the SDK stays under Meta's terms and out of this repo.

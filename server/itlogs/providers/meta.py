@@ -6,8 +6,8 @@ open-weight paths. One still in, the food and the display value out, as structur
 bowl, two stills and what was said in, the one ingredient added out. The parser: the same client
 on a text prompt.
 
-Docs: hackathon/meta-model-api-notes.org. Standard-mode model ids only (no "-contributor":
-those train on the content, and the content is Pedro's kitchen).
+Docs: docs/meta-model-api-notes.org. Standard-mode model ids only (no "-contributor":
+those train on the content, and the content is the wearer's kitchen).
 """
 
 from __future__ import annotations

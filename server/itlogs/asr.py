@@ -2,7 +2,7 @@
 holds one Muse Voice Transcribe realtime session per logging session and turns each
 completed utterance into the existing voice-text path. The key never leaves the server.
 
-Docs: hackathon/meta-model-api-notes.org (realtime handshake, events, close codes).
+Docs: docs/meta-model-api-notes.org (realtime handshake, events, close codes).
 """
 
 from __future__ import annotations

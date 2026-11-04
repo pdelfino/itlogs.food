@@ -1,14 +1,17 @@
-#+TITLE: evals · does the reader get the food and the grams right?
+#+TITLE: evals · what can be checked about the reader and the loop
 
-Two numbers decide the demo: food top-1 and grams within 1 g, over photos of real food on a real scale, read from the glasses. The third is how often the loop logs without asking.
+* What runs today
+=make replay= (=replay.py=) feeds the reads of real sessions (=traces/=) to today's decision logic, with no key, no glasses and no network, and exits 1 on any difference. CI runs it. It tests the decisions made from reads, not the reading itself.
 
-* A set
+=recorded-runs.org= lists every recorded session with its reads, latency and rows. =trace_from_recording.py= generates it and the traces from the recordings, which stay out of git. Traces hold food names, grams, confidence and timing: no photos and no speech.
+
+* What does not exist yet
+Accuracy against ground truth. =sets/= is empty, so =make eval= prints that it has no sets. The numbers it is built to print are food top-1, grams within 1 g, and how often the loop logs without asking.
+
+** A set
 One folder per weighing under =sets/=, named =YYYY-MM-DD-<food>-<n>/=:
-- =a.jpg=, =b.jpg= : two photos of the same food on the scale, about 1.5 s apart, as the glasses took them. Never committed (see .gitignore); they live on the T7.
-- =truth.json= : ={"food": "cooked white rice", "grams": 87.0, "scale": "Renpho", "by": "Pedro", "date": "2026-11-02"}=. Committed.
-- =reads.json= (written by a live run): the model's two reads, so the loop can be re-scored offline. Committed.
+- =a.jpg=, =b.jpg=: two photos of the same food on the scale, as the glasses took them. Never committed.
+- =truth.json=: ={"food": "cooked white rice", "grams": 87.0, "scale": "Renpho", "by": "a person reading the display", "date": "2026-11-02"}=. Committed.
+- =reads.json=: written by a live run, the model's two reads, so the loop can be re-scored offline. Committed.
 
-A live session with =ITLOGS_RECORD_DIR= set keeps the frames each read was made on and the entries with their labels (agreed, confirmed, corrected); those folders become sets with a =truth.json= written from the confirmed entry.
-
-* Run
-=make eval= replays =reads.json= (fast, offline, deterministic, what CI runs). =make eval-live= runs the photos through the configured provider (=ITLOGS_PROVIDER=meta=, =ITLOGS_VISION=meta|local=) and prints latency per read too.
+=make eval= replays =reads.json= with no model calls. =make eval-live= runs the photos through the configured provider (=ITLOGS_PROVIDER=meta=, =ITLOGS_VISION=meta|baseten|local=) and prints latency per read too.

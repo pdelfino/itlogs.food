@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy · itlogs.food</title>
+  <meta name="description" content="What itlogs.food processes, where it goes, what is kept and how to have it deleted.">
+  <link rel="icon" href="brand/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css?v=4">
+  <style>
+    .policy { max-width: 42rem; padding-top: 3rem; padding-bottom: 3rem; }
+    .policy h1 { margin-bottom: 0.5rem; }
+    .policy h2 { font-size: 1.25rem; margin-top: 2.25rem; margin-bottom: 0.5rem; }
+    .policy p, .policy li { line-height: 1.6; }
+    .policy ul { padding-left: 1.25rem; }
+    .policy li { margin-bottom: 0.4rem; }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap">
+      <a class="wordmark" href="/" aria-label="itlogs.food">
+        <span>itlogs</span><span class="accent">.food</span>
+      </a>
+    </div>
+  </header>
+  <main class="wrap policy">
+    <h1>Privacy</h1>
+    <p class="fine">Updated 2026-NOVEMBER-04.</p>
+    <p>itlogs.food is a hackathon project. The app is not in any app store. It runs in Developer Mode on its developer's own glasses and phone, so its only user today is its developer. This page says what it handles, and would apply to anyone else who runs it.</p>
+
+    <h2>What it handles</h2>
+    <ul>
+      <li>Camera frames from the glasses, only between Start and Stop, which you tap.</li>
+      <li>What you say, as text recognized on the glasses. If the glasses are not recognizing speech, audio from the phone's microphone goes to the server, which sends it to Muse Voice Transcribe.</li>
+      <li>Food names and grams, and the nutrients worked out from them.</li>
+      <li>Barcode numbers, when a barcode is seen or scanned.</li>
+    </ul>
+
+    <h2>Why</h2>
+    <p>To log the food you weigh. Nothing else. It does not identify people, show ads or sell data.</p>
+
+    <h2>Where it goes</h2>
+    <ul>
+      <li>From the phone to a server you run on your own network.</li>
+      <li>From the server to the model provider you configured, to read the frame and understand the sentence: the Meta Model API, on model ids that do not train on the content, or Baseten.</li>
+      <li>A barcode number goes to Open Food Facts, to look up the product.</li>
+      <li>If a PostHog token is configured: food names, grams, diagnostic lines and errors go to PostHog. Never frames or audio.</li>
+      <li>To Apple Health, only when you confirm the meal. The app reads back only the energy it wrote.</li>
+    </ul>
+
+    <h2>What is kept</h2>
+    <ul>
+      <li>The video stream is not written to disk.</li>
+      <li>Recording is off by default. When it is on, the frames that were read and the events of the session are kept in a local folder on the server's machine, never in the public repository.</li>
+      <li>The public repository holds food names, grams, confidence and timing from a few real sessions, with no photos and no speech.</li>
+    </ul>
+
+    <h2>Deleting it</h2>
+    <p>Deleting a recording's folder deletes that recording. Meals in Apple Health are deleted in the Health app. To ask for anything to be deleted, or to ask about this page, write to the author at the address on the commits in <a href="https://github.com/pdelfino/itlogs.food">the source repository</a>.</p>
+
+    <h2>This website</h2>
+    <p>This site has no analytics script and sets no cookies.</p>
+  </main>
+  <footer class="wrap">
+    <p class="legal">itlogs.food is an independent project, not affiliated with Meta.</p>
+  </footer>
+</body>
+</html>

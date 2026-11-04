@@ -1,0 +1,30 @@
+#+TITLE: What Meta has said about food logging on its glasses, and the prior art
+#+DATE: 2026-NOVEMBER-04
+
+* Meta's own feature, announced 2026-MARCH-31
+Source: Meta's post on the new Ray-Ban Meta line, https://www.meta.com/blog/ray-ban-meta-styles-prescription-lenses/. Coverage: https://www.roadtovr.com/meta-health-food-logging-ray-ban-smart-glasses/ and https://9to5google.com/2026/04/06/metas-smart-glasses-will-watch-what-you-eat-to-track-nutrition-data/.
+
+Meta wrote:
+- "With a simple voice prompt or quick photo, you can log what you eat hands-free, and Meta AI will extract key nutrition details and add them to your food log in the Meta AI app."
+- "This will be available to users aged 18+ in the U.S. on Ray-Ban Meta and Oakley Meta glasses soon, and Meta Ray-Ban Display glasses later this summer."
+- "In the future, we'll get to a point where your AI glasses can understand what you're eating and automatically log your food."
+
+In practice, according to the press, not Meta:
+- Portions are estimated from the photo and nothing is weighed: https://www.tomsguide.com/ai/i-stopped-weighing-my-food-and-used-ray-ban-meta-glasses-to-track-calories-instead
+- The log lives in the Meta AI app. Road to VR notes it does not tie into Apple Health or Samsung Health.
+- US only, so it was not available in Canada as of 2026-NOVEMBER-01.
+
+* The gap
+Meta's feature answers what was eaten, and estimates how much. Four popular photo apps logged calories and fat about one-third too low across about 100 meals: https://www.westnewsmagazine.com/health/ai-calorie-tracking-apps-may-be-inaccurate-tests-find/article_fd5c470b-6cc5-5240-bdaf-c38366e01239.html. A scale removes the portion problem, and many kitchens already have one.
+
+* Prior art
+| What | Weighs? | Glasses? | Apple Health? | Notes |
+|------+---------+----------+---------------+-------|
+| Meta AI food logging | no, estimates | yes | no | US only, Meta AI app |
+| An iOS app by one developer, https://apps.apple.com/app/id6759910137 | reads the grams off the display from a phone photo | no | writes meals | the closest idea we found; it needs hands for the phone |
+| SnapTrack: Camera Scale Reader (iOS) | reads a body scale's display | no | writes weight | no food |
+| Qalzy (London, Kickstarter 2025) | yes, its own scale with a camera on a stalk | no | not known | USD 269, no independent review |
+| Smart nutrition scales (Etekcity, Renpho, Greater Goods) | yes, by Bluetooth | no | some | the food is picked by hand in the app |
+| Nutrition5k (Google, 2021) | a dataset of weighed ingredients | no | no | research |
+
+We did not find glasses, any scale's display and Apple Health in one hands-free loop. The pieces exist on their own.

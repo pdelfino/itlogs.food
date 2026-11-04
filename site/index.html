@@ -51,17 +51,13 @@
         <a class="btn primary" href="#film">Watch the film</a>
         <a class="btn ghost" href="https://github.com/pdelfino/itlogs.food">View the source</a>
       </div>
-
-      <!-- FILM: when the demo film exists, replace the <div class="poster"> below with
-           <iframe src="https://www.youtube.com/embed/VIDEO_ID" title="itlogs.food demo" allow="fullscreen" loading="lazy"></iframe>
-           Nothing else changes. -->
       <figure class="film reveal" id="film">
         <div class="poster">
           <img src="img/hero.webp" width="1536" height="1024" alt="" fetchpriority="high">
           <div class="play" aria-hidden="true"><span class="cursor big"></span></div>
           <figcaption>
             <span class="k">The film</span>
-            <span>Three minutes, shot in a Montréal kitchen. Here by 2026-NOVEMBER-04.</span>
+            <span>Three minutes, shot in a Montréal kitchen.</span>
           </figcaption>
         </div>
       </figure>
@@ -148,16 +144,14 @@
           <li>Sent to Apple Health with one tap</li>
         </ul>
       </div>
-      <div class="logcard reveal" aria-label="a log that writes itself">
-        <div class="bar"><span></span><span></span><span></span><b>dinner · 2026-NOVEMBER-01</b></div>
+      <div class="logcard reveal" aria-label="the log of a real run">
+        <div class="bar"><span></span><span></span><span></span><b>a real run · 2026-NOVEMBER-03</b></div>
         <ol>
-          <li><span class="t">18:42</span><span class="f">grilled chicken breast</span><span class="g">218 g</span><span class="c">360 kcal</span><span class="s">agreed</span></li>
-          <li><span class="t">18:43</span><span class="f">cooked white rice</span><span class="g">187 g</span><span class="c">243 kcal</span><span class="s">confirmed</span></li>
-          <li><span class="t">18:44</span><span class="f">olive oil</span><span class="g">9 g</span><span class="c">80 kcal</span><span class="s">agreed</span></li>
-          <li><span class="t">18:45</span><span class="f">roasted pumpkin</span><span class="g">120 g</span><span class="c">53 kcal</span><span class="s">corrected</span></li>
-          <li class="live"><span class="t">18:47</span><span class="f">&nbsp;</span><span class="cursor small" aria-hidden="true"></span></li>
+          <li><span class="t">20:15</span><span class="f">apple</span><span class="g">112 g</span><span class="c">58 kcal</span><span class="s">logged</span></li>
+          <li><span class="t">20:15</span><span class="f">banana</span><span class="g">124 g</span><span class="c">110 kcal</span><span class="s">logged</span></li>
+          <li class="live"><span class="t">20:16</span><span class="f">&nbsp;</span><span class="cursor small" aria-hidden="true"></span></li>
         </ol>
-        <p class="sum"><span>dinner</span><span>534 g</span><span>736 kcal</span><span>74 g protein</span></p>
+        <p class="sum"><span>total</span><span>236 g</span><span>169 kcal</span><span>1.6 g protein</span></p>
       </div>
     </section>
 
@@ -181,21 +175,21 @@
         <h2>Meta's models, in the loop.</h2>
       </div>
       <div class="chips">
-        <div class="chip reveal"><b>Ray-Ban Meta</b><span>The glasses, through the Wearables Device Access Toolkit: camera stream, microphone, the button.</span></div>
-        <div class="chip reveal"><b>Muse Spark</b><span>Reads the frame: the food, the number on the display, and how sure it is. Structured output, every time.</span></div>
-        <div class="chip reveal"><b>Muse Voice Transcribe</b><span>Hears your answer when the two reads disagree. Realtime, endpointing, 24 kHz.</span></div>
+        <div class="chip reveal"><b>Ray-Ban Meta</b><span>The glasses, through the Wearables Device Access Toolkit: the camera stream, and speech recognized on the glasses.</span></div>
+        <div class="chip reveal"><b>Muse Spark</b><span>Reads the frame: the food, the number on the display, and how sure it is, as structured output. In a bowl, it compares the picture before and after.</span></div>
+        <div class="chip reveal"><b>Muse Voice Transcribe</b><span>The fallback for speech when the glasses are not recognizing it. Realtime, 24 kHz.</span></div>
         <div class="chip reveal"><b>Muse Image</b><span>Made every picture on this page from a text prompt and one reference frame.</span></div>
-        <div class="chip reveal"><b>Muse Glimmer</b><span>The open-weight path: the same reader on a Mac, recalibrated on the labels the loop produces.</span></div>
-        <div class="chip reveal"><b>FastAPI + Swift</b><span>A thin phone client streams frames up a WebSocket; one Python loop does the rest. Open source.</span></div>
+        <div class="chip reveal"><b>Muse Spark Open</b><span>The open-weight path: the same reader on Baseten, one setting away. It read the apple right at 20 s a read, too slow for live use, so Muse Spark runs the demo.</span></div>
+        <div class="chip reveal"><b>FastAPI + Swift</b><span>A thin phone client streams frames up a WebSocket; one Python loop does the rest. The source is on GitHub.</span></div>
       </div>
     </section>
 
     <section class="band wrap">
       <div class="bandcard reveal">
-        <h2>Submission 2026-NOVEMBER-04.<br>The build is public.</h2>
-        <p>Ten days, one kitchen, every commit in the open. Watch the repository to see the film land.</p>
+        <h2>Built for the Meta Global AI<br>Developer Hackathon.</h2>
+        <p>The code, every recorded run, and a replay of real sessions you can run with no glasses and no key.</p>
         <div class="cta">
-          <a class="btn primary" href="https://github.com/pdelfino/itlogs.food">Watch on GitHub</a>
+          <a class="btn primary" href="https://github.com/pdelfino/itlogs.food">View on GitHub</a>
           <a class="btn ghost light" href="#film">The film</a>
         </div>
       </div>
@@ -205,7 +199,7 @@
   <footer class="wrap">
     <div class="wordmark small"><span>itlogs</span><span class="accent">.food</span><span class="cursor" aria-hidden="true"></span></div>
     <p>itlogs<span class="accent">.food</span> is the first of a family. Only the suffix changes.</p>
-    <p class="legal">Built in Montréal. Ray-Ban Meta and Muse are trademarks of their owners. itlogs.food is an independent project, not affiliated with Meta.</p>
+    <p class="legal">Built in Montréal. Ray-Ban Meta and Muse are trademarks of their owners. itlogs.food is an independent project, not affiliated with Meta. Nutrients: Canadian Nutrient File, Health Canada, contains information licensed under the Open Government Licence, Canada. Packaged foods: Open Food Facts, Open Database License. <a href="privacy.html">Privacy</a>.</p>
   </footer>
 
   <script>

@@ -1,0 +1,11 @@
+# itlogs.food
+
+> Hands-free food logging. Ray-Ban Meta glasses see a digital kitchen scale, Muse Spark names the food and reads the grams off the display, and the meal goes to Apple Health with its calories and macros. Meta Global AI Developer Hackathon entry, Indie track.
+
+The source says what works and what does not, with evidence you can run.
+
+- [README](https://github.com/pdelfino/itlogs.food/blob/main/README.md): state table, how a food gets logged, Meta tooling, architecture, evidence, known limits
+- [AGENTS.md](https://github.com/pdelfino/itlogs.food/blob/main/AGENTS.md): read order, module map, glossary, a command to check each claim
+- [Recorded runs](https://github.com/pdelfino/itlogs.food/blob/main/evals/recorded-runs.org): every session on real glasses
+- [Rules, one by one](https://github.com/pdelfino/itlogs.food/blob/main/docs/rules-compliance.org): what was built when, and the evidence
+- [Privacy](https://itlogs.food/privacy.html)

@@ -6,8 +6,8 @@ Read 2026-OCTOBER-27 from wearables.developer.meta.com (Setup, Manage distributi
 * Registration and terms
 - No registration to develop on your own glasses. Enable Developer Mode in the Meta AI app (Settings, App Info, tap the app version five times, toggle), connect the glasses, and an unpublished app registers with them with no review. It appears under Meta AI settings, App connections, Developer mode apps.
 - A Wearables Developer Center account and organization are needed only for release channels (invite-only testers) and publishing, which is a review. The toolkit is a developer preview: most apps cannot go to public app stores yet.
-- Using the SDK means agreeing to the Meta Wearables Developer Terms and Acceptable Use Policy (the repo LICENSE says so). Pedro's call; nobody accepts on his behalf.
-- Acceptable use encourages "hands-free capture and logging: sport" and "activity and form tracking, coaching"; the design principle is "narrow purpose, short retention, obvious to bystanders". Meta reviews and monitors and can revoke without notice.
+- Using the SDK means agreeing to the Meta Wearables Developer Terms and Acceptable Use Policy (the repo LICENSE says so).
+- Acceptable use encourages "hands-free capture and logging: sport" and "activity and form tracking"; the design principle is "narrow purpose, short retention, obvious to bystanders". Meta reviews and monitors and can revoke without notice.
 - Analytics opt-out: =MWDAT.Analytics.OptOut = true= in Info.plist (set in ios/project.yml).
 
 * Requirements
@@ -15,9 +15,7 @@ iOS 17.2+, Xcode 26.4+ (27.1 installed). Glasses firmware per the version-depend
 
 * The SDK
 - Swift Package =https://github.com/facebook/meta-wearables-dat-ios=, version 1.0.1 (exact), products MWDATCore (registration, devices, permissions, DeviceSession), MWDATCamera (Camera, Stream, VideoFrame, photo capture), MWDATMockDevice (Mock Device Kit for tests without glasses).
-- Lifecycle used in ios/Sources/ItlogsFit/GlassesSource.swift: =Wearables.configure()= at launch; =Wearables.shared.startRegistration()= once (opens the Meta AI app); =createSession(deviceSelector: AutoDeviceSelector(wearables:))=, =session.start()=, wait for =.started=; =checkPermissionStatus(.camera)= or =requestPermission(.camera)= (round-trips through the Meta AI app); =session.addCamera(config: StreamConfiguration(videoCodec: .hvc1, resolution: .low, frameRate: 24))=; =camera.stream.videoFramePublisher.listen { frame in ... }=; =frame.makeUIImage()= decodes the HEVC frame; =camera.stop()=, =session.stop()=.
+- Lifecycle used in ios/Sources/ItlogsFood/GlassesSource.swift: =Wearables.configure()= at launch; =Wearables.shared.startRegistration()= once (opens the Meta AI app); =createSession(deviceSelector: AutoDeviceSelector(wearables:))=, =session.start()=, wait for =.started=; =checkPermissionStatus(.camera)= or =requestPermission(.camera)= (round-trips through the Meta AI app); =session.addCamera(config: StreamConfiguration(videoCodec: .raw, resolution: .high, frameRate: 7))=; =camera.stream.videoFramePublisher.listen { frame in ... }=; =frame.makeUIImage()= gives the frame as an image; =camera.stop()=, =session.stop()=.
 - Info.plist must carry: =MWDAT= dict (AppLinkURLScheme, MetaAppID, ClientToken, TeamID; the last three empty in Developer Mode), a URL scheme, background modes processing, bluetooth-central, bluetooth-peripheral, audio; Bluetooth, local network and Bonjour usage strings.
 - Claude Code plugin =mwdat-ios= (marketplace facebook/meta-wearables-dat-ios) installed on 2026-10-27; it registers the docs MCP server =https://mcp.developer.meta.com/wearables= (public, no auth) with =search_dat_docs=.
 
-* Open numbers (day one with the glasses, #5)
-Actual frame rate reaching the app, resolution of =StreamingResolution.low=, latency glasses to Mac, phone battery per 10 minutes, streaming time before the glasses stop.
