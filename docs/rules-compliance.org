@@ -43,7 +43,7 @@ In this repository:
 | NOVEMBER-01 to 04 | everything after | Weighing mode, the review screen, Apple Health, barcode, bowl mode, replay, the site |
 
 * Coding assistant
-Built with Claude Code (Anthropic) as a coding assistant, disclosed in a =Co-Authored-By= trailer on the commits. The Official Rules allow a third party for technical assistance when the components remain the participant's own work and the participant owns all rights to them. Meta's toolkit documentation has its own Claude Code setup page, https://wearables.developer.meta.com/docs/develop/dat/ai-assisted-claude-code, and this project used Meta's =mwdat-ios= plugin from it. The Meta models are what the product runs on.
+Built with Claude Code (Anthropic) as a coding assistant, disclosed in a =Co-Authored-By= trailer on the commits. The Official Rules allow a third party for technical assistance when the components remain the participant's own work and the participant owns all rights to them. Meta's toolkit documentation has its own Claude Code setup page, https://wearables.developer.meta.com/docs/develop/dat/ai-assisted-claude-code, and this project used Meta's =mwdat-ios= plugin from it. Meta's Model API documentation also describes third-party coding agents, Claude Code among them: https://dev.meta.ai/docs/coding-agents. The Meta models are what the product runs on.
 
 * Platform policies
 Meta's Wearables Developer Terms and Acceptable Use Policy (https://wearables.developer.meta.com/terms, https://wearables.developer.meta.com/acceptable-use-policy):
