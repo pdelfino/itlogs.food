@@ -222,6 +222,35 @@ async def test_the_same_product_is_found_only_once():
     assert again.entries[0].nutrients.kcal == 160.0
 
 
+async def test_only_the_brand_legible_finds_that_brands_saved_label():
+    """16:05: the same bar read as just "Simply Protein", 13 g. The label was saved, the key did
+    not match, and the search was still out when Stop cut it off."""
+    s, _ = weighing(bar())
+    await s.on_frame(b"frame", 1000)
+    await settle(s)
+    brand_only = WrapperLabel(brand="Simply Protein", protein_g=13)
+    again, vision = weighing(bar(), wrappers=(brand_only,))
+    await again.on_frame(b"frame", 1000)
+    await settle(again)
+    assert vision.facts_calls == 0
+    assert again.entries[0].nutrients.kcal == 160.0  # one serving, not the wrapper's 2 g too
+    assert again.entries[0].nutrients.protein_g == 13.0
+
+
+async def test_two_saved_labels_for_a_brand_are_not_guessed_between():
+    first, _ = weighing(bar())
+    await first.on_frame(b"f", 1000)
+    await settle(first)
+    other = BAR.model_copy(update={"flavour": "Peanut Butter"})
+    second, _ = weighing(bar(), wrappers=(other,))
+    await second.on_frame(b"f", 1000)
+    await settle(second)
+    third, vision = weighing(bar(), wrappers=(WrapperLabel(brand="Simply Protein", protein_g=13),))
+    await third.on_frame(b"f", 1000)
+    await settle(third)
+    assert vision.facts_calls == 1
+
+
 async def test_refused_numbers_are_not_kept():
     s, vision = weighing(bar(), facts=FACTS.model_copy(update={"protein_g": 15.0}))
     await s.on_frame(b"frame", 1000)

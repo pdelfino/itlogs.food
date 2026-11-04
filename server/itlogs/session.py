@@ -380,7 +380,8 @@ class Session:
         if row is None:
             print(f"FACTS not trusted for {label.name!r}: {facts}", flush=True)
             return []
-        net = label.net_grams
+        # a whole wrapped item: its net weight, or one serving when the net weight was not legible
+        net = label.net_grams or (facts.serving_g if facts else None)
         eaten = net if net and net <= entry.grams <= net * 1.2 else entry.grams
         found = nutrients.scale(row, eaten)
         note = EntryRead(
