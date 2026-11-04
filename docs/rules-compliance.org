@@ -10,7 +10,7 @@ Checked against the Official Rules accepted on 2026-OCTOBER-25 and the participa
 | One track, one project; fits a problem statement | Met | Indie track, Build for Your World. A personal daily problem: logging food by hand |
 | Team of at most four | Met | Solo. =make rules-check= shows one git author |
 | Repository public and open source | At submission | This repository, public from submission on, under Apache 2.0 (=LICENSE=). An organizers' announcement calls an open-source repository mandatory |
-| New work only, clearly identified | Met | Timeline below. Of the nearly 7,000 lines of Python and Swift here today, about 400 still come from the carried first commit, and that commit was itself written after kickoff (=make rules-check= counts them with =git blame=) |
+| New work only, clearly identified | Met | Timeline below. Of the roughly 8,000 lines of Python and Swift here today, about 400 still come from the carried first commit, and that commit was itself written after kickoff (=make rules-check= counts them with =git blame=) |
 | The demo shows only what was built during the event | At submission | The video shows this app, its server and its Apple Health write |
 | Original work, owned by the entrant (Official Rules, Hackathon Submission) | Met | One author. A coding assistant was used, as described below; the entrant owns the result |
 | Open source used within its licences | Met | Licences below. This project's own code is Apache 2.0: =LICENSE= and =NOTICE= |
@@ -52,7 +52,7 @@ Meta's Wearables Developer Terms and Acceptable Use Policy (https://wearables.de
 - Retention: the server records only when started with =ITLOGS_RECORD_DIR=, which =make run-live= sets. It then keeps the frames that were read and the session's events, in a local folder, never in git. Diagnostic lines from the phone go to a local log.
 - Privacy policy: https://itlogs.food/privacy.html
 - Health: the app writes food samples to Apple Health when the wearer confirms a meal, and reads back only the energy it wrote. Not a medical device, and it holds no protected health information.
-- Model API: standard-mode model ids only, which do not train on the content.
+- Model API: standard-mode model ids only, which Meta's docs say do not train on the content. Its Billing page adds that content may be used for product improvement while free credits are in use, and the hackathon's credits are free credits.
 
 * Third-party licences
 | What | Licence | Where it is credited |

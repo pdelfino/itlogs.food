@@ -4,6 +4,10 @@
 
 **The fix:** wear Ray-Ban Meta glasses and put the food on any digital scale. The glasses read the grams off the display, Muse Spark names the food, and the meal goes to Apple Health with its calories and macros. No typing, hands free, nothing to pair with the scale.
 
+[![Watch the demo, 2:50, on YouTube](https://img.youtube.com/vi/JwRrb7FgCuk/maxresdefault.jpg)](https://www.youtube.com/watch?v=JwRrb7FgCuk)
+
+*The demo, 2:50, on YouTube.*
+
 ![The view from the glasses: a phone showing 112 grams beside a kitchen scale whose display also shows 112](site/img/real-frame.jpg)
 
 *A real frame from the glasses during a run, cropped. The app and the scale both say 112 g.*
@@ -165,7 +169,7 @@ Kickoff was 2026-OCTOBER-26 12:00 ET and the deadline is 2026-NOVEMBER-04 21:00 
 | NOVEMBER-01 14:58 | This repo: that transport layer is carried over (first commit, 20 files, 1,009 lines), and the food logic starts here |
 | NOVEMBER-01 to 04 | Everything else, commit by commit |
 
-Of the nearly 7,000 lines of Python and Swift here today, about 400 still come from that carried first commit (`make rules-check` counts them with `git blame`). The sibling repo stays private because it holds unrelated plans. [docs/rules-compliance.org](docs/rules-compliance.org) lists its commits, and goes through the rules one by one. Built with Claude Code as a coding assistant, disclosed on every commit.
+Of the roughly 8,000 lines of Python and Swift here today, about 400 still come from that carried first commit (`make rules-check` counts them with `git blame`). The sibling repo stays private because it holds unrelated plans. [docs/rules-compliance.org](docs/rules-compliance.org) lists its commits, and goes through the rules one by one. Built with Claude Code as a coding assistant, disclosed on every commit.
 
 ## Run it
 
