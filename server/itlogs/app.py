@@ -195,7 +195,7 @@ async def ws_session(ws: WebSocket) -> None:
                 "barcode",
                 {"t_ms": t_ms, "code": code, "product": product.name if product else None},
             )
-        return session.set_product(product, code)
+        return session.set_product(product, code, t_ms)
 
     async def on_frame(meta: Any, jpeg: bytes) -> list[ServerMessage]:
         nonlocal last_frame, frames, last_code

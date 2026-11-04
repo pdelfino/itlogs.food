@@ -276,6 +276,13 @@ def _singular(w: str) -> str:
     return w
 
 
+# A wrapper read by name ("protein bar", "granola bar", "chips") is a packaged product: the
+# table's nearest generic row is a guess (21:23, 2026-NOVEMBER-03: "protein bar" became the
+# CNF's yogourt-coated fruit granola bar, 25 g of carbs for a 4 g bar). No row: the barcode
+# brings the label's numbers (#13), and until then the table shows "?".
+PACKAGED_LAST_WORDS = frozenset({"bar", "bars", "chips", "crisps", "cracker", "crackers", "candy"})
+
+
 def lookup(food: str) -> Row | None:
     name = canonical(food)
     code = CURATED.get(name)
@@ -283,6 +290,8 @@ def lookup(food: str) -> Row | None:
         return cnf()[code].values
     if name in EXTRA:
         return EXTRA[name]
+    if name.split()[-1:] and name.split()[-1] in PACKAGED_LAST_WORDS:
+        return None
     hit = search(name)
     return hit.values if hit else None
 

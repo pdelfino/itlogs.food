@@ -88,11 +88,33 @@ class Session:
         """A scanned product is waiting for its food to land on the scale."""
         return self._product is not None
 
-    def set_product(self, product: Product | None, code: str = "") -> list[ServerMessage]:
-        """The phone decoded a barcode. Known: the product is the next food on the scale.
-        Unknown: say so; the scale and the reader go on as usual."""
+    def set_product(
+        self, product: Product | None, code: str = "", t_ms: int = 0
+    ) -> list[ServerMessage]:
+        """A barcode was decoded. Known: the product is the next food on the scale, or, when a
+        food the table did not know was logged in the last half minute (21:23: "protein bar",
+        42 g, no row, then the wrapper shown), that food. Unknown: say so; the scale and the
+        reader go on as usual."""
         if product is None:
             return [ServerMessage(kind="say", say="I don't know that barcode.")]
+        if self.entries:
+            last = self.entries[-1]
+            fresh = t_ms - last.t_ms < self.same_again_ms
+            if last.product is None and last.nutrients is None and fresh:
+                relabeled = last.model_copy(
+                    update={
+                        "food": product.name,
+                        "nutrients": nutrients.scale(product.per100g, last.grams),
+                        "product": product.ean,
+                    }
+                )
+                self.entries[-1] = relabeled
+                self._last_product = product
+                line = f"{product.name}, {fmt_grams(last.grams)} grams, logged."
+                return [
+                    ServerMessage(kind="entry", entry=relabeled),  # same index: replaced
+                    ServerMessage(kind="say", say=line),
+                ]
         self._product = product
         self._emptied = True  # the product is a new food even if the scale never read empty
         return [ServerMessage(kind="say", say=f"{product.name}. Put it on the scale.")]

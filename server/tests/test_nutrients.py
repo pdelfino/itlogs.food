@@ -59,3 +59,13 @@ def test_label_rows_for_what_the_cnf_lacks():
 
 def test_unknown_food_has_no_nutrients():
     assert nutrients.for_grams("zzz unknown thing", 100) is None
+
+
+def test_packaged_names_get_no_generic_row():
+    """A wrapper read by name is not a table food: no guess, the barcode brings the label."""
+    from itlogs import nutrients as n
+
+    assert n.lookup("protein bar") is None
+    assert n.lookup("granola bar") is None
+    assert n.for_grams("chips", 30) is None
+    assert n.lookup("banana") is not None  # the table still answers for real foods

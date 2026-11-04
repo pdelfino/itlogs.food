@@ -104,6 +104,32 @@ async def test_scanned_product_names_the_next_entry_and_only_the_grams_must_agre
     assert s._product is None
 
 
+def test_scan_after_weighing_relabels_the_fresh_unknown_entry_only():
+    """21:23: the bar was weighed first ("protein bar", 42 g, no nutrient row), the wrapper
+    shown after. The scan relabels that row; an apple (a known row) is never relabeled."""
+    product = off.parse("00888849000104", QUEST)
+    s = Session(FakeVision(), FakeLLM())
+    s._log("protein bar", 42.0, "auto", [], 30_000, speak=False)
+    assert s.entries[-1].nutrients is None
+    out = s.set_product(product, t_ms=40_000)
+    assert [m.kind for m in out] == ["entry", "say"]
+    e = s.entries[-1]
+    assert e.food.startswith("Quest Protein Bar") and e.grams == 42.0
+    assert e.product == "00888849000104" and e.nutrients is not None
+    assert round(e.nutrients.kcal) == 140
+    assert "42 grams, logged" in out[1].say
+    assert not s.product_pending
+    # a known food is left alone: the product waits for the next one
+    s._log("apple", 111.0, "auto", [], 50_000, speak=False)
+    out = s.set_product(product, t_ms=55_000)
+    assert out[0].kind == "say" and "Put it on the scale" in out[0].say
+    assert s.entries[-1].food == "apple" and s.product_pending
+    # too old: not relabeled either
+    s2 = Session(FakeVision(), FakeLLM())
+    s2._log("protein bar", 42.0, "auto", [], 0, speak=False)
+    assert s2.set_product(product, t_ms=90_000)[0].kind == "say" and s2.product_pending
+
+
 def test_unknown_barcode_is_said_and_changes_nothing():
     s = Session(FakeVision(), FakeLLM())
     out = s.set_product(None, "123")
