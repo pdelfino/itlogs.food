@@ -82,8 +82,8 @@ def main() -> int:
     all_lines = sum(len(b) for b in blamed)
     carried = sum(line.lstrip("^").startswith(root[:12]) for b in blamed for line in b)
     print(
-        f"info {carried} of {all_lines} lines of Python and Swift still come from the first commit, "
-        f"the part carried from the sibling repo; every other line was written in this repo"
+        f"info {carried} of {all_lines} lines of Python and Swift still come from the first "
+        f"commit, the part carried from the sibling repo; every other line was written in this repo"
     )
 
     deps = tomllib.loads((ROOT / "server/pyproject.toml").read_text())["project"]["dependencies"]
