@@ -88,6 +88,10 @@ Works on real hardware or with a key only, so a clone cannot prove it: the glass
 
 Model training or recalibration. A history screen. Per-row delete on the review screen. Android. Authentication on the server. Reconnecting within a run. Any accuracy number against ground truth. The product logs what was weighed and gives no recommendation: its only model outputs are the fields in the schemas in `providers/meta.py`.
 
+## License
+
+The code is Apache 2.0 (`LICENSE`). `NOTICE` lists what it does not cover: the itlogs name and logos, the pictures, the fonts, the nutrient data.
+
 ## If you change the code
 
 - `make lint test replay` before every commit.

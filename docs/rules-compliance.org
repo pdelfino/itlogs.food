@@ -13,7 +13,7 @@ Checked against the Official Rules accepted on 2026-OCTOBER-25 and the participa
 | New work only, clearly identified | Met | Timeline below. Of the nearly 7,000 lines of Python and Swift here today, about 400 still come from the carried first commit, and that commit was itself written after kickoff (=make rules-check= counts them with =git blame=) |
 | The demo shows only what was built during the event | At submission | The video shows this app, its server and its Apple Health write |
 | Original work, owned by the entrant (Official Rules, Hackathon Submission) | Met | One author. A coding assistant was used, as described below; the entrant owns the result |
-| Open source used within its licences | Met | Licences below |
+| Open source used within its licences | Met | Licences below. This project's own code is Apache 2.0: =LICENSE= and =NOTICE= |
 | No infringement of others' rights | Met | No third-party code or data beyond what is listed below. Site pictures generated with Muse Image, with =site/tools/hero.py=, apart from one real frame from a run |
 | Not a generic or policy-violating project | Met | It logs what was weighed. The only things the models can return are the fields in the schemas in =providers/meta.py=: a food, a display value, a unit, a confidence, a vessel flag, an ingredient, what a wrapper prints, a label's nutrition facts, a reply action. There is no path that recommends anything, and it makes no medical claim. The loop around the model is in =server/itlogs/session.py= |
 | Platform policies | Met | Next section |

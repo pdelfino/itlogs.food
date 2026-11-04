@@ -189,3 +189,7 @@ Frames go from the glasses through the phone to a server you run, and from there
 ## Credits
 
 Nutrients: Canadian Nutrient File, Health Canada, contains information licensed under the [Open Government Licence, Canada](https://open.canada.ca/en/open-government-licence-canada). The barcode path, off by default, uses [Open Food Facts](https://world.openfoodfacts.org), under the Open Database License. Fonts: SIL Open Font License, with the licences in `site/fonts/`. The Wearables Device Access Toolkit is fetched by Swift Package Manager under Meta's terms and is not in this repo.
+
+## License
+
+The code is [Apache 2.0](LICENSE). The itlogs name and logos, the pictures in `site/img`, the fonts and the nutrient data are not covered: see [NOTICE](NOTICE).

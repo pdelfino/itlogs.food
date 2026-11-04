@@ -72,6 +72,8 @@ def main() -> int:
     )
     report(bool(models), f"Meta models named in the server: {models}")
 
+    report((ROOT / "LICENSE").exists(), "the project's own license is in LICENSE: Apache 2.0")
+
     root = git("rev-list", "--max-parents=0", "HEAD").split()[0]
     sources = [
         f
