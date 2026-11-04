@@ -456,6 +456,11 @@ footer .legal { font-size: 0.78rem; }
 .legend .d:first-child { margin-left: 0; }
 .source { margin: 1rem 0 0; max-width: 46rem; font-size: 0.9rem; color: var(--mute); }
 .source a { color: var(--accent); }
+a.tag { text-underline-offset: 0.2em; transition: background 0.2s, color 0.2s; }
+a.tag:hover { background: var(--ink); color: #fff; }
+.chip a { color: var(--accent); }
+.chip b a { color: inherit; text-underline-offset: 0.2em; transition: color 0.2s; }
+.chip b a:hover { color: var(--accent); }
 
 @media (min-width: 48rem) {
   .links { display: flex; }
