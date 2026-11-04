@@ -26,6 +26,10 @@ class VisionProvider(Protocol):
         """Find that product's printed nutrition facts on the live web."""
         ...
 
+    async def find_typical(self, name: str, seen: list[str]) -> LabelFacts | None:
+        """Work out what a food with no wrapper is, and find typical values per 100 g."""
+        ...
+
 
 class LLMProvider(Protocol):
     async def parse_reply(self, text: str, context: str) -> Reply:

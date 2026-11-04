@@ -6,6 +6,7 @@ import pytest
 
 os.environ["ITLOGS_PROVIDER"] = "fake"  # env beats .env in pydantic-settings
 os.environ["ITLOGS_POSTHOG_TOKEN"] = ""
+os.environ["ITLOGS_RECORD_STREAM"] = "0"  # server/.env turns it on while filming
 
 
 @pytest.fixture(autouse=True)

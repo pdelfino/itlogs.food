@@ -34,6 +34,8 @@ class FakeVision:
         self.facts: LabelFacts | None = None
         self.wrapper_calls: list[bytes] = []
         self.facts_calls = 0
+        self.typical: LabelFacts | None = None
+        self.typical_calls: list[tuple[str, list[str]]] = []
 
     async def read_entry(self, jpeg: bytes) -> EntryRead:
         read = self.reads[min(self.calls, len(self.reads) - 1)]
@@ -51,6 +53,10 @@ class FakeVision:
     async def find_facts(self, label: WrapperLabel) -> LabelFacts | None:
         self.facts_calls += 1
         return self.facts
+
+    async def find_typical(self, name: str, seen: list[str]) -> LabelFacts | None:
+        self.typical_calls.append((name, seen))
+        return self.typical
 
 
 class FakeLLM:

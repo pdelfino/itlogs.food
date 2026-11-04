@@ -137,6 +137,10 @@ class Session:
     _label_queue: list[tuple[int, bytes]] = field(default_factory=list)
     _labels_running: set[int] = field(default_factory=set)  # one look at a wrapper at a time
     _lookup_queue: list[tuple[int, WrapperLabel]] = field(default_factory=list)
+    # no wrapper either: typical values from the web, with what the reader called it as a hint
+    _typical_queue: list[tuple[int, str, list[str]]] = field(default_factory=list)
+    _typical_tried: set[int] = field(default_factory=set)
+    _seen_names: list[str] = field(default_factory=list)
     _last_net: float | None = (
         None  # the bar's printed net weight; the scale also weighs the wrapper
     )
@@ -233,10 +237,17 @@ class Session:
     def _queue_label(self, read: EntryRead, frame: bytes) -> None:
         """The last row has no nutrients and this frame still shows it: worth looking at its
         wrapper. A second try only comes with a new scene, such as the wrapper turned over."""
-        if not settings.label_search or self._bowl_active or not self.entries or not read.readable:
+        if not settings.label_search or not self.entries:
             return
         last = self.entries[-1]
         if last.nutrients is not None or last.product or last.status == "spoken":
+            return
+        if last.index in self._typical_tried:
+            return
+        if self._bowl_active:
+            self._queue_typical(last)  # an ingredient in a bowl has no wrapper to read
+            return
+        if not read.readable:
             return
         assert read.grams is not None
         tries = self._label_tries.get(last.index, 0)
@@ -247,6 +258,21 @@ class Session:
         self._labels_running.add(last.index)
         self._label_tries[last.index] = tries + 1
         self._label_queue.append((last.index, frame))
+
+    def _queue_typical(self, entry: Entry) -> None:
+        """A named wrapper with its back showing gets another look instead: a generic "protein
+        bar" row was 25 g of carbs for a 4 g bar (2026-NOVEMBER-03)."""
+        words = entry.food.split()
+        if not words or words[-1] in nutrients.PACKAGED_LAST_WORDS:
+            return
+        if entry.index in self._typical_tried:
+            return
+        self._typical_tried.add(entry.index)
+        self._typical_queue.append((entry.index, entry.food, list(self._seen_names)))
+
+    def take_typical(self) -> list[tuple[int, str, list[str]]]:
+        queue, self._typical_queue = self._typical_queue, []
+        return queue
 
     def take_labels(self) -> list[tuple[int, bytes]]:
         """The rows to identify; the app runs them in the background, so weighing goes on."""
@@ -275,12 +301,67 @@ class Session:
         finally:
             self._labels_running.discard(index)
         if not label.brand:
-            return []  # nothing legible on this side; another look may see the front
+            # nothing legible: another look may see a wrapper's front, and a plain food has none
+            self._queue_typical(self.entries[index - 1])
+            return []
         self._label_tries[index] = self.max_label_tries
         self._lookup_queue.append((index, label))
         renamed = self.entries[index - 1].model_copy(update={"food": label.name})
         self.entries[index - 1] = renamed
         return [ServerMessage(kind="entry", entry=renamed)]
+
+    async def look_up_typical(self, index: int, name: str, seen: list[str]) -> list[ServerMessage]:
+        """Typical values per 100 g from Muse Spark's web search, and the food's usual name, which
+        also fixes a misheard one ("brazilian sijah" for esfiha, 13:52). The grams stay the
+        scale's. The same checks apply, and any failure leaves the row at "?"."""
+        key = WrapperLabel(brand=name)
+        facts = facts_cache.get(key)
+        saved = facts is not None
+        if facts is None:
+            try:
+                facts = await self.vision.find_typical(name, seen)
+            except Exception as e:
+                print(f"FACTS failed: {e!r}", flush=True)
+        row = row_from_facts(WrapperLabel(), facts) if facts else None
+        if row is None or facts is None:
+            print(f"FACTS not trusted for {name!r}: {facts}", flush=True)
+            return []
+        if not saved:
+            facts_cache.put(key, facts)
+        entry = self.entries[index - 1]
+        food = facts.name or entry.food
+        found = nutrients.scale(row, entry.grams)
+        note = EntryRead(food=food, grams=entry.grams, confidence=1.0, raw=f"typical; {facts}")
+        named = entry.model_copy(
+            update={
+                "food": food,
+                "nutrients": found,
+                "product": "typical",
+                "source": facts.source,
+                "reads": [*entry.reads, note],
+            }
+        )
+        self.entries[index - 1] = named
+        if index == len(self.entries):
+            self._last_product = Product(
+                ean="",
+                name=food,
+                brand=None,
+                per100g=row,
+                serving_g=100.0,
+                source="web_search",
+            )
+            self._last_net = None
+        print(
+            f"LABEL {food} kcal={found.kcal:g} protein={found.protein_g:g} "
+            f"carbs={found.carbs_g:g} fat={found.fat_g:g} {'saved' if saved else 'searched'}",
+            flush=True,
+        )
+        line = f"{food}, about {round(found.kcal)} calories."
+        return [
+            ServerMessage(kind="entry", entry=named),
+            ServerMessage(kind="say", say=line),
+        ]
 
     async def look_up(self, index: int, label: WrapperLabel) -> list[ServerMessage]:
         """Muse Spark's web search finds the printed facts. A name with "?" beats a guess."""
@@ -390,6 +471,8 @@ class Session:
     async def _read(self, jpeg: bytes, t_ms: int) -> EntryRead:
         """Every look at the scale goes through here."""
         read = await self.vision.read_entry(jpeg)
+        if read.food != "none" and read.food not in self._seen_names:
+            self._seen_names = [*self._seen_names, read.food][-6:]
         if self.on_read is not None:
             self.on_read(jpeg, t_ms, read)
         return read

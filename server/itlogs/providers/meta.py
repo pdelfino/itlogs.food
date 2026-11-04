@@ -166,6 +166,16 @@ FACTS_PROMPT = (
 )
 
 
+TYPICAL_PROMPT = (
+    'A person weighed a food on a kitchen scale. It was called "{name}", which may be a misheard '
+    "word. A camera thought it looked like: {seen}. Work out the most likely food, then find "
+    "typical nutrition values for it per 100 g. Answer with one JSON object and nothing else: "
+    '{{"name": "the usual name of the food, lowercase", "kcal": 0, "protein_g": 0, "carbs_g": 0, '
+    '"fat_g": 0, "fiber_g": 0, "sodium_mg": 0}}. All values are per 100 g. Use null for a value '
+    "no source gives."
+)
+
+
 class MetaReader:
     """VisionProvider on any OpenAI-compatible vision endpoint (Muse Spark or Muse Glimmer)."""
 
@@ -250,6 +260,31 @@ class MetaReader:
             return None
         return LabelFacts(
             serving_g=number(d.get("serving_g")),
+            kcal=number(d.get("kcal")),
+            protein_g=number(d.get("protein_g")),
+            carbs_g=number(d.get("carbs_g")),
+            fat_g=number(d.get("fat_g")),
+            fiber_g=number(d.get("fiber_g")),
+            sodium_mg=number(d.get("sodium_mg")),
+            source=urls[0] if urls else None,
+        )
+
+    async def find_typical(self, name: str, seen: list[str]) -> LabelFacts | None:
+        """A food the table does not know and with no wrapper: an esfiha on a plate, 13:52 on
+        2026-NOVEMBER-04. The grams are the scale's; these are typical values per 100 g, as a
+        table row is."""
+        prompt = TYPICAL_PROMPT.format(name=name, seen=", ".join(seen) or "nothing useful")
+        t0 = time.perf_counter()
+        text, urls = await self.chat.grounded(prompt)
+        took = time.perf_counter() - t0
+        print(f"MODEL facts in {took:.1f} s: {text[:200]!r} cited={urls[:2]}", flush=True)
+        d = json_object(text)
+        if not d:
+            return None
+        found = d.get("name")
+        return LabelFacts(
+            name=found.strip().lower() if isinstance(found, str) and found.strip() else None,
+            serving_g=100.0,
             kcal=number(d.get("kcal")),
             protein_g=number(d.get("protein_g")),
             carbs_g=number(d.get("carbs_g")),

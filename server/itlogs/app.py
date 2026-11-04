@@ -187,6 +187,8 @@ async def ws_session(ws: WebSocket) -> None:
             start_thinking(session.identify(index, frame, t_ms), t_ms, "label")
         for index, label in session.take_lookups():
             start_thinking(session.look_up(index, label), t_ms, "label")
+        for index, name, seen in session.take_typical():
+            start_thinking(session.look_up_typical(index, name, seen), t_ms, "label")
 
     def busy() -> int:
         return sum(1 for t in thinking if not t.done() and t.get_name() == "read")

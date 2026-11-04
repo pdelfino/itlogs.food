@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 
 from itlogs.app import app
 from itlogs.config import settings
-from itlogs.models import EntryRead, LabelFacts, WrapperLabel
+from itlogs.models import Addition, EntryRead, LabelFacts, WrapperLabel
 from itlogs.providers.fake import FakeLLM, FakeVision
 from itlogs.providers.meta import MetaReader
 from itlogs.session import Session, row_from_facts
@@ -51,6 +51,13 @@ async def settle(s):
     for index, label in s.take_lookups():
         out += await s.look_up(index, label)
     return out
+
+
+def session_bowl():
+    vision = FakeVision([EntryRead(food="none", grams=0.0, confidence=0.9)])
+    s = Session(vision, FakeLLM())
+    s.set_watching(True, 0)
+    return s, vision
 
 
 def bar(grams=42.0):
@@ -224,6 +231,73 @@ async def test_refused_numbers_are_not_kept():
     await settle(again)
     assert vision2.facts_calls == 1
     assert again.entries[0].nutrients.kcal == 160.0
+
+
+ESFIHA = LabelFacts(
+    name="esfiha",
+    serving_g=100,
+    kcal=280,
+    protein_g=11,
+    carbs_g=30,
+    fat_g=13,
+    source="https://example.test/esfiha",
+)
+
+
+async def test_a_food_with_no_wrapper_gets_typical_values_and_its_usual_name():
+    """13:52, 2026-NOVEMBER-04: an esfiha on a plate. 117 g was right, "brazilian sijah" was a
+    misheard word, and the row showed "?"."""
+    dish = EntryRead(food="meat pie", grams=117.0, confidence=0.95)
+    s, vision = weighing(dish, wrappers=(WrapperLabel(),))
+    vision.typical = ESFIHA
+    await s.on_frame(b"frame", 1000)
+    await settle(s)
+    [(index, name, seen)] = s.take_typical()
+    assert (name, seen) == ("meat pie", ["meat pie"])
+    out = await s.look_up_typical(index, name, seen)
+    entry = s.entries[0]
+    assert (entry.food, entry.grams, entry.product) == ("esfiha", 117.0, "typical")
+    assert entry.nutrients.kcal == 327.6  # 280 per 100 g at the scale's 117 g
+    assert entry.nutrients.protein_g == 12.87
+    assert entry.source == "https://example.test/esfiha"
+    assert out[-1].say == "esfiha, about 328 calories."
+
+
+async def test_an_ingredient_in_a_bowl_with_no_row_gets_typical_values():
+    s, vision = session_bowl()
+    vision.typical = ESFIHA
+    vision.additions = [Addition(food="brazilian sijah", source="speech", confidence=0.85)]
+    dish = EntryRead(food="meat pie", grams=117.0, confidence=0.85, container=True)
+    await s.on_frame(b"a", 1000)
+    s.vision.reads = [dish]
+    await s.on_frame(b"a", 3000)
+    await s.on_frame(b"a", 5000)  # two reads must agree on a bowl's weight
+    assert [e.food for e in s.entries] == ["brazilian sijah"]
+    assert s.take_labels() == []
+    [(index, name, seen)] = s.take_typical()
+    assert name == "brazilian sijah"
+    assert "meat pie" in seen
+    await s.look_up_typical(index, name, seen)
+    assert s.entries[0].food == "esfiha"
+    assert s.take_typical() == []
+
+
+async def test_a_wrapper_with_its_back_showing_waits_instead_of_a_generic_row():
+    s, vision = weighing(bar(), wrappers=(WrapperLabel(),))
+    vision.typical = ESFIHA
+    await s.on_frame(b"back", 1000)
+    await settle(s)
+    assert s.take_typical() == []  # "protein bar" is packaged: its numbers are on its wrapper
+
+
+async def test_typical_values_that_do_not_fit_stay_a_question_mark():
+    dish = EntryRead(food="meat pie", grams=117.0, confidence=0.95)
+    s, vision = weighing(dish, wrappers=(WrapperLabel(),))
+    vision.typical = ESFIHA.model_copy(update={"kcal": 900.0})
+    await s.on_frame(b"frame", 1000)
+    await settle(s)
+    await s.look_up_typical(*s.take_typical()[0])
+    assert (s.entries[0].food, s.entries[0].nutrients) == ("meat pie", None)
 
 
 async def test_the_switch_turns_it_off(monkeypatch):

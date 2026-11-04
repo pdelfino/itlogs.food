@@ -110,8 +110,10 @@ class WrapperLabel(BaseModel):
 
 
 class LabelFacts(BaseModel):
-    """The printed nutrition facts for one serving, found by Muse Spark's web search."""
+    """Nutrition facts for one serving, found by Muse Spark's web search: a wrapper's printed
+    label, or typical values for a food with no wrapper, with the food's usual name."""
 
+    name: str | None = None
     serving_g: float | None = None
     kcal: float | None = None
     protein_g: float | None = None
@@ -149,7 +151,7 @@ class Entry(BaseModel):
     t_ms: int
     product: str | None = Field(
         default=None,
-        description='where the name and nutrients came from: a barcode (EAN), or "wrapper" (#13)',
+        description='where the name and numbers came from: a barcode (EAN), "wrapper", "typical"',
     )
     source: str | None = Field(default=None, description="the page a wrapper's numbers came from")
 
