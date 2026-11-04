@@ -38,6 +38,7 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 | `evals/run.py`, `evals/sets/` | Accuracy against ground truth. No sets exist yet | |
 | `server/scripts/` | `doctor`, `crashes`, `probe_reader`, `rules_check`, `cnf_snapshot`, `demo_log` (the log for a screen), `pov_video` (what the glasses saw) | |
 | `site/` | The landing page at itlogs.food; deployed from `main` | |
+| `functions/api/waitlist.js`, `db/waitlist.sql`, `wrangler.toml` | The landing page's waitlist: a Cloudflare Pages Function and its D1 table | `onRequestPost` |
 
 ## Glossary
 
@@ -66,6 +67,7 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 | A food with no row and no wrapper gets typical values and its usual name | `test_a_food_with_no_wrapper_gets_typical_values_and_its_usual_name` |
 | A product is searched for only once | `test_the_same_product_is_found_only_once` |
 | How a food was cut does not change its nutrients | `test_how_a_food_was_cut_does_not_change_it` |
+| A waitlist repeat changes nothing, and a bot or a bad address stores nothing | `tests/waitlist.test.mjs` (`make test-site`) |
 | A refused model call at Stop still sends the final state | `test_a_refused_model_call_at_stop_still_sends_the_final_state` |
 | A recording keeps the frame that was read | `test_the_recording_keeps_the_frame_that_was_read` |
 | A model number that is not a number is an unreadable read | `test_a_display_value_that_is_not_a_number_is_an_unreadable_read` |

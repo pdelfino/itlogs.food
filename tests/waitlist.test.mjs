@@ -1,4 +1,4 @@
-// node --test tests/ : the waitlist function against a stand-in for D1.
+// make test-site: the waitlist function against a stand-in for D1.
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { cleanEmail, onRequestPost } from "../functions/api/waitlist.js";

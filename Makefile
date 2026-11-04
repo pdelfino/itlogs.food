@@ -55,7 +55,7 @@ pov:              ## a video of what the glasses saw, from a run recorded with I
 	$(SERVER) python server/scripts/pov_video.py $(RECORD_DIR)
 
 test-site:        ## the waitlist function, against a stand-in for its database
-	node --test tests/
+	node --test tests/*.test.mjs
 
 waitlist:         ## who joined the waitlist (needs a wrangler login on the itlogs.food Cloudflare account)
 	CLOUDFLARE_ACCOUNT_ID=e76fd6e2d96bb78e17e0dbfd2212c970 npx --yes wrangler@4 d1 execute itlogs-food --remote --command "SELECT email, source, created_at FROM waitlist ORDER BY created_at"
