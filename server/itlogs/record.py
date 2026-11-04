@@ -1,7 +1,8 @@
 """Keep a live session for the eval sets: the frames the reads were made on, as JPEG, and the
 entries with their labels, under ITLOGS_RECORD_DIR/<YYYY-MM-DD-HHMMSS>/. Off unless the env
 var is set. Photos never enter git; they live on the T7. Short retention is the rule: only
-the frames that were read are kept, never the stream."""
+the frames that were read are kept, not the stream, unless ITLOGS_RECORD_STREAM is on to film what
+the glasses saw."""
 
 from __future__ import annotations
 
@@ -18,6 +19,11 @@ class Recorder:
 
     def photo(self, jpeg: bytes, t_ms: int) -> None:
         (self.dir / "photos" / f"{t_ms:08d}.jpg").write_bytes(jpeg)
+
+    def stream(self, jpeg: bytes, t_ms: int) -> None:
+        folder = self.dir / "stream"
+        folder.mkdir(exist_ok=True)
+        (folder / f"{t_ms:08d}.jpg").write_bytes(jpeg)
 
     def event(self, kind: str, payload: dict) -> None:
         self.events.append({"kind": kind, **payload})

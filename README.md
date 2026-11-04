@@ -184,7 +184,7 @@ On an iPhone with Ray-Ban Meta glasses: turn on Developer Mode in the Meta AI ap
 
 ## Your data
 
-Frames go from the glasses through the phone to a server you run, and from there to the model provider you configured (the Meta Model API, on standard-mode model ids, or Baseten). The stream is not written to disk. With `ITLOGS_RECORD_DIR` set, the frames that were read and the session's events are kept in that local folder. The name read off a wrapper goes to the Meta Model API's web search. With a PostHog token set, food names, grams and diagnostic lines go to PostHog. Apple Health gets a meal only when you confirm it. [Privacy](https://itlogs.food/privacy.html).
+Frames go from the glasses through the phone to a server you run, and from there to the model provider you configured (the Meta Model API, on standard-mode model ids, or Baseten). The stream is not written to disk, unless the server runs with `ITLOGS_RECORD_STREAM=1`, which exists to film what the glasses saw. With `ITLOGS_RECORD_DIR` set, the frames that were read and the session's events are kept in that local folder. The name read off a wrapper goes to the Meta Model API's web search. With a PostHog token set, food names, grams and diagnostic lines go to PostHog. Apple Health gets a meal only when you confirm it. [Privacy](https://itlogs.food/privacy.html).
 
 ## Credits
 

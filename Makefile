@@ -9,7 +9,7 @@ SCHEME = ItlogsFood
 DEVICE ?= $(shell xcrun xctrace list devices 2>/dev/null | grep -i iphone | grep -v Simulator | head -1 | sed -E 's/.*\(([0-9A-F-]+)\)$$/\1/')
 SIM ?= $(shell xcrun simctl list devices available 2>/dev/null | grep -i iphone | head -1 | sed -E 's/^ *(.*) \(([0-9A-F-]+)\).*/\2/')
 
-.PHONY: help setup test lint format doctor run-bg stop run run-live replay rules-check eval eval-live ci ios-gen ios-build ios-test ios-run ios-logs phone-logs phone-dat-log phone-crashes docker-build
+.PHONY: help setup test lint format doctor run-bg stop run run-live replay demo-log pov rules-check eval eval-live ci ios-gen ios-build ios-test ios-run ios-logs phone-logs phone-dat-log phone-crashes docker-build
 
 help:             ## this list
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed -E 's/:.*## /  /' | column -t -s '  '
@@ -47,6 +47,12 @@ run-live:         ## the server with the Meta models and the recorder (MODEL_API
 
 replay:           ## real recorded reads through today's logic: no key, no glasses, no network
 	$(SERVER) python evals/replay.py
+
+demo-log:         ## the server's log for a screen, one plain line per thing that happened (FROM=n TO=n to print old lines)
+	$(SERVER) python server/scripts/demo_log.py $(if $(FROM),--from-line $(FROM) --to-line $(TO),)
+
+pov:              ## a video of what the glasses saw, from a run recorded with ITLOGS_RECORD_STREAM=1
+	$(SERVER) python server/scripts/pov_video.py $(RECORD_DIR)
 
 rules-check:      ## what can be checked about the hackathon rules from a clone: dates, author, media, keys, licences
 	$(SERVER) python server/scripts/rules_check.py

@@ -223,6 +223,8 @@ async def ws_session(ws: WebSocket) -> None:
     async def on_frame(meta: Any, jpeg: bytes) -> list[ServerMessage]:
         nonlocal frames, last_code
         frames += 1
+        if recorder and settings.record_stream:
+            recorder.stream(jpeg, meta.t_ms)
         if frames == 1 or frames % 100 == 0:
             print(f"FRAMES {frames} ({len(jpeg)} bytes, t={meta.t_ms} ms)", flush=True)
         session.observe(jpeg, meta.t_ms)

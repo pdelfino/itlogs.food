@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     second_read_after_ms: int = 1500
     grams_tolerance_g: float = 1.0
     record_dir: str = ""  # set to keep photos and entries for the eval sets
+    # keep every frame too, under record_dir: only to film what the glasses saw (make pov)
+    record_stream: bool = False
     posthog_token: str = ""  # the PostHog project token (public, write-only); empty = telemetry off
     posthog_host: str = "https://us.i.posthog.com"
 

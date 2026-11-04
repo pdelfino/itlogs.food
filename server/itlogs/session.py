@@ -285,6 +285,7 @@ class Session:
     async def look_up(self, index: int, label: WrapperLabel) -> list[ServerMessage]:
         """Muse Spark's web search finds the printed facts. A name with "?" beats a guess."""
         facts = facts_cache.get(label)
+        saved = facts is not None
         if facts is None:
             try:
                 facts = await self.vision.find_facts(label)
@@ -327,6 +328,11 @@ class Session:
                 source="web_search",
             )
             self._last_net = net
+        print(
+            f"LABEL {label.name} kcal={found.kcal:g} protein={found.protein_g:g} "
+            f"carbs={found.carbs_g:g} fat={found.fat_g:g} {'saved' if saved else 'searched'}",
+            flush=True,
+        )
         line = f"{label.name}, {round(found.kcal)} calories."
         return [
             ServerMessage(kind="entry", entry=named),  # same index: the phone replaces the row

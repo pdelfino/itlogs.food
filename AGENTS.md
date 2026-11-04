@@ -36,7 +36,7 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 | `evals/replay.py`, `evals/traces/` | Real recorded reads through today's logic | `replay` |
 | `evals/recorded-runs.org` | Every recorded session: reads, latency, rows | |
 | `evals/run.py`, `evals/sets/` | Accuracy against ground truth. No sets exist yet | |
-| `server/scripts/` | `doctor`, `crashes`, `probe_reader`, `rules_check`, `cnf_snapshot` | |
+| `server/scripts/` | `doctor`, `crashes`, `probe_reader`, `rules_check`, `cnf_snapshot`, `demo_log` (the log for a screen), `pov_video` (what the glasses saw) | |
 | `site/` | The landing page at itlogs.food; deployed from `main` | |
 
 ## Glossary

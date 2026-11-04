@@ -48,7 +48,7 @@ Built with Claude Code (Anthropic) as a coding assistant, disclosed in a =Co-Aut
 * Platform policies
 Meta's Wearables Developer Terms and Acceptable Use Policy (https://wearables.developer.meta.com/terms, https://wearables.developer.meta.com/acceptable-use-policy):
 - Use: "hands-free capture and logging" is among the uses Meta's guidance encourages (https://wearables.developer.meta.com/docs/develop/dat/acceptable-use). The app runs in Developer Mode on the entrant's own glasses and is not distributed.
-- Recording: the camera runs only between Start and Stop, which the wearer taps, and the code does not touch the glasses' capture light. Nothing identifies people. The stream is not written to disk.
+- Recording: the camera runs only between Start and Stop, which the wearer taps, and the code does not touch the glasses' capture light. Nothing identifies people. The stream is not written to disk, except with =ITLOGS_RECORD_STREAM=1=, used to film the demo on the entrant's own glasses.
 - Retention: the server records only when started with =ITLOGS_RECORD_DIR=, which =make run-live= sets. It then keeps the frames that were read and the session's events, in a local folder, never in git. Diagnostic lines from the phone go to a local log.
 - Privacy policy: https://itlogs.food/privacy.html
 - Health: the app writes food samples to Apple Health when the wearer confirms a meal, and reads back only the energy it wrote. Not a medical device, and it holds no protected health information.
