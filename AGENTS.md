@@ -25,7 +25,7 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 | `server/itlogs/providers/meta.py` | Reader and parser on any OpenAI-compatible endpoint; prompts and schemas | `ENTRY_SYSTEM`, `read_entry`, `read_addition`, `make_reader` |
 | `server/itlogs/providers/chat.py` | One chat client with JSON-schema output, and a plain-mode fallback | `structured` |
 | `server/itlogs/providers/fake.py` | Deterministic providers for tests and replay | `FakeVision` |
-| `server/itlogs/providers/openfoodfacts.py`, `barcode.py` | A barcode to a product's label values | `lookup`, `decode` |
+| `server/itlogs/barcode.py`, `server/itlogs/providers/openfoodfacts.py` | A frame to a barcode, a barcode to a product's label values | `decode`, `lookup` |
 | `server/itlogs/asr.py` | Muse Voice Transcribe, used only when PCM comes up from the phone | `Transcriber` |
 | `server/itlogs/record.py`, `telemetry.py` | Optional local recording; optional PostHog events | `Recorder` |
 | `ios/Sources/ItlogsFood/GlassesSource.swift` | The toolkit: registration, session, camera stream, speech | `start` |
@@ -73,7 +73,8 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 | The dates, the author, no media or keys, the licences | `make rules-check` | every line `ok` or `info` |
 | The phone holds no model key and calls no model | `grep -rnE 'MODEL_API_KEY\|api\.meta\.ai\|BASETEN' ios/Sources` | no output |
 | Only standard-mode model ids | `grep -rn 'contributor' server/itlogs` | only the comment that rules them out |
-| The latency figures | `evals/recorded-runs.org`, last line | 216 timed reads, median 3.2 s |
+| The latency figures | `make replay`, from `evals/recorded-latency.json` | 216 timed reads, median 3.2 s, 90th percentile 5.0 s |
+| How much was carried from before this repo | `make rules-check` | about 400 lines of nearly 7,000 |
 
 Works on real hardware only, so a clone cannot prove it: the glasses path and the Apple Health write. The evidence for those is the demo video and the recorded sessions.
 

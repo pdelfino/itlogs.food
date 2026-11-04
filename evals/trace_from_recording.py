@@ -2,8 +2,8 @@
 
 uv run --project server python evals/trace_from_recording.py <recordings folder>
 
-Writes evals/traces/<session>.json for the sessions named in CHOSEN and evals/recorded-runs.org
-for every session. What leaves a recording: the food name, grams, confidence and raw value of each
+Writes evals/traces/<session>.json for the sessions named in CHOSEN, and for every session
+evals/recorded-runs.org and evals/recorded-latency.json. What leaves a recording: the food name, grams, confidence and raw value of each
 read, whether the scene was still, read latency, and the rows logged. Never photos, never speech.
 The recordings themselves stay out of git.
 """
@@ -85,6 +85,7 @@ def main() -> int:
         "|---------+--------+-------+---------------+-------------+-------------|",
     ]
     spark: list[int] = []
+    latency: dict[str, dict] = {}
     reads_total = weighed_total = runs_with_reads = runs = 0
     for folder in sorted(p for p in root.iterdir() if p.is_dir()):
         run = load(folder)
@@ -113,7 +114,11 @@ def main() -> int:
                 **run,
             }
             path = HERE / "traces" / f"{name}.json"
+            if path.exists():  # the rows a person reviewed stay as they were
+                trace["expect_now"] = json.loads(path.read_text()).get("expect_now", [])
             path.write_text(json.dumps(trace, indent=1) + "\n")
+        if ms:
+            latency[name] = {"reader": reader, "read_ms": ms}
     spark.sort()
     out += [
         "",
@@ -126,6 +131,7 @@ def main() -> int:
         "",
     ]
     (HERE / "recorded-runs.org").write_text("\n".join(out))
+    (HERE / "recorded-latency.json").write_text(json.dumps(latency, indent=1) + "\n")
     print(out[-2])
     return 0
 

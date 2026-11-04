@@ -72,6 +72,20 @@ def main() -> int:
     )
     report(bool(models), f"Meta models named in the server: {models}")
 
+    root = git("rev-list", "--max-parents=0", "HEAD").split()[0]
+    sources = [
+        f
+        for f in tracked
+        if f.endswith((".py", ".swift")) and f.startswith(("server/", "ios/", "evals/"))
+    ]
+    blamed = [git("blame", "-l", "HEAD", "--", f).splitlines() for f in sources]
+    all_lines = sum(len(b) for b in blamed)
+    carried = sum(line.lstrip("^").startswith(root[:12]) for b in blamed for line in b)
+    print(
+        f"info {carried} of {all_lines} lines of Python and Swift still come from the first commit, "
+        f"the part carried from the sibling repo; every other line was written in this repo"
+    )
+
     deps = tomllib.loads((ROOT / "server/pyproject.toml").read_text())["project"]["dependencies"]
     print("info direct server dependencies and their licences:")
     for dep in deps:

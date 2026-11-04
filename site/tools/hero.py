@@ -15,7 +15,7 @@ enters the repo or an agent's context. USD 0.01 per image.
 
 Hero candidates land in site/img/candidates/, story candidates in
 site/img/candidates/story/ (both gitignored), each with a browse.html next to
-them: open it, pick, and tell Claude "hero: 2-3" or "story: 1-2, 2-4, 3-1, ...".
+them: open it and pick: "hero: 2-3" or "story: 1-2, 2-4, 3-1, ...".
 Only the chosen files are copied into site/img/ and committed.
 """
 

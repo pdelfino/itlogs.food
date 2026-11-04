@@ -51,7 +51,7 @@ There is also an older deliberate trigger, "Log it now", which takes two looks a
 |---|---|---|---|
 | Muse Spark 1.3, vision | Names the food and reads a third-party display from a head-worn camera, as structured output | `providers/meta.py`, `MetaReader.read_entry` | **Yes**: 216 timed reads on real runs |
 | Muse Spark 1.3, two images plus speech | Names what was added to a bowl: the wearer's words if useful, else before and after pictures | `MetaReader.read_addition` | Built, not yet run on a real bowl |
-| Muse Spark 1.3, text | Turns a spoken sentence into start, stop, log, confirm, correct, cancel or none | `MetaParser.parse_reply` | Yes, on any speech |
+| Muse Spark 1.3, text | Turns a spoken sentence into start, stop, log, confirm, correct, cancel or none | `MetaParser.parse_reply` | Runs on whatever the glasses hear; the commands themselves have not run live |
 | Wearables Device Access Toolkit | Registration, device session, camera stream | `GlassesSource.swift` | **Yes** |
 | Toolkit speech (`MWDATSpeech`) | Recognizes speech on the glasses; only text reaches the server | `GlassesSource.swift` | **Yes** |
 | Toolkit voice invocation | "Hey Meta, start" launches the app | `VoiceInvocations.swift` | Not working yet |
@@ -95,7 +95,7 @@ Three machines, one WebSocket, one seam. The glasses see and hear, the phone car
 
 ## Evidence
 
-All numbers come from [every recorded session](evals/recorded-runs.org): 21 sessions from 2026-NOVEMBER-02 to 04, on real glasses and one real scale. 16 of them have at least one read. Across them there are 228 reads, 80 with a weight. Muse Spark 1.3 took a median of 3.2 s and a 90th percentile of 5.0 s over 216 timed reads.
+All numbers come from [every recorded session](evals/recorded-runs.org): 21 sessions from 2026-NOVEMBER-02 to 04, on real glasses and one real scale. 16 of them have at least one read. Across them there are 228 reads, 80 with a weight. Muse Spark 1.3 took a median of 3.2 s and a 90th percentile of 5.0 s over 216 timed reads ([the raw timings](evals/recorded-latency.json), which `make replay` also summarizes).
 
 `make replay` feeds the reads of real sessions to today's logic, with no key, no glasses and no network, and fails on any difference. CI runs it. It tests the decisions made from reads, not the reading itself.
 
@@ -106,7 +106,7 @@ All numbers come from [every recorded session](evals/recorded-runs.org): 21 sess
 | 2026-11-02-194354 | Two names, one banana | banana 129 g, whole banana 129 g | banana 129 g |
 | 2026-11-02-195734 | One 0 g read is a hand, not an empty scale | apple 113 g, banana 128 g, banana 128 g | apple 113 g, banana 128 g |
 | 2026-11-03-214319 | Same grams under another name is the same item | apple 112 g, banana 124 g, protein bar 43 g, granola bar 43 g | apple 112 g, banana 124 g, protein bar 43 g |
-| 2026-11-04-080057 | A bowl: each rise is one row. 104 g is what the scale showed. Names here are the reader's, since naming needs a model call | cashew nuts 66 g, mixed nuts 59 g, cashew nuts 66 g, mixed nuts 74 g | chocolate cereal 16 g, ground beef 14 g, mixed nuts 16 g, mixed nuts 50 g, mixed nuts 8 g |
+| 2026-11-04-080057 | A bowl: each rise is one row, and the total is what the scale showed. Replay does not name the rows, since naming takes a model call | four rows, 265 g | five rows of 16, 14, 16, 50 and 8 g: 104 g |
 | 2026-11-03-215802 | The dim kitchen: 102 reads, 1 weight. Still fails | nothing | nothing |
 
 Tests: 88 server tests (`make test`), plus the iOS tests, on fake providers and mocked HTTP.
@@ -118,7 +118,7 @@ Tests: 88 server tests (`make test`), plus the iOS tests, on fake providers and 
 - The server trusts its LAN: the WebSocket has no authentication. Run it on your own network.
 - One socket is one run. If the socket dies, the phone keeps what was logged, says so and asks you to tap Stop; there is no reconnect within a run.
 - The first Start after "Forget and reconnect" can lose voice for that run, because the toolkit's microphone permission fails on the second app switch. The next Start works.
-- There is no history screen and no per-row delete yet. Review sends all rows or none.
+- There is no history screen and no per-row delete yet. Review sends all rows or none, and a row with no nutrient data shows "?" and is left out of the Health write.
 
 ## Built during the hackathon
 
@@ -131,7 +131,7 @@ Kickoff was 2026-OCTOBER-26 12:00 ET and the deadline is 2026-NOVEMBER-04 21:00 
 | NOVEMBER-01 14:58 | This repo: that transport layer is carried over (first commit, 20 files, 1,009 lines), and the food logic starts here |
 | NOVEMBER-01 to 04 | Everything else, commit by commit |
 
-The sibling repo stays private because it holds unrelated plans. [docs/rules-compliance.org](docs/rules-compliance.org) lists its commits, and goes through the rules one by one. Built with Claude Code as a coding assistant, disclosed on every commit.
+Of the nearly 7,000 lines of Python and Swift here today, about 400 still come from that carried first commit (`make rules-check` counts them with `git blame`). The sibling repo stays private because it holds unrelated plans. [docs/rules-compliance.org](docs/rules-compliance.org) lists its commits, and goes through the rules one by one. Built with Claude Code as a coding assistant, disclosed on every commit.
 
 ## Run it
 

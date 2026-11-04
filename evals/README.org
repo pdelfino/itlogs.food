@@ -3,7 +3,7 @@
 * What runs today
 =make replay= (=replay.py=) feeds the reads of real sessions (=traces/=) to today's decision logic, with no key, no glasses and no network, and exits 1 on any difference. CI runs it. It tests the decisions made from reads, not the reading itself.
 
-=recorded-runs.org= lists every recorded session with its reads, latency and rows. =trace_from_recording.py= generates it and the traces from the recordings, which stay out of git. Traces hold food names, grams, confidence and timing: no photos and no speech.
+=recorded-runs.org= lists every recorded session with its reads, latency and rows, and =recorded-latency.json= holds the raw timings. =trace_from_recording.py= generates them and the traces from the recordings, which stay out of git. Traces hold food names, grams, confidence and timing: no photos and no speech.
 
 * What does not exist yet
 Accuracy against ground truth. =sets/= is empty, so =make eval= prints that it has no sets. The numbers it is built to print are food top-1, grams within 1 g, and how often the loop logs without asking.

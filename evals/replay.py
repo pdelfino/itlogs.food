@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import statistics
 import sys
 from pathlib import Path
 
@@ -47,6 +48,17 @@ async def replay(trace: dict) -> list[list]:
     return [[e.food, e.grams] for e in session.entries]
 
 
+def latency_line() -> str:
+    """Every timed read of every recorded session, not only the sessions kept as traces."""
+    runs = json.loads((TRACES.parent / "recorded-latency.json").read_text()).values()
+    ms = sorted(m for r in runs if r["reader"] == "Muse Spark" for m in r["read_ms"])
+    p90 = ms[int(len(ms) * 0.9)]
+    return (
+        f"Muse Spark over {len(ms)} timed reads on real runs: "
+        f"median {statistics.median(ms) / 1000:.1f} s, 90th percentile {p90 / 1000:.1f} s"
+    )
+
+
 def rows_text(rows: list[list]) -> str:
     return ", ".join(f"{food} {grams:g} g" for food, grams in rows) or "nothing"
 
@@ -72,7 +84,8 @@ def main() -> int:
         print(f"     now:  {rows_text(now)}")
         if not ok:
             print(f"     expected: {rows_text(trace['expect_now'])}")
-    print(f"\n{len(results) - failed} of {len(results)} sessions replay as expected")
+    print(f"\n{latency_line()}")
+    print(f"{len(results) - failed} of {len(results)} sessions replay as expected")
     return 1 if failed else 0
 
 
