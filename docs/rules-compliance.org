@@ -9,7 +9,7 @@ Checked against the Official Rules accepted on 2026-OCTOBER-25 and the participa
 | The project must incorporate Meta's models | Met | Muse Spark 1.3 reads the frames the loop selects, reads wrappers, searches the web for their labels with its =web_search= tool, and parses speech (=server/itlogs/providers/meta.py=). 254 timed reads on real runs in =evals/recorded-runs.org=. Wearables Device Access Toolkit for the camera and speech (=ios/Sources/ItlogsFood/GlassesSource.swift=). The README's Meta tooling table says which tools run in the demo and which do not |
 | One track, one project; fits a problem statement | Met | Indie track, Build for Your World. A personal daily problem: logging food by hand |
 | Team of at most four | Met | Solo. =make rules-check= shows one git author |
-| Repository public | At submission | This repository, public from submission on |
+| Repository public and open source | At submission | This repository, public from submission on, under Apache 2.0 (=LICENSE=). An organizers' announcement calls an open-source repository mandatory |
 | New work only, clearly identified | Met | Timeline below. Of the nearly 7,000 lines of Python and Swift here today, about 400 still come from the carried first commit, and that commit was itself written after kickoff (=make rules-check= counts them with =git blame=) |
 | The demo shows only what was built during the event | At submission | The video shows this app, its server and its Apple Health write |
 | Original work, owned by the entrant (Official Rules, Hackathon Submission) | Met | One author. A coding assistant was used, as described below; the entrant owns the result |
