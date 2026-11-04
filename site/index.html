@@ -18,7 +18,7 @@
   <link rel="icon" href="brand/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
   <link rel="preload" href="fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <div class="glow" aria-hidden="true"></div>
@@ -30,6 +30,7 @@
       </a>
       <nav class="links" aria-label="sections">
         <a href="#how">How it works</a>
+        <a href="#compare">Compare</a>
         <a href="#film">The film</a>
         <a href="#log">The log</a>
         <a href="#built">Built on</a>
@@ -45,7 +46,7 @@
         Meta Global AI Developer Hackathon 2026 · Indie track
       </a>
       <h1 class="reveal">You eat.<br><span class="grad">It logs.</span></h1>
-      <p class="sub reveal">Ray-Ban Meta glasses look at the kitchen scale you already own, read the food and the grams off its display, and write the line. No app on the scale. No pairing. No hands.</p>
+      <p class="sub reveal">Ray-Ban Meta glasses look at the kitchen scale you already own, read the grams off its display, name the food, and log it for you. No manual entry. Hands free. Works with any digital scale.</p>
       <div class="cta reveal">
         <a class="btn primary" href="#film">Watch the film</a>
         <a class="btn ghost" href="https://github.com/pdelfino/itlogs.food">View the source</a>
@@ -67,39 +68,73 @@
 
       <ul class="proof reveal" aria-label="works with">
         <li>Works with Ray-Ban Meta</li>
-        <li>Any kitchen scale</li>
+        <li>Any digital kitchen scale</li>
         <li>Muse Spark reads the frame</li>
-        <li>Muse Voice hears you</li>
-        <li>Every entry stays on your phone</li>
+        <li>Barcodes get read</li>
+        <li>Macros and kcal go to Apple Health</li>
       </ul>
     </section>
 
     <section class="how wrap" id="how">
       <div class="head reveal">
         <p class="eyebrow">How it works</p>
-        <h2>Three seconds. Zero typing.</h2>
-        <p class="lead">Food apps make you type. Smart scales make you pick. itlogs.food reads the number the scale already shows, and asks only when it has to.</p>
+        <h2>No manual entry. Hands free.</h2>
+        <p class="lead">Typing apps make you enter every food. Photo apps guess the portion from a picture. itlogs.food reads the number your scale already shows.</p>
       </div>
       <div class="cards">
         <article class="card reveal">
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="12" width="18" height="8" rx="2"/><path d="M7 12V9a5 5 0 0 1 10 0v3"/><path d="M8 16h3"/></svg></div>
           <span class="num">01</span>
-          <h3>Put the food on the scale</h3>
-          <p>The one you own. The glasses read the display, not a Bluetooth radio, so nothing to pair and nothing to buy.</p>
+          <h3>The scale gets the grams</h3>
+          <p>Put the food on the scale you already own. The number on its display is the weight, so there is nothing to pair and nothing to buy.</p>
         </article>
         <article class="card reveal">
-          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3a4 4 0 0 1 4 4v5a4 4 0 0 1-8 0V7a4 4 0 0 1 4-4z"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></div>
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="7" cy="14" r="4"/><circle cx="17" cy="14" r="4"/><path d="M11 14h2"/><path d="M3 14l1-6h3"/><path d="M21 14l-1-6h-3"/></svg></div>
           <span class="num">02</span>
-          <h3>Say <em>log it</em></h3>
-          <p>Or press the button on the frame. Muse Spark names the food and reads the grams. A second look 1.5 s later checks the first.</p>
+          <h3>The glasses get the images</h3>
+          <p>Ray-Ban Meta glasses see what you see. No phone in your hand, no photo to take, nothing to type.</p>
         </article>
         <article class="card reveal">
-          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 10v4a2 2 0 0 0 2 2h2l5 4V4L8 8H6a2 2 0 0 0-2 2z"/><path d="M16 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a8 8 0 0 1 0 11"/></svg></div>
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12V4h8l8 8-8 8z"/><circle cx="8.5" cy="8.5" r="1.2"/></svg></div>
           <span class="num">03</span>
-          <h3>Hear it back</h3>
-          <p><em>218 grams of chicken breast, logged.</em> When two reads disagree you get a question in your ear instead, and your answer is the label.</p>
+          <h3>The system names the food</h3>
+          <p>Muse Spark names the food and reads the display. When it is unsure, it looks again before anything is logged.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5v14"/><path d="M7.5 5v14"/><path d="M11 5v14"/><path d="M15 5v14"/><path d="M17.5 5v14"/><path d="M20 5v14"/></svg></div>
+          <span class="num">04</span>
+          <h3>Barcodes get read</h3>
+          <p>Packaged food carries its own answer. Scan the barcode and the row takes the numbers from the product&#39;s label, through Open Food Facts.</p>
+        </article>
+        <article class="card reveal">
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/></svg></div>
+          <span class="num">05</span>
+          <h3>Macros and kcal go to Apple Health</h3>
+          <p>Protein, carbs, fat and kcal for every food. You check the meal, then send it with one tap.</p>
         </article>
       </div>
+    </section>
+
+    <section class="compare wrap" id="compare">
+      <div class="head reveal">
+        <p class="eyebrow">Compare</p>
+        <h2>Weighed, not guessed.</h2>
+      </div>
+      <div class="tablewrap reveal" tabindex="0" role="region" aria-label="itlogs.food compared with photo apps and typing apps">
+        <table class="vs">
+          <thead>
+            <tr><td></td><th scope="col" class="us">itlogs.food</th><th scope="col">Photo apps</th><th scope="col">Typing apps</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">What you do</th><td class="us">Put the food on the scale</td><td>Photograph the plate</td><td>Search, pick, type the amount</td></tr>
+            <tr><th scope="row">Your hands</th><td class="us">Free</td><td>Holding the phone</td><td>Typing on the phone</td></tr>
+            <tr><th scope="row">The grams</th><td class="us">Read off your scale</td><td>Estimated from the picture</td><td>Whatever you enter</td></tr>
+            <tr><th scope="row">Scale</th><td class="us">Any with a digital display, nothing to pair</td><td>None</td><td>Yours, if you copy the number</td></tr>
+            <tr><th scope="row">Packaged food</th><td class="us">Barcode, the label&#39;s numbers</td><td>Varies by app</td><td>Barcode or search</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="source reveal">Four popular photo apps logged calories and fat about one-third too low, across about 100 meals measured to 0.1 g. <a href="https://www.westnewsmagazine.com/health/ai-calorie-tracking-apps-may-be-inaccurate-tests-find/article_fd5c470b-6cc5-5240-bdaf-c38366e01239.html" rel="noopener">Study led by an NIH fellow, presented at the American Society for Nutrition&#39;s annual meeting.</a></p>
     </section>
 
     <section class="logsec wrap" id="log">
@@ -109,8 +144,8 @@
         <p class="lead">Every line carries the grams, the calories and protein from a nutrient table, and the label the loop produced: agreed, confirmed, or corrected. Those labels are tomorrow's eval set.</p>
         <ul class="ticks">
           <li>Grams to the unit, straight off the display</li>
-          <li>Kcal and protein from the grams, nothing else</li>
-          <li>Apple Health on your phone, nowhere else</li>
+          <li>Protein, carbs, fat and kcal from the grams</li>
+          <li>Sent to Apple Health with one tap</li>
         </ul>
       </div>
       <div class="logcard reveal" aria-label="a log that writes itself">
