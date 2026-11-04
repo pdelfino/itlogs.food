@@ -147,11 +147,6 @@ actor StreamClient {
         pump()
     }
 
-    func send(barcode code: String, tMs: Int) throws {
-        queue.append(.text(try encode(ClientMessage(kind: "barcode", barcode: BarcodeMeta(t_ms: tMs, code: code)))))
-        pump()
-    }
-
     func endSession() throws {
         queue.append(.text(try encode(ClientMessage(kind: "end_session"))))
         pump()

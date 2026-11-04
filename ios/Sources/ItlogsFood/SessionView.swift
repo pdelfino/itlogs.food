@@ -8,7 +8,6 @@ struct SessionView: View {
     @Bindable var session: SessionController
     @State private var showSettings = false
     @State private var bigPreview = false
-    @State private var scanning = false
 
     @State private var now = Date()
     private let clock = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -34,7 +33,6 @@ struct SessionView: View {
         .onReceive(clock) { now = $0 }
         .sheet(isPresented: $session.reviewing) { ReviewView(session: session) }
         .sheet(isPresented: $showSettings) { SettingsView(session: session) }
-        .sheet(isPresented: $scanning) { BarcodeScanView { code in session.scanned(code) } }
         .sheet(isPresented: $bigPreview) {
             if let img = session.preview {
                 Image(uiImage: img).resizable().scaledToFit().padding().presentationDetents([.large])
@@ -209,11 +207,6 @@ struct SessionView: View {
                 HStack(spacing: 28) {
                     Button("Log it now") { session.capture() }
                         .font(Theme.body(14)).foregroundStyle(Theme.mute)
-                    if session.useGlasses {
-                        // the phone camera is free while the glasses stream (#13)
-                        Button("Scan a barcode") { scanning = true }
-                            .font(Theme.body(14)).foregroundStyle(Theme.mute)
-                    }
                 }
             } else {
                 if !session.entries.isEmpty || session.lastRead != nil {
