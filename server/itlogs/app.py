@@ -205,14 +205,15 @@ async def ws_session(ws: WebSocket) -> None:
             print(f"FRAMES {frames} ({len(jpeg)} bytes, t={meta.t_ms} ms)", flush=True)
         session.observe(jpeg, meta.t_ms)
         out = session.ready()  # "Ready..." once, on the first frame after Start
-        # hands free (#13, option A): every third frame is searched for a barcode, a few ms on
-        # the Mac, while no product is waiting; the same code is not taken twice in 15 s
-        if (
-            frames % 3 == 1
-            and not session.product_pending
-            and (last_code is None or meta.t_ms - last_code[1] > 15000)
-        ):
-            code = await asyncio.to_thread(decode_barcode, jpeg)
+        # hands free (#13, option A): every frame is searched for a barcode (18 ms median on the
+        # Mac, measured 2026-NOVEMBER-03) while no product is waiting, so a wrapper held up for a
+        # second gets seven tries; the same code is not taken twice in 15 s
+        if not session.product_pending and (last_code is None or meta.t_ms - last_code[1] > 15000):
+            try:
+                code = await asyncio.to_thread(decode_barcode, jpeg)
+            except Exception as e:  # the decoder must never cost a session
+                print(f"BARCODE decoder failed: {e!r}", flush=True)
+                code = None
             if code:
                 last_code = (code, meta.t_ms)
                 out = [*out, *await on_barcode(code, meta.t_ms)]

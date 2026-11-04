@@ -253,3 +253,21 @@ async def test_two_empty_reads_then_the_same_food_is_a_second_item():
     s.set_watching(True)
     await feed(s, 0, 4)
     assert [(e.food, e.grams) for e in s.entries] == [("banana", 128.0), ("banana", 128.0)]
+
+
+async def test_same_grams_without_an_empty_read_is_the_same_item_under_any_name():
+    """21:43: "protein bar 43 g" then "granola bar 43 g" became two rows. The scale never read
+    empty in between and the grams are the same: one item, the row corrected, not added."""
+    from itlogs.providers.fake import FakeLLM, FakeVision
+
+    reads = [
+        EntryRead(food="protein bar", grams=43.0, confidence=0.9),
+        EntryRead(food="granola bar", grams=43.0, confidence=0.9),
+    ]
+    s = Session(FakeVision(reads), FakeLLM())
+    s.set_watching(True, 0)
+    out = await s.on_frame(b"a", 1000)
+    out += await s.on_frame(b"b", 6000)
+    entries = [m.entry for m in out if m.kind == "entry" and m.entry]
+    assert [e.index for e in entries] == [1, 1]  # the second message replaces the first row
+    assert len(s.entries) == 1 and s.entries[0].grams == 43.0

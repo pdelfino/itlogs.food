@@ -205,3 +205,25 @@ def test_ws_frame_with_a_barcode_names_the_next_food(monkeypatch):
             if m["kind"] == "say" and m["say"].startswith("Quest Protein Bar"):
                 break
             assert len(kinds) < 8, kinds
+
+
+def test_a_scan_waits_one_minute_for_its_food():
+    """A scan nobody weighs must not name a banana weighed much later."""
+    product = off.parse("00888849000104", QUEST)
+    s = Session(FakeVision([EntryRead(food="banana", grams=124.0, confidence=0.95)]), FakeLLM())
+    s.set_watching(True, 0)
+    s.observe(b"a", 1000)
+    s.set_product(product, t_ms=1000)
+    assert s.product_pending
+    s.observe(b"b", 62_000)
+    assert not s.product_pending
+
+
+async def test_an_expired_scan_does_not_name_the_next_food():
+    product = off.parse("00888849000104", QUEST)
+    s = Session(FakeVision([EntryRead(food="banana", grams=124.0, confidence=0.95)]), FakeLLM())
+    s.set_watching(True, 0)
+    s.set_product(product, t_ms=0)
+    out = await s.on_frame(b"a", 70_000)
+    entries = [m.entry for m in out if m.kind == "entry" and m.entry]
+    assert [e.food for e in entries] == ["banana"] and entries[0].product is None

@@ -79,14 +79,23 @@ class Session:
     # a scanned product (#13): names the next food and brings the label's nutrients; the reads
     # then only have to agree on the grams. _last_product keeps the row for a quiet correction.
     _product: Product | None = None
+    _product_ms: int = 0
     _last_product: Product | None = None
+    product_ttl_ms: int = 60_000  # a scan nobody weighs must not name a food much later
 
     # a barcode
 
     @property
     def product_pending(self) -> bool:
         """A scanned product is waiting for its food to land on the scale."""
-        return self._product is not None
+        return self._live_product() is not None
+
+    def _live_product(self) -> Product | None:
+        now = self._last_frame_ms
+        if self._product is not None and now is not None:
+            if now - self._product_ms > self.product_ttl_ms:
+                self._product = None
+        return self._product
 
     def set_product(
         self, product: Product | None, code: str = "", t_ms: int = 0
@@ -116,6 +125,7 @@ class Session:
                     ServerMessage(kind="say", say=line),
                 ]
         self._product = product
+        self._product_ms = t_ms
         self._emptied = True  # the product is a new food even if the scale never read empty
         return [ServerMessage(kind="say", say=f"{product.name}. Put it on the scale.")]
 
@@ -246,10 +256,11 @@ class Session:
         agrees_with_prev = prev is not None and prev.readable and self._agree(read, prev)
         if not confident_still and not agrees_with_prev:
             return []  # the display may still be changing; wait for two reads in a row
-        if not self._emptied and self.entries and same_item(read.food, self.entries[-1].food):
+        if not self._emptied and self.entries and self._still_the_same(read):
             # the same food, still on the scale, read again with another number or another name
-            # (19:51: "apple 108" then "apple 112", "banana 128" then "whole banana 128"):
-            # this corrects the last row instead of adding one
+            # (19:51: "apple 108" then "apple 112", "banana 128" then "whole banana 128"; 21:43:
+            # "protein bar 43" then "granola bar 43"): this corrects the last row instead of
+            # adding one
             return self._correct_last(read, t_ms)
         self._watch_logged = read
         self._emptied = False
@@ -268,6 +279,15 @@ class Session:
             and abs(read.grams - last.grams) <= self.grams_tolerance_g
             and t_ms - last.t_ms < self.same_again_ms
         )
+
+    def _still_the_same(self, read: EntryRead) -> bool:
+        """The last food never left the scale (no empty read since), so a new read is the same
+        item: under a kindred name, or under any name at the same grams. Two different foods
+        cannot show the same weight without the scale passing through empty."""
+        last = self.entries[-1]
+        if same_item(read.food, last.food):
+            return True
+        return read.grams is not None and abs(read.grams - last.grams) <= self.grams_tolerance_g
 
     def _correct_last(self, read: EntryRead, t_ms: int) -> list[ServerMessage]:
         last = self.entries[-1]
@@ -297,7 +317,7 @@ class Session:
         # with a scanned product the name is known: the reads only have to agree on the grams
         # (a wrapper read as "protein bar" then "granola bar", 2026-NOVEMBER-03 21:09)
         return (
-            (self._product is not None or same_food(a.food, b.food))
+            (self._live_product() is not None or same_food(a.food, b.food))
             and a.grams is not None
             and b.grams is not None
             and abs(a.grams - b.grams) <= self.grams_tolerance_g
@@ -389,7 +409,7 @@ class Session:
         t_ms: int,
         speak: bool = True,
     ) -> list[ServerMessage]:
-        product, self._product = self._product, None
+        product, self._product = self._live_product(), None
         self._last_product = product
         if product is not None:
             food = product.name  # the label's name, as printed
