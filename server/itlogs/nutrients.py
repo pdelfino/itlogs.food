@@ -143,6 +143,10 @@ ALIASES = {
     "rolled oats": "oats",
     "oatmeal": "oats",
     # plain "cashews" matched the CNF's cashew drink, 23 kcal per 100 g (2026-NOVEMBER-04)
+    "walnut": "walnuts",
+    "almond": "almonds",
+    "peanut": "peanuts",
+    "raw oats": "oats",
     "cashew": "cashew nuts",
     "cashews": "cashew nuts",
     "porridge": "cooked oatmeal",
@@ -245,10 +249,23 @@ def normalize(food: str) -> str:
     return re.sub(r"\s+", " ", food.strip().lower())
 
 
+# How a food was cut does not change it. "banana slices" had no row at all, and "sliced apple" and
+# "sliced strawberries" found the canned and the sweetened frozen products (2026-NOVEMBER-04).
+CUT_WORDS = frozenset(
+    {"sliced", "slice", "slices", "chopped", "diced", "cubed", "halved", "peeled", "cut"}
+    | {"piece", "pieces", "chunk", "chunks", "wedge", "wedges", "fresh"}
+)
+
+
 def canonical(food: str) -> str:
-    """The curated name for a food, or the food itself when unknown."""
+    """The curated name for a food, or the food itself when unknown. Words for how it was cut go
+    only when what is left is a food the table knows: "chocolate chunks" stays as it is."""
     f = normalize(food)
-    return ALIASES.get(f, f)
+    if f in ALIASES:
+        return ALIASES[f]
+    uncut = " ".join(w for w in f.split() if w not in CUT_WORDS)
+    uncut = ALIASES.get(uncut, uncut)
+    return uncut if uncut != f and (uncut in CURATED or uncut in EXTRA) else f
 
 
 def search(food: str) -> CnfRow | None:

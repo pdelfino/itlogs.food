@@ -85,3 +85,15 @@ def test_nuts_of_a_real_bowl_get_nut_rows():
     ]:
         row = n.lookup(food)
         assert row is not None and low <= row[0] <= high, (food, row)
+
+
+def test_how_a_food_was_cut_does_not_change_it():
+    whole = {name: nutrients.lookup(name) for name in ("banana", "apple", "strawberries")}
+    for name in ("banana slices", "sliced banana", "chopped banana", "banana pieces"):
+        assert nutrients.canonical(name) == "banana"
+        assert nutrients.lookup(name) == whole["banana"]
+    for name in ("sliced apple", "apple slices", "red apple slices", "diced apple"):
+        assert nutrients.lookup(name) == whole["apple"]
+    assert nutrients.lookup("sliced strawberries") == whole["strawberries"]
+    assert nutrients.canonical("walnut pieces") == "walnuts"
+    assert nutrients.canonical("chocolate chunks") == "chocolate chunks"  # not a known food
