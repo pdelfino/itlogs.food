@@ -195,6 +195,31 @@ async def test_a_look_still_running_is_not_queued_again():
     assert len(vision.wrapper_calls) == 1
 
 
+async def test_the_same_product_is_found_only_once():
+    """The search took 32 s on the real bar; the label does not change between meals. The reader
+    worded the same bar two ways at 12:48, so the key is the brand and the flavour."""
+    s, vision = weighing(bar())
+    await s.on_frame(b"frame", 1000)
+    await settle(s)
+    assert vision.facts_calls == 1
+    again, vision2 = weighing(bar(), wrappers=(BAR.model_copy(update={"product": "Snack Bar"}),))
+    await again.on_frame(b"frame", 1000)
+    await settle(again)
+    assert vision2.facts_calls == 0
+    assert again.entries[0].nutrients.kcal == 160.0
+
+
+async def test_refused_numbers_are_not_kept():
+    s, vision = weighing(bar(), facts=FACTS.model_copy(update={"protein_g": 15.0}))
+    await s.on_frame(b"frame", 1000)
+    await settle(s)
+    again, vision2 = weighing(bar())
+    await again.on_frame(b"frame", 1000)
+    await settle(again)
+    assert vision2.facts_calls == 1
+    assert again.entries[0].nutrients.kcal == 160.0
+
+
 async def test_the_switch_turns_it_off(monkeypatch):
     monkeypatch.setattr(settings, "label_search", False)
     s, _ = weighing(bar())

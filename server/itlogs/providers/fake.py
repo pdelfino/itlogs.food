@@ -33,6 +33,7 @@ class FakeVision:
         self.wrappers: list[WrapperLabel] = []
         self.facts: LabelFacts | None = None
         self.wrapper_calls: list[bytes] = []
+        self.facts_calls = 0
 
     async def read_entry(self, jpeg: bytes) -> EntryRead:
         read = self.reads[min(self.calls, len(self.reads) - 1)]
@@ -48,6 +49,7 @@ class FakeVision:
         return self.wrappers.pop(0) if self.wrappers else WrapperLabel()
 
     async def find_facts(self, label: WrapperLabel) -> LabelFacts | None:
+        self.facts_calls += 1
         return self.facts
 
 

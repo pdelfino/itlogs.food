@@ -142,12 +142,20 @@ class ChatModel:
         answer's text and the pages it cited. https://dev.meta.ai/docs/search-grounding"""
         r = await self._http.post(
             "/responses",
-            json={"model": self.model, "input": prompt, "tools": [{"type": "web_search"}]},
+            json={
+                "model": self.model,
+                "input": prompt,
+                "tools": [{"type": "web_search"}],
+                "include": ["web_search_call.results"],
+            },
         )
         r.raise_for_status()
         texts: list[str] = []
         urls: list[str] = []
+        considered: list[str] = []
         for item in r.json().get("output") or []:
+            if item.get("type") == "web_search_call":
+                considered += [x["url"] for x in item.get("results") or [] if x.get("url")]
             if item.get("type") != "message":
                 continue
             for part in item.get("content") or []:
@@ -157,7 +165,7 @@ class ChatModel:
                 for note in part.get("annotations") or []:
                     if note.get("type") == "url_citation" and note.get("url"):
                         urls.append(note["url"])
-        return "".join(texts), urls
+        return "".join(texts), urls or considered  # what it cited, else what it looked at
 
     async def aclose(self) -> None:
         await self._http.aclose()

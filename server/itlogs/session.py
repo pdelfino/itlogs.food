@@ -23,7 +23,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
-from itlogs import nutrients
+from itlogs import facts_cache, nutrients
 from itlogs.config import settings
 from itlogs.frames import Stillness, difference, thumbnail
 from itlogs.models import (
@@ -282,12 +282,15 @@ class Session:
 
     async def look_up(self, index: int, label: WrapperLabel) -> list[ServerMessage]:
         """Muse Spark's web search finds the printed facts. A name with "?" beats a guess."""
-        facts: LabelFacts | None = None
-        try:
-            facts = await self.vision.find_facts(label)
-        except Exception as e:
-            print(f"FACTS failed: {e!r}", flush=True)
+        facts = facts_cache.get(label)
+        if facts is None:
+            try:
+                facts = await self.vision.find_facts(label)
+            except Exception as e:
+                print(f"FACTS failed: {e!r}", flush=True)
         row = row_from_facts(label, facts) if facts else None
+        if row is not None and facts is not None:
+            facts_cache.put(label, facts)
         entry = self.entries[index - 1]
         is_last = index == len(self.entries)
         if row is None:
