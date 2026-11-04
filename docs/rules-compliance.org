@@ -6,7 +6,7 @@ Checked against the Official Rules accepted on 2026-OCTOBER-25 and the participa
 * The rules
 | Rule | State | Evidence |
 |------+-------+----------|
-| The project must incorporate Meta's models | Met | Muse Spark 1.3 reads the frames the loop selects and parses speech (=server/itlogs/providers/meta.py=). 216 timed reads on real runs in =evals/recorded-runs.org=. Wearables Device Access Toolkit for the camera and speech (=ios/Sources/ItlogsFood/GlassesSource.swift=). The README's Meta tooling table says which tools run in the demo and which do not |
+| The project must incorporate Meta's models | Met | Muse Spark 1.3 reads the frames the loop selects, reads wrappers, searches the web for their labels with its =web_search= tool, and parses speech (=server/itlogs/providers/meta.py=). 254 timed reads on real runs in =evals/recorded-runs.org=. Wearables Device Access Toolkit for the camera and speech (=ios/Sources/ItlogsFood/GlassesSource.swift=). The README's Meta tooling table says which tools run in the demo and which do not |
 | One track, one project; fits a problem statement | Met | Indie track, Build for Your World. A personal daily problem: logging food by hand |
 | Team of at most four | Met | Solo. =make rules-check= shows one git author |
 | Repository public | At submission | This repository, public from submission on |
@@ -15,7 +15,7 @@ Checked against the Official Rules accepted on 2026-OCTOBER-25 and the participa
 | Original work, owned by the entrant (Official Rules, Hackathon Submission) | Met | One author. A coding assistant was used, as described below; the entrant owns the result |
 | Open source used within its licences | Met | Licences below |
 | No infringement of others' rights | Met | No third-party code or data beyond what is listed below. Site pictures generated with Muse Image, with =site/tools/hero.py=, apart from one real frame from a run |
-| Not a generic or policy-violating project | Met | It logs what was weighed. The only things the models can return are the fields in the schemas in =providers/meta.py=: a food, a display value, a unit, a confidence, a vessel flag, an ingredient, a reply action. There is no path that recommends anything, and it makes no medical claim. The loop around the model is in =server/itlogs/session.py= |
+| Not a generic or policy-violating project | Met | It logs what was weighed. The only things the models can return are the fields in the schemas in =providers/meta.py=: a food, a display value, a unit, a confidence, a vessel flag, an ingredient, what a wrapper prints, a label's nutrition facts, a reply action. There is no path that recommends anything, and it makes no medical claim. The loop around the model is in =server/itlogs/session.py= |
 | Platform policies | Met | Next section |
 | Eligibility and the waiver | Attested | Attested by the entrant when signing the waiver. Not checkable from a repo |
 
@@ -40,7 +40,7 @@ In this repository:
 |-----------+--------+------|
 | NOVEMBER-01 14:58 | =4ab1f6d= | The transport layer and documents carried from the sibling: 20 files, 1,009 lines |
 | NOVEMBER-01 14:58 | =3216b23= | The food logic: reader, second look, voice check, nutrients, evals, the phone UI: 31 files, 2,718 lines |
-| NOVEMBER-01 to 04 | everything after | Weighing mode, the review screen, Apple Health, barcode, bowl mode, replay, the site |
+| NOVEMBER-01 to 04 | everything after | Weighing mode, the review screen, Apple Health, bowl mode, wrapper reading with web search, replay, the site |
 
 * Coding assistant
 Built with Claude Code (Anthropic) as a coding assistant, disclosed in a =Co-Authored-By= trailer on the commits. The Official Rules allow a third party for technical assistance when the components remain the participant's own work and the participant owns all rights to them. Meta's toolkit documentation has its own Claude Code setup page, https://wearables.developer.meta.com/docs/develop/dat/ai-assisted-claude-code, and this project used Meta's =mwdat-ios= plugin from it. Meta's Model API documentation also describes third-party coding agents, Claude Code among them: https://dev.meta.ai/docs/coding-agents. The Meta models are what the product runs on.
@@ -58,7 +58,7 @@ Meta's Wearables Developer Terms and Acceptable Use Policy (https://wearables.de
 | What | Licence | Where it is credited |
 |------+---------+----------------------|
 | Canadian Nutrient File, Health Canada | Open Government Licence, Canada | =server/itlogs/data/README.org=, =README.md=, the site footer |
-| Open Food Facts, looked up per barcode, not bundled | Open Database License | =README.md=, the site |
+| Open Food Facts, looked up per barcode on a path that is off by default, not bundled | Open Database License | =README.md= |
 | Wearables Device Access Toolkit | Meta's terms; fetched by Swift Package Manager, not in this repo | =ios/project.yml= |
 | posthog-ios | fetched by Swift Package Manager, not in this repo | =ios/project.yml= |
 | Inter, JetBrains Mono, Plus Jakarta Sans | SIL Open Font License | =site/fonts/= |

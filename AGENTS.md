@@ -16,16 +16,17 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 
 | File | What it holds | Start at |
 |---|---|---|
-| `server/itlogs/session.py` | The loop: weighing mode, bowls, "log it", voice, barcodes. One `Session` per socket | `decide`, `_watch`, `_bowl_step`, `final_look` |
+| `server/itlogs/session.py` | The loop: weighing mode, bowls, wrappers, "log it", voice. One `Session` per socket | `decide`, `_watch`, `_bowl_step`, `identify`, `look_up`, `final_look` |
 | `server/itlogs/app.py` | FastAPI, `/ws/session`, `/health`, `/log`. Pairs JSON meta with binary frames; at most two reads in flight | `ws_session`, `think` |
 | `server/itlogs/frames.py` | Which frame is worth a model call: stillness and sharpness, pixel math on thumbnails | `Stillness` |
 | `server/itlogs/models.py` | Pydantic types for the wire and the domain | `EntryRead`, `Entry`, `ServerMessage` |
 | `server/itlogs/nutrients.py` | Grams to nutrients from the Canadian Nutrient File: curated map, aliases, careful search | `lookup`, `search` |
 | `server/itlogs/providers/base.py` | The seam: `VisionProvider`, `LLMProvider` | both protocols |
-| `server/itlogs/providers/meta.py` | Reader and parser on any OpenAI-compatible endpoint; prompts and schemas | `ENTRY_SYSTEM`, `read_entry`, `read_addition`, `make_reader` |
-| `server/itlogs/providers/chat.py` | One chat client with JSON-schema output, and a plain-mode fallback | `structured` |
+| `server/itlogs/providers/meta.py` | Reader and parser on any OpenAI-compatible endpoint; prompts and schemas | `ENTRY_SYSTEM`, `read_entry`, `read_addition`, `read_wrapper`, `find_facts`, `make_reader` |
+| `server/itlogs/providers/chat.py` | One chat client with JSON-schema output and a plain-mode fallback, and the Responses API call with `web_search` | `structured`, `grounded` |
 | `server/itlogs/providers/fake.py` | Deterministic providers for tests and replay | `FakeVision` |
-| `server/itlogs/barcode.py`, `server/itlogs/providers/openfoodfacts.py` | A frame to a barcode, a barcode to a product's label values | `decode`, `lookup` |
+| `server/itlogs/facts_cache.py` | A product's label once found, kept out of git | `key` |
+| `server/itlogs/barcode.py`, `server/itlogs/providers/openfoodfacts.py` | The barcode path, off by default: it never decoded a real wrapper from the glasses | `decode`, `lookup` |
 | `server/itlogs/asr.py` | Muse Voice Transcribe, used only when PCM comes up from the phone | `Transcriber` |
 | `server/itlogs/record.py`, `telemetry.py` | Optional local recording; optional PostHog events | `Recorder` |
 | `ios/Sources/ItlogsFood/GlassesSource.swift` | The toolkit: registration, session, camera stream, speech | `start` |
@@ -46,6 +47,7 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 - **still**: the thumbnail difference has stayed below a threshold for 0.6 s (`Stillness`).
 - **empty**: the scale reads 0 or less, or nothing is on it. Two in a row mean a new food can come.
 - **bowl**: from the first read that sees a vessel until the scale is empty, each rise is one row.
+- **wrapper**: a packaged food the nutrient table does not know. One call reads what it prints, then `web_search` finds its label.
 - **final look**: one last read at Stop.
 - **A time in a comment, like 21:58 or "2026-NOVEMBER-03 19:26"**: a real recorded session where this code path mattered. Many are in `evals/recorded-runs.org`.
 - **`#12` and the like**: an issue number in the project's private tracker. The code and the commit message carry the reasoning, so nothing depends on reading it.
@@ -59,6 +61,10 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 | Foods outside a bowl keep the whole number | `test_foods_outside_a_bowl_keep_the_whole_number` |
 | A spoken amount in a bowl counts once | `test_saying_the_food_and_the_grams_does_not_count_it_twice` |
 | A failed name never loses a row | `test_failed_naming_keeps_the_row` |
+| Web numbers that disagree with the wrapper or with themselves are refused | `test_numbers_that_cannot_be_trusted_are_refused` |
+| The protein printed on the wrapper wins | `test_the_protein_printed_on_the_wrapper_wins` |
+| A product is searched for only once | `test_the_same_product_is_found_only_once` |
+| How a food was cut does not change its nutrients | `test_how_a_food_was_cut_does_not_change_it` |
 | A refused model call at Stop still sends the final state | `test_a_refused_model_call_at_stop_still_sends_the_final_state` |
 | A recording keeps the frame that was read | `test_the_recording_keeps_the_frame_that_was_read` |
 | A model number that is not a number is an unreadable read | `test_a_display_value_that_is_not_a_number_is_an_unreadable_read` |
@@ -73,10 +79,10 @@ For coding agents, and for anyone using an LLM to read this repository. [README.
 | The dates, the author, no media or keys, the licences | `make rules-check` | every line `ok` or `info` |
 | The phone holds no model key and calls no model | `grep -rnE 'MODEL_API_KEY\|api\.meta\.ai\|BASETEN' ios/Sources` | no output |
 | Only standard-mode model ids | `grep -rn 'contributor' server/itlogs` | only the comment that rules them out |
-| The latency figures | `make replay`, from `evals/recorded-latency.json` | 216 timed reads, median 3.2 s, 90th percentile 5.0 s |
+| The latency figures | `make replay`, from `evals/recorded-latency.json` | 254 timed reads, median 3.0 s, 90th percentile 5.0 s |
 | How much was carried from before this repo | `make rules-check` | about 400 lines of nearly 7,000 |
 
-Works on real hardware only, so a clone cannot prove it: the glasses path and the Apple Health write. The evidence for those is the demo video and the recorded sessions.
+Works on real hardware or with a key only, so a clone cannot prove it: the glasses path, the Apple Health write and the web search. The evidence for those is the demo video and the recorded sessions.
 
 ## Not built, so do not assume it
 

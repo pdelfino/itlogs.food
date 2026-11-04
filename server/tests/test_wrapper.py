@@ -107,6 +107,12 @@ def test_numbers_that_cannot_be_trusted_are_refused(facts):
     assert row_from_facts(BAR, facts) is None
 
 
+def test_the_protein_printed_on_the_wrapper_wins():
+    """The second real search said 12 g, within the check; the wrapper prints 13 g."""
+    row = row_from_facts(BAR, FACTS.model_copy(update={"protein_g": 12.0}))
+    assert round(row[1] * 40 / 100, 2) == 13.0
+
+
 async def test_refused_numbers_keep_the_name_and_the_question_mark():
     s, _ = weighing(bar(), facts=FACTS.model_copy(update={"protein_g": 15.0}))
     await s.on_frame(b"frame", 1000)

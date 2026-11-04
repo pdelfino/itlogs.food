@@ -34,7 +34,6 @@
       <li>Camera frames from the glasses, only between Start and Stop, which you tap.</li>
       <li>What you say, as text recognized on the glasses. If the glasses are not recognizing speech, audio from the phone's microphone goes to the server, which sends it to Muse Voice Transcribe.</li>
       <li>Food names and grams, and the nutrients worked out from them.</li>
-      <li>Barcode numbers, when a barcode is seen or scanned.</li>
     </ul>
 
     <h2>Why</h2>
@@ -44,7 +43,7 @@
     <ul>
       <li>From the phone to a server you run on your own network.</li>
       <li>From the server to the model provider you configured, to read the frame and understand the sentence: the Meta Model API, on model ids that do not train on the content, or Baseten.</li>
-      <li>A barcode number goes to Open Food Facts, to look up the product.</li>
+      <li>The name read off a packaged food's wrapper goes to the Meta Model API's web search, to find its printed nutrition facts.</li>
       <li>If a PostHog token is configured: food names, grams, diagnostic lines and errors go to PostHog. Never frames or audio.</li>
       <li>To Apple Health, only when you confirm the meal. The app reads back only the energy it wrote.</li>
     </ul>

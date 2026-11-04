@@ -74,7 +74,7 @@
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="7" cy="14" r="4"/><circle cx="17" cy="14" r="4"/><path d="M11 14h2"/><path d="M3 14l1-6h3"/><path d="M21 14l-1-6h-3"/></svg></div>
           <span class="num">02</span>
           <h3>Ray-Ban Meta glasses</h3>
-          <p>The glasses see the food and the display. Muse Spark names the food and reads the grams.</p>
+          <p>The glasses see the food and the display. Muse Spark names the food and reads the grams. For a packaged food, it reads the wrapper and searches the web for the label.</p>
         </article>
         <article class="card reveal">
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg></div>
@@ -110,12 +110,12 @@
             <tr><th scope="row">Hands free while weighing</th><td class="us"><span class="d y" role="img" aria-label="Yes"></span></td><td><span class="d p" role="img" aria-label="Partly or varies"></span></td><td><span class="d n" role="img" aria-label="No"></span></td><td><span class="d n" role="img" aria-label="No"></span></td><td><span class="d n" role="img" aria-label="No"></span></td></tr>
             <tr><th scope="row">No phone in your hand while weighing</th><td class="us"><span class="d y" role="img" aria-label="Yes"></span></td><td><span class="d y" role="img" aria-label="Yes"></span></td><td><span class="d n" role="img" aria-label="No"></span></td><td><span class="d n" role="img" aria-label="No"></span></td><td><span class="d n" role="img" aria-label="No"></span></td></tr>
             <tr><th scope="row">Goes to Apple Health</th><td class="us"><span class="d y" role="img" aria-label="Yes"></span></td><td><span class="d y" role="img" aria-label="Yes"></span></td><td><span class="d p" role="img" aria-label="Partly or varies"></span></td><td><span class="d p" role="img" aria-label="Partly or varies"></span></td><td><span class="d p" role="img" aria-label="Partly or varies"></span></td></tr>
-            <tr><th scope="row">Barcodes</th><td class="us"><span class="d p" role="img" aria-label="Partly or varies"></span></td><td><span class="d y" role="img" aria-label="Yes"></span></td><td><span class="d p" role="img" aria-label="Partly or varies"></span></td><td><span class="d y" role="img" aria-label="Yes"></span></td><td><span class="d p" role="img" aria-label="Partly or varies"></span></td></tr>
+            <tr><th scope="row">Names packaged food and finds its label</th><td class="us"><span class="d y" role="img" aria-label="Yes"></span></td><td><span class="d y" role="img" aria-label="Yes"></span></td><td><span class="d p" role="img" aria-label="Partly or varies"></span></td><td><span class="d y" role="img" aria-label="Yes"></span></td><td><span class="d p" role="img" aria-label="Partly or varies"></span></td></tr>
           </tbody>
         </table>
       </div>
       <p class="legend reveal"><span class="d y" aria-hidden="true"></span> yes <span class="d p" aria-hidden="true"></span> partly or it varies <span class="d n" aria-hidden="true"></span> no</p>
-      <p class="source reveal">In itlogs.food you tap Start, Stop and send on the phone, and nothing for each food. Its barcode path is built but not yet proven on a real wrapper. Qalzy's column comes from <a href="https://qalzy.com/pages/scale-guide" rel="noopener">its own guide</a>, read 2026-NOVEMBER-04: you press a button on the scale for each scan, or twice for a Live Scan.</p>
+      <p class="source reveal">In itlogs.food you tap Start, Stop and send on the phone, and nothing for each food. It reads a packaged food's wrapper, and the first lookup of a product takes 30 to 60 s. Qalzy's column comes from <a href="https://qalzy.com/pages/scale-guide" rel="noopener">its own guide</a>, read 2026-NOVEMBER-04: you press a button on the scale for each scan, or twice for a Live Scan.</p>
       <p class="source reveal">Four popular photo apps logged calories and fat about one-third too low, across about 100 meals measured to 0.1 g. <a href="https://www.westnewsmagazine.com/health/ai-calorie-tracking-apps-may-be-inaccurate-tests-find/article_fd5c470b-6cc5-5240-bdaf-c38366e01239.html" rel="noopener">Study led by an NIH fellow, presented at the American Society for Nutrition&#39;s annual meeting.</a></p>
     </section>
 
@@ -162,7 +162,7 @@
       </div>
       <div class="chips">
         <div class="chip reveal"><b>Ray-Ban Meta</b><span>The glasses, through the Wearables Device Access Toolkit: the camera stream, and speech recognized on the glasses.</span></div>
-        <div class="chip reveal"><b>Muse Spark</b><span>Reads the frame: the food, the number on the display, and how sure it is, as structured output.</span></div>
+        <div class="chip reveal"><b>Muse Spark</b><span>Reads the frame: the food, the number on the display, and how sure it is, as structured output. For a packaged food, it reads the wrapper, then its web search finds the printed numbers.</span></div>
         <div class="chip reveal"><b>Muse Voice Transcribe</b><span>The fallback for speech when the glasses are not recognizing it. Realtime, 24 kHz.</span></div>
         <div class="chip reveal"><b>Muse Image</b><span>Made the kitchen pictures on this page from a text prompt and one reference frame.</span></div>
         <div class="chip reveal"><b>Muse Spark Open</b><span>The open-weight path: the same reader on Baseten, one setting away. It read the apple right at 20 s a read, too slow for live use, so Muse Spark runs the demo.</span></div>
@@ -184,7 +184,7 @@
   <footer class="wrap">
     <div class="wordmark small"><span>itlogs</span><span class="accent">.food</span><span class="cursor" aria-hidden="true"></span></div>
     <p>itlogs<span class="accent">.food</span> is the first of a family. Only the suffix changes.</p>
-    <p class="legal">Built in Montréal. Ray-Ban Meta and Muse are trademarks of their owners. itlogs.food is an independent project, not affiliated with Meta. Nutrients: Canadian Nutrient File, Health Canada, contains information licensed under the Open Government Licence, Canada. Packaged foods: Open Food Facts, Open Database License. <a href="privacy.html">Privacy</a>.</p>
+    <p class="legal">Built in Montréal. Ray-Ban Meta and Muse are trademarks of their owners. itlogs.food is an independent project, not affiliated with Meta. Nutrients: Canadian Nutrient File, Health Canada, contains information licensed under the Open Government Licence, Canada. <a href="privacy.html">Privacy</a>.</p>
   </footer>
 
   <script>

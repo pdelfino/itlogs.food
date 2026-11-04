@@ -59,8 +59,10 @@ def row_from_facts(label: WrapperLabel, facts: LabelFacts) -> nutrients.Row | No
     k = 100.0 / f.serving_g
     if f.kcal * k > 900:
         return None
+    # what the wrapper prints wins: two searches for this bar said 13 g and 12 g of protein
+    protein = f.protein_g if label.protein_g is None else label.protein_g
     fiber, sodium = f.fiber_g or 0.0, f.sodium_mg or 0.0
-    return (f.kcal * k, f.protein_g * k, f.carbs_g * k, f.fat_g * k, fiber * k, sodium * k)
+    return (f.kcal * k, protein * k, f.carbs_g * k, f.fat_g * k, fiber * k, sodium * k)
 
 
 def fmt_grams(g: float) -> str:
