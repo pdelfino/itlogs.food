@@ -65,6 +65,7 @@ class ChatModel:
         # switched on by the first 400 that mentions them.
         self.plain = plain
         self.latency_ms: list[float] = []
+        self.last_usage: dict[str, int | None] = {}
 
     def _body(self, system: str, content: list[dict], schema: dict, max_tokens: int) -> dict:
         if self.plain:
@@ -113,7 +114,17 @@ class ChatModel:
             )
         self.latency_ms.append((time.perf_counter() - t0) * 1000)
         r.raise_for_status()
-        choice = r.json()["choices"][0]
+        data = r.json()
+        # where the time went: prompt (image) tokens vs completion, and the reasoning share
+        # when the endpoint reports it (Muse Spark Open always reasons; this is the cost)
+        usage = data.get("usage") or {}
+        details = usage.get("completion_tokens_details") or {}
+        self.last_usage = {
+            "prompt": usage.get("prompt_tokens"),
+            "completion": usage.get("completion_tokens"),
+            "reasoning": details.get("reasoning_tokens"),
+        }
+        choice = data["choices"][0]
         raw = choice["message"].get("content")
         if not raw:
             # reasoning models spend the budget before the answer; say so instead of crashing

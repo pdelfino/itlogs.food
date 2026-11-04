@@ -35,9 +35,11 @@ async def main() -> int:
             read = await reader.read_entry(jpeg)
             ms = reader.chat.latency_ms[before:]
             took.extend(ms)
+            u = getattr(reader.chat, "last_usage", {}) or {}
             print(
                 f"{i + 1}: {read.food!r} {read.grams} g conf={read.confidence:.2f} "
-                f"{int(sum(ms))} ms"
+                f"{int(sum(ms))} ms  tokens prompt={u.get('prompt')} "
+                f"completion={u.get('completion')} reasoning={u.get('reasoning')}"
             )
     finally:
         await reader.aclose()
