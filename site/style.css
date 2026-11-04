@@ -414,6 +414,24 @@ footer .legal { font-size: 0.78rem; }
 .vs tbody tr + tr > *, .vs tbody tr:first-child > * { border-top: 1px solid var(--line); }
 .vs .us { background: rgba(88, 72, 229, 0.08); color: var(--ink); font-weight: 600; }
 .vs thead .us { color: var(--accent); }
+.dots { min-width: 46rem; table-layout: fixed; }
+.dots thead td { width: 25%; }
+.dots th, .dots td { padding: 0.95rem 0.75rem; text-align: center; vertical-align: middle; }
+.dots thead th { padding-top: 1.4rem; padding-bottom: 1.2rem; }
+.dots tbody th { text-align: left; white-space: normal; min-width: 12rem; }
+.dots thead td, .dots tbody th { position: sticky; left: 0; z-index: 1; background: var(--card); }
+.dots .need td { font-size: 0.86rem; line-height: 1.35; }
+.tag { display: inline-block; padding: 0.4rem 0.8rem; border: 1px solid var(--ink); border-radius: 999px; font-size: 0.88rem; font-weight: 600; white-space: nowrap; color: var(--ink); }
+.tag.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.d { display: inline-block; width: 1.1rem; height: 1.1rem; border-radius: 50%; border: 1.5px solid var(--ink); vertical-align: middle; }
+.d.y { background: var(--ink); }
+.dots .us .d { border-color: var(--accent); }
+.dots .us .d.y { background: var(--accent); }
+.d.p { background: linear-gradient(90deg, var(--ink) 50%, transparent 50%); }
+.dots .us .d.p { background: linear-gradient(90deg, var(--accent) 50%, transparent 50%); }
+.legend { margin: 1rem 0 0; font-size: 0.9rem; color: var(--mute); }
+.legend .d { width: 0.8rem; height: 0.8rem; margin: 0 0.2rem 0 0.8rem; }
+.legend .d:first-child { margin-left: 0; }
 .source { margin: 1rem 0 0; max-width: 46rem; font-size: 0.9rem; color: var(--mute); }
 .source a { color: var(--accent); }
 
@@ -436,6 +454,12 @@ footer .legal { font-size: 0.78rem; }
 
 /* narrow screens: the log drops the time and kcal columns */
 @media (max-width: 40rem) {
+  .dots { min-width: 38rem; }
+  .dots thead td { width: 8.5rem; }
+  .dots tbody th { min-width: 0; font-size: 0.86rem; }
+  .dots th, .dots td { padding: 0.8rem 0.45rem; }
+  .dots .need td { font-size: 0.76rem; }
+  .tag { padding: 0.3rem 0.55rem; font-size: 0.76rem; }
   .logcard ol { font-size: 0.8rem; }
   .logcard li { grid-template-columns: 1fr 6ch 9ch; }
   .logcard li:nth-child(5) { grid-template-columns: 1fr auto; }

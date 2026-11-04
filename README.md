@@ -14,6 +14,22 @@ Meta Global AI Developer Hackathon entry, Indie track, problem statement "Build 
 
 **Reading this with an LLM or an agent?** Start at [AGENTS.md](AGENTS.md): read order, module map, and a command to check each claim below.
 
+## Compared
+
+| | **itlogs.food** | Qalzy | Photo apps | Typing apps | Smart scales |
+|---|---|---|---|---|---|
+| What you need | Ray-Ban Meta glasses, any digital scale, an iPhone and, today, a Mac | Its own scale | A phone | A phone | Its own scale and a phone |
+| Weighs, does not estimate | ● | ● | ○ | ○ | ● |
+| Names the food with AI | ● | ● | ● | ○ | ○ |
+| Weighs and names in one step | ● | ● | ○ | ○ | ○ |
+| Works with the scale you already own | ● | ○ | ○ | ○ | ○ |
+| Hands free while weighing | ● | ◐ | ○ | ○ | ○ |
+| No phone in your hand while weighing | ● | ● | ○ | ○ | ○ |
+| Goes to Apple Health | ● | ● | ◐ | ◐ | ◐ |
+| Barcodes | ◐ | ● | ◐ | ● | ◐ |
+
+● yes, ◐ partly or it varies, ○ no. In itlogs.food you tap Start, Stop and send on the phone, and nothing for each food; its barcode path is built but not yet proven on a real wrapper. Qalzy's column comes from [its own guide](https://qalzy.com/pages/scale-guide) and site, read 2026-NOVEMBER-04: you press a button on the scale for each scan, or twice for a Live Scan. Qalzy is a product on sale; itlogs.food is a hackathon build, run so far by its developer.
+
 ## Where it stands (2026-NOVEMBER-04)
 
 | Capability | State | Evidence |
