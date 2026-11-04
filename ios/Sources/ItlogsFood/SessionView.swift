@@ -97,8 +97,8 @@ struct SessionView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.top, 10)
-            if session.running && session.lostDisplay {
-                Label("Display is blocked", systemImage: "eye.slash.fill")
+            if let warning = session.warning {
+                Label(warning.title, systemImage: warning.icon)
                     .font(Theme.sentence(19, weight: .semibold))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 18)
@@ -117,6 +117,13 @@ struct SessionView: View {
                 .lineSpacing(3)
                 .padding(.horizontal, 28)
                 .padding(.top, 4)
+            // the last thing said in the ear: "The model is out of reach", "Voice input is off"
+            if !session.lastSaid.isEmpty, session.lastSaid != stateLine, session.warning == nil {
+                Text(session.lastSaid)
+                    .font(Theme.body(13)).foregroundStyle(Theme.mute)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 28)
+            }
             if let q = session.question {
                 Text(q.text).font(Theme.sentence(17, weight: .semibold)).foregroundStyle(Theme.ink).padding(.top, 6)
             }
@@ -140,8 +147,10 @@ struct SessionView: View {
         if let e = session.error { return e }
         if session.finishing { return "Finishing the last reading…" }
         if session.starting { return "Starting…" }
+        if session.running && (session.connectionLost || session.noPicture) { return "Tap Stop. What is logged so far is kept." }
         if session.running && !session.cameraLive { return "The camera is starting. Wait for \"Ready\"." }
         if session.running && session.lostDisplay { return "Look down at the scale." }
+        if session.paused { return "Weighing is paused." }
         if session.watching { return "Watching the scale. Weigh at your pace." }
         if session.running { return "Ready." }
         if !session.entries.isEmpty { return "Meal weighed. Check it below, or start again." }
@@ -188,6 +197,10 @@ struct SessionView: View {
     private var bottom: some View {
         VStack(spacing: 10) {
             if session.running {
+                if session.paused {
+                    Button("Resume weighing") { session.setWeighing(true) }
+                        .buttonStyle(PillButtonStyle(fill: Theme.ink))
+                }
                 let left = max(0, Int((session.stopAfterSeconds - now.timeIntervalSince(session.startedAt ?? now)).rounded(.up)))
                 Button(session.finishing ? "Finishing…" : (left > 0 ? "Stop (\(left))" : "Stop")) { Task { await session.stop() } }
                     .buttonStyle(PillButtonStyle(fill: Theme.accent))

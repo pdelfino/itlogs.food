@@ -44,6 +44,8 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
             .onAppear { urlText = session.serverURL.absoluteString }
+            // Done with no Return kept the old address, and Start then blamed the network
+            .onDisappear { if let u = URL(string: urlText), u != session.serverURL { session.serverURL = u } }
         }
     }
 }

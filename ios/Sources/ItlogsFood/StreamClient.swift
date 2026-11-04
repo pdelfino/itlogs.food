@@ -37,13 +37,17 @@ actor StreamClient {
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
     private var onMessage: (@Sendable (ServerMessage) -> Void)?
+    private var onClose: (@Sendable () -> Void)?
+    private var lastPong = Date()
     private var queue: [Outgoing] = []
     private var pumping = false
 
     /// Opens the socket and returns once the server accepted it; throws after `timeout` seconds,
-    /// or at once when the connection fails (nothing listening, no route).
-    func connect(url: URL, timeout: TimeInterval = 10, onMessage: @escaping @Sendable (ServerMessage) -> Void) async throws {
+    /// or at once when the connection fails (nothing listening, no route). `onClose` fires if the
+    /// socket dies afterwards, never for `disconnect`.
+    func connect(url: URL, timeout: TimeInterval = 10, onClose: @escaping @Sendable () -> Void = {}, onMessage: @escaping @Sendable (ServerMessage) -> Void) async throws {
         self.onMessage = onMessage
+        self.onClose = onClose
         queue.removeAll()
         let handshake = Handshake()
         let session = URLSession(configuration: .default, delegate: handshake, delegateQueue: nil)
@@ -70,6 +74,38 @@ actor StreamClient {
         timer.cancel()
         log.info("connected to \(url.absoluteString, privacy: .public)")
         Task { await self.receiveLoop() }
+        Task { await self.keepAlive() }
+    }
+
+    /// A Mac that sleeps or leaves the Wi-Fi closes nothing, and receive waits forever: a ping every
+    /// 5 s, and 15 s with no answer means the socket is gone.
+    private func keepAlive() async {
+        lastPong = Date()
+        while task != nil {
+            try? await Task.sleep(for: .seconds(5))
+            guard let task else { return }
+            if Date().timeIntervalSince(lastPong) > 15 {
+                lost("no pong for 15 s")
+                return
+            }
+            task.sendPing { [weak self] error in
+                guard error == nil else { return }
+                Task { await self?.pong() }
+            }
+        }
+    }
+
+    private func pong() { lastPong = Date() }
+
+    /// The socket died on its own (after `disconnect` the task is already nil): tell the owner once.
+    private func lost(_ why: String) {
+        guard task != nil else { return }
+        log.error("socket lost: \(why, privacy: .public)")
+        queue.removeAll()
+        task = nil
+        session?.invalidateAndCancel()
+        session = nil
+        onClose?()
     }
 
     func disconnect() {
@@ -145,8 +181,7 @@ actor StreamClient {
                     try await task.send(.data(d))
                 }
             } catch {
-                log.error("send failed: \(error.localizedDescription, privacy: .public)")
-                queue.removeAll()  // the socket is gone; nothing queued can go anywhere
+                lost("send failed: \(error.localizedDescription)")  // nothing queued can go anywhere
                 return
             }
         }
@@ -161,7 +196,7 @@ actor StreamClient {
                     onMessage?(msg)
                 }
             } catch {
-                log.error("receive failed: \(error.localizedDescription, privacy: .public)")
+                lost("receive failed: \(error.localizedDescription)")
                 return
             }
         }

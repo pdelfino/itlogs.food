@@ -56,7 +56,7 @@ targets:
         NSLocalNetworkUsageDescription: Lets the phone find the glasses over Wi-Fi and reach the itlogs.food server on the LAN.
         NSBonjourServices: [_bonjour._tcp]
         NSHealthUpdateUsageDescription: Each confirmed meal is written to Apple Health as food samples (energy, protein, carbs, fat, fiber, sodium) with the food name and grams.
-        NSHealthShareUsageDescription: It Logs Food does not read your Health data; it only writes the meals you confirm.
+        NSHealthShareUsageDescription: It Logs Food reads back only the energy it wrote, to show what it saved today. It reads nothing else from Health.
     # The camera stream rides a Wi-Fi network the glasses host; Meta's CameraAccess sample carries the
     # HotspotConfiguration and wifi-info entitlements, and without them the process died with SIGTRAP
     # at stream start (2026-11-01). Xcode: "Personal development teams do not support the Access Wi-Fi

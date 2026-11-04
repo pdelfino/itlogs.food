@@ -44,6 +44,28 @@ final class StreamClientTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(inbox.all.filter { $0 == "state" }.count, 2, "watch state and final state; got \(inbox.all)")
     }
 
+    /// Set ITLOGS_WS_TEST_URL to a server running the fake provider, so no model is called.
+    func testASocketThatDiesIsReportedAndDisconnectIsNot() async throws {
+        guard let raw = ProcessInfo.processInfo.environment["ITLOGS_WS_TEST_URL"], let url = URL(string: raw) else {
+            throw XCTSkip("set ITLOGS_WS_TEST_URL to a server on the fake provider")
+        }
+        let inbox = Inbox()
+        let client = StreamClient()
+        try await client.connect(url: url, timeout: 5, onClose: { inbox.add("closed") }) { inbox.add($0.kind) }
+        try await client.endSession()  // the server answers and closes the socket from its side
+        for _ in 0..<50 where !inbox.all.contains("closed") {
+            try await Task.sleep(for: .milliseconds(100))
+        }
+        XCTAssertEqual(inbox.all.filter { $0 == "closed" }.count, 1, "got \(inbox.all)")
+
+        let quiet = Inbox()
+        let second = StreamClient()
+        try await second.connect(url: url, timeout: 5, onClose: { quiet.add("closed") }) { _ in }
+        await second.disconnect()
+        try await Task.sleep(for: .seconds(1))
+        XCTAssertFalse(quiet.all.contains("closed"), "our own disconnect is not a lost socket")
+    }
+
     func testConnectFailsFastWhenNothingListens() async {
         let client = StreamClient()
         do {

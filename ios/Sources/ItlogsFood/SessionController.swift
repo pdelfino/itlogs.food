@@ -37,6 +37,25 @@ final class SessionController {
     /// Reads that named a food with no weight since the last number; two mean the display is lost.
     var noDisplayReads = 0
     var lostDisplay: Bool { noDisplayReads >= 2 }
+    /// The socket to the Mac died during a run. Nothing else reaches the screen then: at 09:27 and
+    /// 20:33 on 2026-NOVEMBER-03 it said "Watching the scale" until Stop ran out of time.
+    var connectionLost = false
+    /// No frame for `noPictureAfterSeconds`: folded glasses, a lost link, a stream that stopped. The
+    /// glasses do not restart a session by themselves (19:26, 2026-NOVEMBER-02, six minutes of "live").
+    var noPicture = false
+    let noPictureAfterSeconds: TimeInterval = 12
+    private var lastFrameAt: Date?
+    private var frameWatch: Task<Void, Never>?
+    /// What stops the run from working, for the pill on the weighing screen.
+    var warning: (title: String, icon: String)? {
+        guard running else { return nil }
+        if connectionLost { return ("Lost the Mac", "wifi.slash") }
+        if noPicture { return ("No picture from the glasses", "video.slash.fill") }
+        if lostDisplay { return ("Display is blocked", "eye.slash.fill") }
+        return nil
+    }
+    /// Saying "done" turns weighing off and leaves the run open: the screen offers Resume.
+    var paused: Bool { running && !watching && cameraLive && !finishing && !connectionLost }
     var watching = false
     /// Start was tapped and the glasses session and stream are coming up (about six seconds);
     /// a second tap meanwhile made the toolkit throw sessionAlreadyExists (19:33, three times).
@@ -125,6 +144,10 @@ final class SessionController {
         entries = []  // a run is one meal; the review and the Health write cover this run only
         lastRead = nil
         noDisplayReads = 0
+        connectionLost = false
+        noPicture = false
+        lastFrameAt = nil
+        lastSaid = ""
         question = nil
         Diag.send("start tapped; glasses=\(useGlasses) server=\(serverURL.absoluteString)")
         let glasses: GlassesSource? = useGlasses ? GlassesSource() : nil
@@ -145,7 +168,9 @@ final class SessionController {
         do {
             // the socket first, and only once the server accepted it: frames queued on a socket
             // still opening went out meta before bytes and killed two runs (NOVEMBER-03 09:27)
-            try await client.connect(url: serverURL) { [weak self] msg in
+            try await client.connect(url: serverURL, onClose: { [weak self] in
+                Task { @MainActor in self?.socketClosed() }
+            }) { [weak self] msg in
                 Task { @MainActor in self?.handle(msg) }
             }
             do {
@@ -194,6 +219,7 @@ final class SessionController {
             // the phone sits on a stand while weighing: no auto-lock until Stop
             UIApplication.shared.isIdleTimerDisabled = true
             startedAt = Date()
+            watchFrames()
             // Start means weighing: the server watches the scale from here until Stop
             try? await client.watch(on: true, tMs: nowMs(), ask: askEachFood)
         } catch {
@@ -211,8 +237,34 @@ final class SessionController {
         }
     }
 
+    private func socketClosed() {
+        guard running, !connectionLost else { return }
+        connectionLost = true
+        Diag.send("socket lost during the run; entries=\(entries.count)")
+        if !finishing { voice.say("Lost the Mac. Tap Stop.") }
+    }
+
+    private func watchFrames() {
+        frameWatch?.cancel()
+        frameWatch = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(2))
+                guard let self else { return }
+                guard self.running, !self.finishing, !self.noPicture, !self.connectionLost else { continue }
+                let since = self.lastFrameAt ?? self.startedAt ?? Date()
+                if Date().timeIntervalSince(since) > self.noPictureAfterSeconds {
+                    self.noPicture = true
+                    Diag.send("no frame for \(Int(self.noPictureAfterSeconds)) s during the run")
+                    self.voice.say("No picture from the glasses. Tap Stop.")
+                }
+            }
+        }
+    }
+
     private func showFrame(_ jpeg: Data) {
         cameraLive = true
+        lastFrameAt = Date()
+        noPicture = false
         let now = Date()
         guard now.timeIntervalSince(lastPreviewAt) >= 0.4 else { return }  // about 2 a second
         lastPreviewAt = now
@@ -328,13 +380,20 @@ final class SessionController {
         try? await client.endSession()
         // the server finishes the read in flight, then answers with the list to read back (#12)
         let waited = Date()
-        for _ in 0..<80 where !finalStateArrived {  // up to 8 s: reads in flight, then the final look
+        // up to 30 s: the server can spend 8 s on reads in flight, then a model call on the final
+        // look (a real Stop took 7.7 s on 2026-NOVEMBER-03, and 8 s lost the last food). Ends at once
+        // when the state arrives or the socket is gone.
+        for _ in 0..<300 where !finalStateArrived && !connectionLost {
             try? await Task.sleep(for: .milliseconds(100))
         }
         Diag.send("stop: final state \(finalStateArrived ? "arrived" : "never came") after \(Int(Date().timeIntervalSince(waited) * 1000)) ms; entries=\(entries.count)")
         try? await Task.sleep(for: .milliseconds(500))  // let the last "say" land before the socket closes
         await client.disconnect()
+        frameWatch?.cancel()
+        frameWatch = nil
         running = false
+        connectionLost = false
+        noPicture = false
         UIApplication.shared.isIdleTimerDisabled = false
         watching = false
         finishing = false
@@ -359,6 +418,7 @@ final class SessionController {
                     entries[i] = e  // the server corrected a row (same food read again)
                 } else {
                     entries.append(e)
+                    lastSaid = ""  // "Ready..." is done once a food has landed
                     chime.play()  // the "checked" sound: move on to the next food
                 }
             }
