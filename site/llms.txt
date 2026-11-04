@@ -1,6 +1,6 @@
 # itlogs.food
 
-> Hands-free food logging. Ray-Ban Meta glasses see a digital kitchen scale, Muse Spark names the food and reads the grams off the display, and the meal goes to Apple Health with its calories and macros. Meta Global AI Developer Hackathon entry, Indie track.
+> Logging food means typing every meal, and the typing kills the habit. Wear Ray-Ban Meta glasses, put the food on any digital scale, and it goes to Apple Health, hands free. Muse Spark names the food and reads the grams off the display. Meta Global AI Developer Hackathon entry, Indie track.
 
 The source says what works and what does not, with evidence you can run.
 

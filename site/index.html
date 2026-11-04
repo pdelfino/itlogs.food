@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>itlogs.food · your food, weighed and logged, hands free</title>
-  <meta name="description" content="Ray-Ban Meta glasses look at any kitchen scale, read the food and the grams, and log it. No typing.">
+  <meta name="description" content="Logging food means typing every meal. Wear Ray-Ban Meta glasses, put the food on any digital scale, and it goes to Apple Health. Hands free.">
   <meta name="theme-color" content="#fafaf7">
   <meta property="og:title" content="itlogs.food">
   <meta property="og:description" content="Your food, weighed and logged, hands free.">
@@ -18,7 +18,7 @@
   <link rel="icon" href="brand/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
   <link rel="preload" href="fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
   <div class="glow" aria-hidden="true"></div>
@@ -31,7 +31,6 @@
       <nav class="links" aria-label="sections">
         <a href="#how">How it works</a>
         <a href="#compare">Compare</a>
-        <a href="#film">The film</a>
         <a href="#log">The log</a>
         <a href="#built">Built on</a>
       </nav>
@@ -46,29 +45,16 @@
         Meta Global AI Developer Hackathon 2026 · Indie track
       </a>
       <h1 class="reveal">You eat.<br><span class="grad">It logs.</span></h1>
-      <p class="sub reveal">Ray-Ban Meta glasses look at the kitchen scale you already own, read the grams off its display, name the food, and log it for you. No manual entry. Hands free. Works with any digital scale.</p>
+      <p class="pain reveal">Logging food means typing every meal, and the typing kills the habit.</p>
+      <p class="sub reveal">Wear Ray-Ban Meta glasses, put the food on any digital scale, and it goes to Apple Health. Hands free.</p>
       <div class="cta reveal">
-        <a class="btn primary" href="#film">Watch the film</a>
+        <a class="btn primary" href="#how">How it works</a>
         <a class="btn ghost" href="https://github.com/pdelfino/itlogs.food">View the source</a>
       </div>
-      <figure class="film reveal" id="film">
-        <div class="poster">
-          <img src="img/hero.webp" width="1536" height="1024" alt="" fetchpriority="high">
-          <div class="play" aria-hidden="true"><span class="cursor big"></span></div>
-          <figcaption>
-            <span class="k">The film</span>
-            <span>Three minutes, shot in a Montréal kitchen.</span>
-          </figcaption>
-        </div>
+      <figure class="frame reveal">
+        <img src="img/real-frame.jpg" width="720" height="576" alt="The view from the glasses: a phone showing 112 grams beside a kitchen scale whose display also shows 112, with a hand on the apple on the scale." fetchpriority="high">
+        <figcaption>A real frame from the glasses during a run, cropped. The app and the scale both say 112 g.</figcaption>
       </figure>
-
-      <ul class="proof reveal" aria-label="works with">
-        <li>Works with Ray-Ban Meta</li>
-        <li>Any digital kitchen scale</li>
-        <li>Muse Spark reads the frame</li>
-        <li>Barcodes get read</li>
-        <li>Macros and kcal go to Apple Health</li>
-      </ul>
     </section>
 
     <section class="how wrap" id="how">
@@ -81,32 +67,26 @@
         <article class="card reveal">
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="12" width="18" height="8" rx="2"/><path d="M7 12V9a5 5 0 0 1 10 0v3"/><path d="M8 16h3"/></svg></div>
           <span class="num">01</span>
-          <h3>The scale gets the grams</h3>
-          <p>Put the food on the scale you already own. The number on its display is the weight, so there is nothing to pair and nothing to buy.</p>
+          <h3>Any digital scale</h3>
+          <p>Use the scale you already own. The number on its display is the weight, so there is nothing to pair and nothing to buy.</p>
         </article>
         <article class="card reveal">
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="7" cy="14" r="4"/><circle cx="17" cy="14" r="4"/><path d="M11 14h2"/><path d="M3 14l1-6h3"/><path d="M21 14l-1-6h-3"/></svg></div>
           <span class="num">02</span>
-          <h3>The glasses get the images</h3>
-          <p>Ray-Ban Meta glasses see what you see. No phone in your hand, no photo to take, nothing to type.</p>
+          <h3>Ray-Ban Meta glasses</h3>
+          <p>The glasses see the food and the display. Muse Spark names the food and reads the grams.</p>
         </article>
         <article class="card reveal">
-          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12V4h8l8 8-8 8z"/><circle cx="8.5" cy="8.5" r="1.2"/></svg></div>
+          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M4 20h16"/></svg></div>
           <span class="num">03</span>
-          <h3>The system names the food</h3>
-          <p>Muse Spark names the food and reads the display. When it is unsure, it looks again before anything is logged.</p>
-        </article>
-        <article class="card reveal">
-          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5v14"/><path d="M7.5 5v14"/><path d="M11 5v14"/><path d="M15 5v14"/><path d="M17.5 5v14"/><path d="M20 5v14"/></svg></div>
-          <span class="num">04</span>
-          <h3>Barcodes get read</h3>
-          <p>Packaged food carries its own answer. Scan the barcode and the row takes the numbers from the product&#39;s label, through Open Food Facts.</p>
+          <h3>Put the food down, hands free</h3>
+          <p>No phone in your hand, no photo to take, nothing to type. Move on to the next food.</p>
         </article>
         <article class="card reveal">
           <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z"/></svg></div>
-          <span class="num">05</span>
-          <h3>Macros and kcal go to Apple Health</h3>
-          <p>Protein, carbs, fat and kcal for every food. You check the meal, then send it with one tap.</p>
+          <span class="num">04</span>
+          <h3>It goes to Apple Health</h3>
+          <p>The food, the grams, the calories and the macros. You check the meal, then send it with one tap.</p>
         </article>
       </div>
     </section>
@@ -178,7 +158,7 @@
         <div class="chip reveal"><b>Ray-Ban Meta</b><span>The glasses, through the Wearables Device Access Toolkit: the camera stream, and speech recognized on the glasses.</span></div>
         <div class="chip reveal"><b>Muse Spark</b><span>Reads the frame: the food, the number on the display, and how sure it is, as structured output.</span></div>
         <div class="chip reveal"><b>Muse Voice Transcribe</b><span>The fallback for speech when the glasses are not recognizing it. Realtime, 24 kHz.</span></div>
-        <div class="chip reveal"><b>Muse Image</b><span>Made every picture on this page from a text prompt and one reference frame.</span></div>
+        <div class="chip reveal"><b>Muse Image</b><span>Made the kitchen pictures on this page from a text prompt and one reference frame.</span></div>
         <div class="chip reveal"><b>Muse Spark Open</b><span>The open-weight path: the same reader on Baseten, one setting away. It read the apple right at 20 s a read, too slow for live use, so Muse Spark runs the demo.</span></div>
         <div class="chip reveal"><b>FastAPI + Swift</b><span>A thin phone client streams frames up a WebSocket; one Python loop does the rest. The source is on GitHub.</span></div>
       </div>
@@ -190,7 +170,6 @@
         <p>The code, every recorded run, and a replay of real sessions you can run with no glasses and no key.</p>
         <div class="cta">
           <a class="btn primary" href="https://github.com/pdelfino/itlogs.food">View on GitHub</a>
-          <a class="btn ghost light" href="#film">The film</a>
         </div>
       </div>
     </section>

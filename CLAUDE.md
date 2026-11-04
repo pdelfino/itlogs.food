@@ -16,7 +16,7 @@ Read [AGENTS.md](AGENTS.md) first: what this is, the module map, the glossary, t
 
 ## Rules
 - Secrets come from the environment (`ITLOGS_*`, see `server/.env.example`); never in the repo, never echoed.
-- Photos and model weights never enter git. Recordings stay in a local folder.
+- Photos and model weights never enter git, apart from the one approved frame at `site/img/real-frame.jpg`. Recordings stay in a local folder.
 - Only standard-mode model ids (no `-contributor`).
 - Org-mode for docs (`README.md` and `AGENTS.md` are the two exceptions), no em-dashes, dates as 2026-OCTOBER-26 in prose.
 - Keep commits honest and small: the commit history is how this project shows what was built when.

@@ -1,6 +1,12 @@
 # itlogs.food
 
-Put food on a digital kitchen scale while wearing Ray-Ban Meta glasses. The glasses see the scale, Muse Spark names the food and reads the grams off the display, and the meal goes to Apple Health with its calories and macros. No typing, and no pairing with the scale.
+**The pain:** logging food means typing every meal, and the typing kills the habit. Photo apps skip the typing but guess the portion: four popular ones logged calories and fat about one-third too low across about 100 meals ([study led by an NIH fellow, presented at the American Society for Nutrition's annual meeting](https://www.westnewsmagazine.com/health/ai-calorie-tracking-apps-may-be-inaccurate-tests-find/article_fd5c470b-6cc5-5240-bdaf-c38366e01239.html)).
+
+**The fix:** wear Ray-Ban Meta glasses and put the food on any digital scale. The glasses read the grams off the display, Muse Spark names the food, and the meal goes to Apple Health with its calories and macros. No typing, hands free, nothing to pair with the scale.
+
+![The view from the glasses: a phone showing 112 grams beside a kitchen scale whose display also shows 112](site/img/real-frame.jpg)
+
+*A real frame from the glasses during a run, cropped. The app and the scale both say 112 g.*
 
 Meta Global AI Developer Hackathon entry, Indie track, problem statement "Build for Your World". Site: https://itlogs.food
 
@@ -13,6 +19,7 @@ Meta Global AI Developer Hackathon entry, Indie track, problem statement "Build 
 | Capability | State | Evidence |
 |---|---|---|
 | Start, weigh single foods, Stop, review, send to Apple Health | **Works on real glasses in good light** | Best run, tag `best-run-2026-11-03`: apple 112 g, banana 124 g, 37 s from Start to the end, both foods in Health |
+| Any digital scale | **Built for any, proven on one so far** | It reads the display and pairs with nothing, so nothing here is specific to one scale. Every recorded run used the same backlit scale |
 | One row per food | **Works**, and old bugs are pinned | `make replay` on real recorded reads |
 | A dim room | **Fails**: the digits wash out | 102 reads, 1 with a weight ([recorded runs](evals/recorded-runs.org)). The screen and the ear say the display is lost |
 | A bowl, one row per ingredient | **Grams proven on real reads; naming not yet run on a real bowl** | Replay gives 104 g where the app had logged 265 g; `server/tests/test_bowl.py` |
@@ -21,11 +28,9 @@ Meta Global AI Developer Hackathon entry, Indie track, problem statement "Build 
 | "Hey Meta, start" launch | **Built, not working yet** | `VoiceInvocations.swift`; needs a Wearables Developer Center release channel |
 | Accuracy against ground truth | **Not measured yet** | `evals/sets/` is empty, so `make eval` reports no sets |
 
-## Why
+## Why this approach
 
-Four popular photo apps logged calories and fat about one-third too low, across about 100 meals ([study led by an NIH fellow, presented at the American Society for Nutrition's annual meeting](https://www.westnewsmagazine.com/health/ai-calorie-tracking-apps-may-be-inaccurate-tests-find/article_fd5c470b-6cc5-5240-bdaf-c38366e01239.html)). Smart scales weigh correctly, then make you pick the food by hand on a phone. Meta announced food logging by photo for its glasses in 2026: US only, estimated portions, in the Meta AI app.
-
-So the glasses read the number on the scale you already own. The scale supplies the grams, the glasses supply the picture, the model supplies the food's name, a table or a barcode supplies the nutrients, and nobody types. [What Meta has said, and the prior art](docs/prior-art.org).
+Smart scales weigh correctly, then make you pick the food by hand on a phone. Meta announced food logging by photo for its glasses in 2026: US only, estimated portions, in the Meta AI app. So the glasses read the number on the scale you already own. The scale supplies the grams, the glasses supply the picture, the model supplies the food's name, a table or a barcode supplies the nutrients, and nobody types. [What Meta has said, and the prior art](docs/prior-art.org).
 
 ## How a food gets logged
 
