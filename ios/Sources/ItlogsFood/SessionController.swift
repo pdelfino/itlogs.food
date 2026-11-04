@@ -191,7 +191,14 @@ final class SessionController {
             // Start means weighing: the server watches the scale from here until Stop
             try? await client.watch(on: true, tMs: nowMs(), ask: askEachFood)
         } catch {
-            let kind: UserFacingError = error is StreamClient.Failure ? .serverUnreachable : .startFailed
+            let kind: UserFacingError
+            if error is StreamClient.Failure {
+                kind = .serverUnreachable
+            } else if error is GlassesSource.NotConnected {
+                kind = .glassesNotConnected
+            } else {
+                kind = .startFailed
+            }
             self.error = UserFacingError.report(kind, error)
             await source.stop()
             await client.disconnect()
@@ -234,12 +241,23 @@ final class SessionController {
             } catch {
                 Diag.send("startUnregistration threw: \(String(describing: error))")
             }
+            // The state flips after the Meta AI round trip, not on return (2026-NOVEMBER-03 20:08:
+            // still .registered right after, so startRegistration threw alreadyRegistered). Give
+            // it three seconds.
+            for _ in 0..<12 where Wearables.shared.registrationState == .registered {
+                try? await Task.sleep(nanoseconds: 250_000_000)
+            }
         }
         do {
             try await GlassesSource.register()
             Diag.send("startRegistration returned; state now \(String(describing: Wearables.shared.registrationState))")
             self.error = nil
             self.lastSaid = "Reconnecting to the glasses through Meta AI."
+        } catch let e as RegistrationError where e == .alreadyRegistered {
+            // nothing to redo: the registration held, which is the good case
+            Diag.send("reconnect: still registered, nothing to redo")
+            self.error = nil
+            self.lastSaid = "The glasses are already connected. Tap Start."
         } catch {
             self.error = UserFacingError.report(.reconnectFailed, error)
         }

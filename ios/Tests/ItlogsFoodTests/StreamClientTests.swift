@@ -19,6 +19,12 @@ final class StreamClientTests: XCTestCase {
     }
 
     func testFramesStayPairedAndTheSessionEnds() async throws {
+        // Opt in: against the live server this test makes real model calls on whatever provider
+        // the server runs (a gray frame cost Baseten reads on 2026-NOVEMBER-03) and leaves a
+        // recording on the T7.
+        guard ProcessInfo.processInfo.environment["ITLOGS_LIVE_WS_TEST"] == "1" else {
+            throw XCTSkip("set ITLOGS_LIVE_WS_TEST=1 to run against the server on localhost:8000")
+        }
         guard await serverIsUp() else { throw XCTSkip("no server on localhost:8000") }
         let inbox = Inbox()
         let client = StreamClient()

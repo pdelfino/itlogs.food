@@ -6,6 +6,7 @@ import Foundation
 /// Never an error domain, a code number or a type name on the screen.
 enum UserFacingError: String, CaseIterable {
     case startFailed = "start_failed"
+    case glassesNotConnected = "glasses_not_connected"
     case serverUnreachable = "server_unreachable"
     case reconnectFailed = "reconnect_failed"
     case glassesUpdate = "glasses_update"
@@ -21,6 +22,8 @@ enum UserFacingError: String, CaseIterable {
             return "Couldn't start. Check that the glasses are connected in the Meta AI app, then tap Start again."
         case .serverUnreachable:
             return "Couldn't reach the itlogs.food server. Check that the Mac is on the same Wi-Fi and the server is running, then tap Start again."
+        case .glassesNotConnected:
+            return "The glasses aren't connected. Put them on with the arms open, wait for the Meta AI app to show them connected, then tap Start again."
         case .reconnectFailed:
             return "Couldn't reconnect to the glasses. Open the Meta AI app, check that the glasses are connected, then try again."
         case .glassesUpdate:

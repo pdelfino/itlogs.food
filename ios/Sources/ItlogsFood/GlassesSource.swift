@@ -47,6 +47,30 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
         try await Wearables.shared.startRegistration()
     }
 
+    /// The glasses are known but their link is not up (off, folded, or still connecting).
+    struct NotConnected: Error {}
+
+    /// True as soon as the device's link is connected, false after timeoutMs. The listener fires
+    /// with the current state first, so an already-connected device returns at once.
+    private func waitForLink(_ id: DeviceIdentifier, timeoutMs: UInt64) async -> Bool {
+        guard let device = Wearables.shared.deviceForIdentifier(id) else { return false }
+        let bag = ListenerTokenBag()
+        let states = AsyncStream<LinkState> { continuation in
+            device.addLinkStateListener { continuation.yield($0) }.store(in: bag)
+            Task {
+                try? await Task.sleep(nanoseconds: timeoutMs * 1_000_000)
+                continuation.finish()
+            }
+        }
+        var connected = false
+        for await state in states where state == .connected {
+            connected = true
+            break
+        }
+        withExtendedLifetime(bag) {}
+        return connected
+    }
+
     func start(_ sink: @escaping @Sendable (Data, FrameMeta) -> Void) async throws {
         let wearables = Wearables.shared
         Diag.send("glasses: creating session; devices=\(wearables.devices.count)")
@@ -55,6 +79,13 @@ final class GlassesSource: FrameSource, @unchecked Sendable {
         // noEligibleDevice here with the glasses connected and compatible (2026-11-01 19:10).
         let selector: DeviceSelector
         if let id = wearables.devices.first {
+            // Start tapped while the glasses were still connecting (2026-NOVEMBER-03 20:08: link
+            // disconnected at the tap, connected one second later, createSession threw
+            // noEligibleDevice). Wait for the link, a few seconds at most.
+            if !(await waitForLink(id, timeoutMs: 8000)) {
+                Diag.send("glasses: link not connected after 8 s; not starting")
+                throw NotConnected()
+            }
             selector = SpecificDeviceSelector(device: id)
         } else {
             selector = AutoDeviceSelector(wearables: wearables)
