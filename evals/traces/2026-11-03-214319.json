@@ -1,0 +1,130 @@
+{
+ "session": "2026-11-03-214319",
+ "why": "One bar logged as protein bar and granola bar at the same grams.",
+ "assume_vessel": false,
+ "reads": [
+  {
+   "t_ms": 6369,
+   "food": "red apple",
+   "grams": 112.0,
+   "confidence": 0.95,
+   "raw": "112 g",
+   "still": false
+  },
+  {
+   "t_ms": 8062,
+   "food": "red apple",
+   "grams": 112.0,
+   "confidence": 0.95,
+   "raw": "112 g",
+   "still": true
+  },
+  {
+   "t_ms": 12500,
+   "food": "banana",
+   "grams": 0.0,
+   "confidence": 0.9,
+   "raw": "0 g",
+   "still": true
+  },
+  {
+   "t_ms": 13484,
+   "food": "whole banana",
+   "grams": 124.0,
+   "confidence": 0.95,
+   "raw": "124 g",
+   "still": true
+  },
+  {
+   "t_ms": 15625,
+   "food": "whole banana",
+   "grams": 124.0,
+   "confidence": 0.95,
+   "raw": "124 g",
+   "still": true
+  },
+  {
+   "t_ms": 20504,
+   "food": "none",
+   "grams": 0.0,
+   "confidence": 0.9,
+   "raw": "0 g",
+   "still": true
+  },
+  {
+   "t_ms": 21222,
+   "food": "protein bar",
+   "grams": 0.0,
+   "confidence": 0.7,
+   "raw": "0 g",
+   "still": true
+  },
+  {
+   "t_ms": 22505,
+   "food": "protein bar",
+   "grams": 43.0,
+   "confidence": 0.85,
+   "raw": "43 g",
+   "still": true
+  },
+  {
+   "t_ms": 24326,
+   "food": "granola bar",
+   "grams": 43.0,
+   "confidence": 0.9,
+   "raw": "43 g",
+   "still": false
+  },
+  {
+   "t_ms": 24326,
+   "food": "packaged snack",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  }
+ ],
+ "read_ms": [
+  2115,
+  2173,
+  2497,
+  1913,
+  2543,
+  3229,
+  1921,
+  1530,
+  1911
+ ],
+ "logged_then": [
+  [
+   "apple",
+   112.0
+  ],
+  [
+   "banana",
+   124.0
+  ],
+  [
+   "protein bar",
+   43.0
+  ],
+  [
+   "granola bar",
+   43.0
+  ]
+ ],
+ "expect_now": [
+  [
+   "apple",
+   112.0
+  ],
+  [
+   "banana",
+   124.0
+  ],
+  [
+   "protein bar",
+   43.0
+  ]
+ ]
+}

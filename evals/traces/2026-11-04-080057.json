@@ -1,0 +1,346 @@
+{
+ "session": "2026-11-04-080057",
+ "why": "A bowl built from four ingredients. Logged as 265 g in four rows; the scale showed about 104 g across one tare. The reader had no vessel field yet, so this replay assumes the bowl. Names here are the reader's: naming an ingredient takes a model call.",
+ "assume_vessel": true,
+ "reads": [
+  {
+   "t_ms": 9018,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 12999,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 17310,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 22601,
+   "food": "granola cereal",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 25895,
+   "food": "ground coffee",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 27749,
+   "food": "mixed cereal",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 28881,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 32880,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 39329,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 43928,
+   "food": "chocolate chunks",
+   "grams": 15.0,
+   "confidence": 0.6,
+   "raw": "15 g",
+   "still": false
+  },
+  {
+   "t_ms": 44189,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 47052,
+   "food": "chocolate cereal",
+   "grams": 16.0,
+   "confidence": 0.45,
+   "raw": "16 g",
+   "still": false
+  },
+  {
+   "t_ms": 51058,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 51610,
+   "food": "walnuts",
+   "grams": 30.0,
+   "confidence": 0.6,
+   "raw": "30 g",
+   "still": true
+  },
+  {
+   "t_ms": 54630,
+   "food": "ground beef",
+   "grams": 0.0,
+   "confidence": 0.5,
+   "raw": "0 g",
+   "still": false
+  },
+  {
+   "t_ms": 57905,
+   "food": "dog kibble",
+   "grams": 16.0,
+   "confidence": 0.6,
+   "raw": "16 g",
+   "still": true
+  },
+  {
+   "t_ms": 59329,
+   "food": "mixed nuts",
+   "grams": 16.0,
+   "confidence": 0.4,
+   "raw": "16 g",
+   "still": true
+  },
+  {
+   "t_ms": 60601,
+   "food": "cashew nuts",
+   "grams": 16.0,
+   "confidence": 0.85,
+   "raw": "16 g",
+   "still": true
+  },
+  {
+   "t_ms": 63187,
+   "food": "mixed nuts",
+   "grams": 15.0,
+   "confidence": 0.6,
+   "raw": "15 g",
+   "still": true
+  },
+  {
+   "t_ms": 66194,
+   "food": "mixed nuts",
+   "grams": 15.0,
+   "confidence": 0.55,
+   "raw": "15 g",
+   "still": false
+  },
+  {
+   "t_ms": 71897,
+   "food": "coffee grounds",
+   "grams": 15.0,
+   "confidence": 0.4,
+   "raw": "15 g",
+   "still": false
+  },
+  {
+   "t_ms": 74324,
+   "food": "mixed nuts",
+   "grams": 15.0,
+   "confidence": 0.5,
+   "raw": "15 g",
+   "still": false
+  },
+  {
+   "t_ms": 74914,
+   "food": "cashew nuts",
+   "grams": 66.0,
+   "confidence": 0.8,
+   "raw": "66 g",
+   "still": false
+  },
+  {
+   "t_ms": 76199,
+   "food": "mixed nuts",
+   "grams": 59.0,
+   "confidence": 0.8,
+   "raw": "59 g",
+   "still": true
+  },
+  {
+   "t_ms": 80878,
+   "food": "peanuts",
+   "grams": 62.0,
+   "confidence": 0.4,
+   "raw": "62.0 g",
+   "still": false
+  },
+  {
+   "t_ms": 86349,
+   "food": "cooked food",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 86657,
+   "food": "mixed nuts",
+   "grams": 60.0,
+   "confidence": 0.4,
+   "raw": "60 g",
+   "still": true
+  },
+  {
+   "t_ms": 87612,
+   "food": "cashew nuts",
+   "grams": 66.0,
+   "confidence": 0.85,
+   "raw": "66 g",
+   "still": false
+  },
+  {
+   "t_ms": 90073,
+   "food": "mixed nuts",
+   "grams": 66.0,
+   "confidence": 0.6,
+   "raw": "66 g",
+   "still": false
+  },
+  {
+   "t_ms": 92684,
+   "food": "mixed nuts",
+   "grams": 66.0,
+   "confidence": 0.7,
+   "raw": "66 g",
+   "still": false
+  },
+  {
+   "t_ms": 94491,
+   "food": "mixed nuts",
+   "grams": 74.0,
+   "confidence": 0.85,
+   "raw": "74 g",
+   "still": true
+  },
+  {
+   "t_ms": 95514,
+   "food": "mixed nuts",
+   "grams": 74.0,
+   "confidence": 0.75,
+   "raw": "74 g",
+   "still": true
+  },
+  {
+   "t_ms": 96896,
+   "food": "mixed nuts",
+   "grams": 74.0,
+   "confidence": 0.8,
+   "raw": "74 g",
+   "still": true
+  }
+ ],
+ "read_ms": [
+  2265,
+  2348,
+  2662,
+  2513,
+  7293,
+  3727,
+  1887,
+  1913,
+  4231,
+  3218,
+  5019,
+  2291,
+  2624,
+  1533,
+  2646,
+  2826,
+  2272,
+  1982,
+  2874,
+  2984,
+  4830,
+  5544,
+  2536,
+  1386,
+  4029,
+  5404,
+  4009,
+  1222,
+  2032,
+  1683,
+  1861,
+  1355,
+  1633
+ ],
+ "logged_then": [
+  [
+   "cashew nuts",
+   66.0
+  ],
+  [
+   "mixed nuts",
+   59.0
+  ],
+  [
+   "cashew nuts",
+   66.0
+  ],
+  [
+   "mixed nuts",
+   74.0
+  ]
+ ],
+ "expect_now": [
+  [
+   "chocolate cereal",
+   16.0
+  ],
+  [
+   "ground beef",
+   14.0
+  ],
+  [
+   "mixed nuts",
+   16.0
+  ],
+  [
+   "mixed nuts",
+   50.0
+  ],
+  [
+   "mixed nuts",
+   8.0
+  ]
+ ]
+}

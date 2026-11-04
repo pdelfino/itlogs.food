@@ -1,0 +1,92 @@
+{
+ "session": "2026-11-03-201500",
+ "why": "The best run: apple, then banana, no zero between them.",
+ "assume_vessel": false,
+ "reads": [
+  {
+   "t_ms": 10419,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 12176,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 15427,
+   "food": "red apple",
+   "grams": 112.0,
+   "confidence": 0.95,
+   "raw": "112 g",
+   "still": false
+  },
+  {
+   "t_ms": 18935,
+   "food": "red apple",
+   "grams": 112.0,
+   "confidence": 0.9,
+   "raw": "112 g",
+   "still": false
+  },
+  {
+   "t_ms": 21476,
+   "food": "whole banana",
+   "grams": 124.0,
+   "confidence": 0.92,
+   "raw": "124 g",
+   "still": true
+  },
+  {
+   "t_ms": 23480,
+   "food": "whole banana",
+   "grams": 124.0,
+   "confidence": 0.95,
+   "raw": "124 g",
+   "still": true
+  },
+  {
+   "t_ms": 23480,
+   "food": "whole banana",
+   "grams": 124.0,
+   "confidence": 0.95,
+   "raw": "124 g",
+   "still": true
+  }
+ ],
+ "read_ms": [
+  3636,
+  5799,
+  2288,
+  3209,
+  2402,
+  2875,
+  2485
+ ],
+ "logged_then": [
+  [
+   "apple",
+   112.0
+  ],
+  [
+   "banana",
+   124.0
+  ]
+ ],
+ "expect_now": [
+  [
+   "apple",
+   112.0
+  ],
+  [
+   "banana",
+   124.0
+  ]
+ ]
+}

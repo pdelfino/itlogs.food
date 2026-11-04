@@ -1,0 +1,88 @@
+{
+ "session": "2026-11-02-194354",
+ "why": "One banana logged as banana and whole banana.",
+ "assume_vessel": false,
+ "reads": [
+  {
+   "t_ms": 8080,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 11382,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 15456,
+   "food": "none",
+   "grams": 0.0,
+   "confidence": 0.95,
+   "raw": "0 g",
+   "still": false
+  },
+  {
+   "t_ms": 21221,
+   "food": "red apple",
+   "grams": 104.0,
+   "confidence": 0.65,
+   "raw": "104 g",
+   "still": false
+  },
+  {
+   "t_ms": 23934,
+   "food": "banana",
+   "grams": 129.0,
+   "confidence": 0.95,
+   "raw": "129 g",
+   "still": true
+  },
+  {
+   "t_ms": 24519,
+   "food": "whole banana",
+   "grams": 129.0,
+   "confidence": 0.95,
+   "raw": "129 g",
+   "still": true
+  },
+  {
+   "t_ms": 24622,
+   "food": "whole banana",
+   "grams": 129.0,
+   "confidence": 0.95,
+   "raw": "129 g",
+   "still": true
+  }
+ ],
+ "read_ms": [
+  3643,
+  2863,
+  2826,
+  4451,
+  3640,
+  2558,
+  2500
+ ],
+ "logged_then": [
+  [
+   "banana",
+   129.0
+  ],
+  [
+   "whole banana",
+   129.0
+  ]
+ ],
+ "expect_now": [
+  [
+   "banana",
+   129.0
+  ]
+ ]
+}

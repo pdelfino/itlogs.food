@@ -1,0 +1,112 @@
+{
+ "session": "2026-11-02-195113",
+ "why": "One apple and one banana logged as five rows, before a re-read of the same food corrected its row.",
+ "assume_vessel": false,
+ "reads": [
+  {
+   "t_ms": 7207,
+   "food": "none",
+   "grams": 0.0,
+   "confidence": 0.95,
+   "raw": "0 g",
+   "still": true
+  },
+  {
+   "t_ms": 8714,
+   "food": "red apple",
+   "grams": 108.0,
+   "confidence": 0.9,
+   "raw": "108 g",
+   "still": true
+  },
+  {
+   "t_ms": 10344,
+   "food": "red apple",
+   "grams": 112.0,
+   "confidence": 0.95,
+   "raw": "112 g",
+   "still": true
+  },
+  {
+   "t_ms": 12505,
+   "food": "red apple",
+   "grams": 112.0,
+   "confidence": 0.9,
+   "raw": "112 g",
+   "still": false
+  },
+  {
+   "t_ms": 15017,
+   "food": "banana",
+   "grams": 128.0,
+   "confidence": 0.95,
+   "raw": "128 g",
+   "still": true
+  },
+  {
+   "t_ms": 17143,
+   "food": "whole banana",
+   "grams": 128.0,
+   "confidence": 0.95,
+   "raw": "128 g",
+   "still": true
+  },
+  {
+   "t_ms": 19430,
+   "food": "whole banana",
+   "grams": 128.0,
+   "confidence": 0.9,
+   "raw": "128 g",
+   "still": false
+  },
+  {
+   "t_ms": 19430,
+   "food": "whole banana",
+   "grams": 188.0,
+   "confidence": 0.9,
+   "raw": "188 g",
+   "still": false
+  }
+ ],
+ "read_ms": [
+  2867,
+  2685,
+  2620,
+  3247,
+  1708,
+  2309,
+  3337
+ ],
+ "logged_then": [
+  [
+   "apple",
+   108.0
+  ],
+  [
+   "apple",
+   112.0
+  ],
+  [
+   "banana",
+   128.0
+  ],
+  [
+   "whole banana",
+   128.0
+  ],
+  [
+   "whole banana",
+   188.0
+  ]
+ ],
+ "expect_now": [
+  [
+   "apple",
+   112.0
+  ],
+  [
+   "banana",
+   128.0
+  ]
+ ]
+}

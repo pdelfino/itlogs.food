@@ -1,0 +1,95 @@
+{
+ "session": "2026-11-02-195734",
+ "why": "One banana logged twice around a single 0 g read, a hand over the display.",
+ "assume_vessel": false,
+ "reads": [
+  {
+   "t_ms": 6038,
+   "food": "none",
+   "grams": 0.0,
+   "confidence": 0.95,
+   "raw": "0 g",
+   "still": false
+  },
+  {
+   "t_ms": 8197,
+   "food": "red apple",
+   "grams": 113.0,
+   "confidence": 0.95,
+   "raw": "113 g",
+   "still": true
+  },
+  {
+   "t_ms": 9901,
+   "food": "red apple",
+   "grams": 112.0,
+   "confidence": 0.9,
+   "raw": "112 g",
+   "still": false
+  },
+  {
+   "t_ms": 14477,
+   "food": "whole banana",
+   "grams": 128.0,
+   "confidence": 0.92,
+   "raw": "128 g",
+   "still": true
+  },
+  {
+   "t_ms": 15770,
+   "food": "none",
+   "grams": 0.0,
+   "confidence": 0.95,
+   "raw": "0 g",
+   "still": true
+  },
+  {
+   "t_ms": 16761,
+   "food": "whole banana",
+   "grams": 128.0,
+   "confidence": 0.95,
+   "raw": "128 g",
+   "still": true
+  },
+  {
+   "t_ms": 17466,
+   "food": "whole banana",
+   "grams": 128.0,
+   "confidence": 0.95,
+   "raw": "128 g",
+   "still": false
+  }
+ ],
+ "read_ms": [
+  1982,
+  1600,
+  1837,
+  1548,
+  4777,
+  1634
+ ],
+ "logged_then": [
+  [
+   "apple",
+   113.0
+  ],
+  [
+   "banana",
+   128.0
+  ],
+  [
+   "banana",
+   128.0
+  ]
+ ],
+ "expect_now": [
+  [
+   "apple",
+   113.0
+  ],
+  [
+   "banana",
+   128.0
+  ]
+ ]
+}

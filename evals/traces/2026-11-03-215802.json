@@ -1,0 +1,928 @@
+{
+ "session": "2026-11-03-215802",
+ "why": "The worst failure, a dim kitchen: the reader named a food on nearly every frame and read one weight. Nothing logged. Software did not fix this.",
+ "assume_vessel": false,
+ "reads": [
+  {
+   "t_ms": 7827,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 8390,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 11569,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 15435,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 20144,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 22837,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 24724,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 26006,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 29019,
+   "food": "salt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 31865,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 33718,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 37583,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 40295,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 42637,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 43745,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 47724,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 50028,
+   "food": "plain yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 53606,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 54363,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 57306,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 59287,
+   "food": "protein powder",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 60167,
+   "food": "greek yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 63019,
+   "food": "greek yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 63439,
+   "food": "greek yogurt",
+   "grams": 113.0,
+   "confidence": 0.65,
+   "raw": "113 g",
+   "still": true
+  },
+  {
+   "t_ms": 66171,
+   "food": "greek yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 68459,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 71175,
+   "food": "egg whites",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 72585,
+   "food": "greek yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 77026,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 77781,
+   "food": "egg whites",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 81343,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 81743,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 87453,
+   "food": "mozzarella cheese",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 90284,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 92573,
+   "food": "greek yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 98583,
+   "food": "chia seeds",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 103164,
+   "food": "plain yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 104300,
+   "food": "egg whites",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 110456,
+   "food": "plain yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 111865,
+   "food": "plain yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 115164,
+   "food": "greek yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 115756,
+   "food": "greek yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 119149,
+   "food": "yogurt and oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 119301,
+   "food": "rolled oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 122452,
+   "food": "rolled oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 122996,
+   "food": "rolled oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 129146,
+   "food": "dry oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 130159,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 135146,
+   "food": "rolled oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 138713,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 142046,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 144590,
+   "food": "rolled oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 146154,
+   "food": "oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 149286,
+   "food": "protein oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 151584,
+   "food": "oatmeal mixture",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 152567,
+   "food": "oatmeal mixture",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 155589,
+   "food": "oats with yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 157998,
+   "food": "oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 159871,
+   "food": "rolled oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 161996,
+   "food": "overnight oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 163588,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 168292,
+   "food": "dough mixture",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 168416,
+   "food": "oatmeal mixture",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 173578,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 176445,
+   "food": "creamy mixture",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 177006,
+   "food": "mashed potatoes",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 180279,
+   "food": "white batter",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 183019,
+   "food": "white batter",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 185280,
+   "food": "flour mixture",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 189197,
+   "food": "spinach dip",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 190018,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 191728,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 196875,
+   "food": "oatmeal",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 198868,
+   "food": "protein oatmeal mix",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 201442,
+   "food": "overnight oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 204009,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 208584,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 209709,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 213440,
+   "food": "overnight oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 214734,
+   "food": "peanut butter oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 217283,
+   "food": "peanut butter oatmeal",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 221004,
+   "food": "yogurt bowl",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 223420,
+   "food": "peanut butter oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 225141,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 227723,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 230733,
+   "food": "peanut butter oats",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 232858,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 235128,
+   "food": "protein powder",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 237725,
+   "food": "peanut butter oatmeal",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 240735,
+   "food": "yogurt with toppings",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 242568,
+   "food": "peanut butter oatmeal",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 246122,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": true
+  },
+  {
+   "t_ms": 248419,
+   "food": "peanut butter yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 251135,
+   "food": "cooked white rice",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 253420,
+   "food": "peanut butter yogurt",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 256726,
+   "food": "protein powder",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 259160,
+   "food": "peanut butter oatmeal",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": true
+  },
+  {
+   "t_ms": 260570,
+   "food": "yogurt with toppings",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 263320,
+   "food": "yogurt with toppings",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None g",
+   "still": false
+  },
+  {
+   "t_ms": 265978,
+   "food": "none",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 269438,
+   "food": "oatmeal with toppings",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  },
+  {
+   "t_ms": 269438,
+   "food": "mixed cereal",
+   "grams": null,
+   "confidence": 0.0,
+   "raw": "None unknown",
+   "still": false
+  }
+ ],
+ "read_ms": [
+  4865,
+  3043,
+  3142,
+  3374,
+  4718,
+  3352,
+  3694,
+  3115,
+  4099,
+  2831,
+  2056,
+  2014,
+  2701,
+  3516,
+  2866,
+  4145,
+  4930,
+  2868,
+  5227,
+  3720,
+  4174,
+  2740,
+  3678,
+  2515,
+  3038,
+  3205,
+  3009,
+  2855,
+  3665,
+  6579,
+  3895,
+  2787,
+  4306,
+  3749,
+  2195,
+  4042,
+  3718,
+  6453,
+  7069,
+  6013,
+  4601,
+  3099,
+  3909,
+  2459,
+  3018,
+  2146,
+  4167,
+  2859,
+  4345,
+  3939,
+  3869,
+  3170,
+  3155,
+  4661,
+  5321,
+  3211,
+  3832,
+  4693,
+  4236,
+  4126,
+  3598,
+  6203,
+  4809,
+  5256,
+  6455,
+  3342,
+  3750,
+  4911,
+  4914,
+  6155,
+  4708,
+  2302,
+  3247,
+  2792,
+  3669,
+  3072,
+  5582,
+  4993,
+  4717,
+  4513,
+  3691,
+  4949,
+  5161,
+  3056,
+  4031,
+  4950,
+  4213,
+  4405,
+  4782,
+  3716,
+  4036,
+  3766,
+  4406,
+  2986,
+  3709,
+  5392,
+  5653,
+  3754,
+  4080,
+  2650,
+  3831
+ ],
+ "logged_then": [],
+ "expect_now": []
+}
