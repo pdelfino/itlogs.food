@@ -40,3 +40,6 @@ server/.cache/
 
 # Cloudflare
 .wrangler/
+
+# Pedro's script for the video
+demo-pitch*
