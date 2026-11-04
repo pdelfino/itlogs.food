@@ -17,3 +17,4 @@ jobs:
       - run: uv run pytest -q
         working-directory: server
       - run: uv run --project server python evals/replay.py
+      - run: node --test tests/

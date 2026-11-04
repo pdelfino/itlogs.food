@@ -1,0 +1,9 @@
+# Cloudflare Pages, deployed from main. The database holds the landing page's waitlist (#24).
+name = "itlogs-food"
+pages_build_output_dir = "site"
+compatibility_date = "2026-11-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "itlogs-food"
+database_id = "6292ec2a-8844-4aa9-8be0-769150995aba"

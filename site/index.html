@@ -18,7 +18,7 @@
   <link rel="icon" href="brand/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
   <link rel="preload" href="fonts/inter-variable.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
   <div class="glow" aria-hidden="true"></div>
@@ -47,8 +47,18 @@
       <h1 class="reveal">You eat.<br><span class="grad">It logs.</span></h1>
       <p class="pain reveal">Logging food means typing every meal, and the typing kills the habit.</p>
       <p class="sub reveal">Wear Ray-Ban Meta glasses, put the food on any digital scale, and it goes to Apple Health. Hands free.</p>
+      <form class="wait reveal" data-waitlist action="/api/waitlist" method="post">
+        <div class="wait-row">
+          <label class="vh" for="wait-hero">Your email</label>
+          <input id="wait-hero" type="email" name="email" required maxlength="254" autocomplete="email" placeholder="you@email.com">
+          <button class="btn primary" type="submit">Join the waitlist</button>
+        </div>
+        <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <input type="hidden" name="source" value="hero">
+        <p class="wait-note" role="status">We'll email you when you can use it. Unsubscribe any time.</p>
+      </form>
       <div class="cta reveal">
-        <a class="btn primary" href="#how">How it works</a>
+        <a class="btn ghost" href="#how">How it works</a>
         <a class="btn ghost" href="https://github.com/pdelfino/itlogs.food">View the source</a>
       </div>
       <figure class="frame reveal">
@@ -174,8 +184,18 @@
       <div class="bandcard reveal">
         <h2>Built for the Meta Global AI<br>Developer Hackathon.</h2>
         <p>The code, every recorded run, and a replay of real sessions you can run with no glasses and no key.</p>
+        <form class="wait light reveal" data-waitlist action="/api/waitlist" method="post">
+          <div class="wait-row">
+            <label class="vh" for="wait-end">Your email</label>
+            <input id="wait-end" type="email" name="email" required maxlength="254" autocomplete="email" placeholder="you@email.com">
+            <button class="btn primary" type="submit">Join the waitlist</button>
+          </div>
+          <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <input type="hidden" name="source" value="end">
+          <p class="wait-note" role="status">We'll email you when you can use it. Unsubscribe any time.</p>
+        </form>
         <div class="cta">
-          <a class="btn primary" href="https://github.com/pdelfino/itlogs.food">View on GitHub</a>
+          <a class="btn ghost light" href="https://github.com/pdelfino/itlogs.food">View on GitHub</a>
         </div>
       </div>
     </section>
@@ -199,6 +219,48 @@
         entries.forEach(function (en) { if (en.isIntersecting) { show(en.target); io.unobserve(en.target); } });
       }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
       els.forEach(function (e) { if (!e.classList.contains('in')) io.observe(e); });
+    })();
+  </script>
+  <script>
+    (function () {
+      var joined = "You're on the list. We'll email you when you can use it.";
+      var failed = "That didn't go through. Try again.";
+      var badEmail = "That email doesn't look right.";
+      function done(form, note) {
+        form.querySelector('.wait-row').hidden = true;
+        note.textContent = joined;
+        note.classList.remove('bad');
+      }
+      document.querySelectorAll('form[data-waitlist]').forEach(function (form) {
+        var note = form.querySelector('.wait-note');
+        var button = form.querySelector('button');
+        form.addEventListener('submit', function (event) {
+          event.preventDefault();
+          button.disabled = true;
+          var body = Object.fromEntries(new FormData(form));
+          fetch(form.action, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', accept: 'application/json' },
+            body: JSON.stringify(body)
+          }).then(function (r) {
+            return r.json().then(function (j) { return { ok: r.ok && j.ok, error: j.error }; });
+          }).then(function (r) {
+            if (r.ok) return done(form, note);
+            note.textContent = r.error === 'email' ? badEmail : failed;
+            note.classList.add('bad');
+          }).catch(function () {
+            note.textContent = failed;
+            note.classList.add('bad');
+          }).finally(function () { button.disabled = false; });
+        });
+      });
+      var state = new URLSearchParams(location.search).get('waitlist');
+      if (state) {
+        var form = document.querySelector('form[data-waitlist]');
+        var note = form.querySelector('.wait-note');
+        if (state === 'joined') done(form, note);
+        else { note.textContent = failed; note.classList.add('bad'); }
+      }
     })();
   </script>
 </body>

@@ -9,7 +9,7 @@ SCHEME = ItlogsFood
 DEVICE ?= $(shell xcrun xctrace list devices 2>/dev/null | grep -i iphone | grep -v Simulator | head -1 | sed -E 's/.*\(([0-9A-F-]+)\)$$/\1/')
 SIM ?= $(shell xcrun simctl list devices available 2>/dev/null | grep -i iphone | head -1 | sed -E 's/^ *(.*) \(([0-9A-F-]+)\).*/\2/')
 
-.PHONY: help setup test lint format doctor run-bg stop run run-live replay demo-log pov rules-check eval eval-live ci ios-gen ios-build ios-test ios-run ios-logs phone-logs phone-dat-log phone-crashes docker-build
+.PHONY: help setup test lint format doctor run-bg stop run run-live replay demo-log pov test-site waitlist rules-check eval eval-live ci ios-gen ios-build ios-test ios-run ios-logs phone-logs phone-dat-log phone-crashes docker-build
 
 help:             ## this list
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed -E 's/:.*## /  /' | column -t -s '  '
@@ -53,6 +53,12 @@ demo-log:         ## the server's log for a screen, one plain line per thing tha
 
 pov:              ## a video of what the glasses saw, from a run recorded with ITLOGS_RECORD_STREAM=1
 	$(SERVER) python server/scripts/pov_video.py $(RECORD_DIR)
+
+test-site:        ## the waitlist function, against a stand-in for its database
+	node --test tests/
+
+waitlist:         ## who joined the waitlist (needs a wrangler login on the itlogs.food Cloudflare account)
+	CLOUDFLARE_ACCOUNT_ID=e76fd6e2d96bb78e17e0dbfd2212c970 npx --yes wrangler@4 d1 execute itlogs-food --remote --command "SELECT email, source, created_at FROM waitlist ORDER BY created_at"
 
 rules-check:      ## what can be checked about the hackathon rules from a clone: dates, author, media, keys, licences
 	$(SERVER) python server/scripts/rules_check.py
