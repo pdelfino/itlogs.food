@@ -43,7 +43,7 @@ run:              ## the server on :8000 with the fake provider
 	$(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000 --reload
 
 run-live:         ## the server with the Meta models and the recorder (MODEL_API_KEY from the env); reloads on server/ changes
-	set -o pipefail; mkdir -p .sessions; ITLOGS_PROVIDER=meta ITLOGS_RECORD_DIR=$${ITLOGS_RECORD_DIR:-/Volumes/T7/itlogs-food-sessions} $(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000 --reload --reload-dir server/itlogs 2>&1 | tee -a .sessions/server.log
+	set -o pipefail; mkdir -p .sessions; ITLOGS_PROVIDER=meta ITLOGS_RECORD_DIR=$${ITLOGS_RECORD_DIR:-$(RECORD_DIR)} $(SERVER) uvicorn itlogs.app:app --app-dir server --host '::' --port 8000 --reload --reload-dir server/itlogs 2>&1 | tee -a .sessions/server.log
 
 eval:             ## replay the recorded reads, no model calls (fast, offline)
 	$(SERVER) python evals/run.py --from-reads

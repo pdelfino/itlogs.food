@@ -14,9 +14,10 @@ class Settings(BaseSettings):
     provider: str = "fake"  # fake | meta
     meta_api_key: str = Field(
         default="", validation_alias=AliasChoices("ITLOGS_META_API_KEY", "MODEL_API_KEY")
-    )  # MODEL_API_KEY is the name Meta's docs use; it lives in ~/.secure_env_vars
+    )  # MODEL_API_KEY is the name Meta's docs use
     meta_api_base: str = "https://api.meta.ai/v1"
-    # the reader (food + display): meta (Muse Spark) or local (Muse Glimmer on llama-server)
+    # the reader (food + display): meta (Muse Spark), baseten (Muse Spark Open on Baseten) or
+    # local (Muse Glimmer on llama-server)
     vision: str = "meta"
     vision_model: str = "muse-spark-1.3"
     bowl: bool = True  # ITLOGS_BOWL=0: bowls take the bare-food path (#22)

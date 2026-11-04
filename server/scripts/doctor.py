@@ -92,11 +92,11 @@ def main() -> int:
     env = ROOT / "server/.env"
     env_lines = env.read_text().splitlines() if env.exists() else []
     tok = any(t.startswith("ITLOGS_POSTHOG_TOKEN=") and len(t) > 25 for t in env_lines)
-    where = "token in server/.env; project itlogs.food 703736 (Claude: execute-sql on events)"
+    where = "token in server/.env (PostHog project itlogs.food; query the events table)"
     line("posthog", where if tok else "no token: telemetry off")
 
     print("\nnext: gh issue list · make phone-logs · make phone-crashes")
-    print("      DEVELOPMENT_TEAM=6X8G2S2P89 make ios-run")
+    print("      DEVELOPMENT_TEAM=<your Apple team id> make ios-run")
     return 0
 
 

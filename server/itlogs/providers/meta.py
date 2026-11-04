@@ -1,8 +1,10 @@
 """Meta models behind the two protocols.
 
-The reader: Muse Spark (muse-spark-1.3) on the Meta Model API, or Muse Glimmer with its vision
-projector on this Mac through llama-server (the open-weight path). One still in, the food and
-the display value out, as structured output. The parser: the same client on a text prompt.
+The reader: Muse Spark (muse-spark-1.3) on the Meta Model API, Muse Spark Open on Baseten, or
+Muse Glimmer with its vision projector on this Mac through llama-server; the last two are the
+open-weight paths. One still in, the food and the display value out, as structured output. For a
+bowl, two stills and what was said in, the one ingredient added out. The parser: the same client
+on a text prompt.
 
 Docs: hackathon/meta-model-api-notes.org. Standard-mode model ids only (no "-contributor":
 those train on the content, and the content is Pedro's kitchen).
@@ -83,6 +85,14 @@ TO_GRAMS = {"g": 1.0, "kg": 1000.0, "oz": 28.349523125, "lb": 453.59237, "ml": 1
 MODEL_LONG_SIDE = 1024  # the digits of a scale display are large; fewer image tokens, faster reads
 
 
+def number(value: object) -> float | None:
+    """A model's number, or None when it sent something else ("112g"): an unreadable read."""
+    try:
+        return float(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return None
+
+
 def shrink(jpeg: bytes) -> bytes:
     """The copy the model sees: at most MODEL_LONG_SIDE on the long side. The recording keeps the
     original. Bytes that are not an image (tests) pass through."""
@@ -150,19 +160,19 @@ class MetaReader:
         d = await self.chat.structured(ENTRY_SYSTEM, user, ENTRY_SCHEMA, jpeg)
         if not d:
             return EntryRead(food="none", confidence=0.0)
-        value, unit = d.get("display_value"), d.get("unit", "unknown")
-        if unit == "unknown" and value is not None and 0 < float(value) < 10000:
+        value, unit = number(d.get("display_value")), d.get("unit", "unknown")
+        if unit == "unknown" and value is not None and 0 < value < 10000:
             # a kitchen scale with no unit on the display is in grams (the apple read as
             # "113, unknown" on 2026-NOVEMBER-02 and was thrown away)
             unit = "g"
-        grams = None if value is None or unit not in TO_GRAMS else float(value) * TO_GRAMS[unit]
+        grams = None if value is None or unit not in TO_GRAMS else value * TO_GRAMS[unit]
         food = (d.get("food") or "none").strip().lower() or "none"
         raw = f"{value} {d.get('unit', 'unknown')}"
         print(f"MODEL food={food!r} display={raw} conf={d.get('confidence')}", flush=True)
         return EntryRead(
             food=food,
             grams=grams,
-            confidence=min(1.0, max(0.0, float(d.get("confidence", 0)))),
+            confidence=min(1.0, max(0.0, number(d.get("confidence")) or 0.0)),
             raw=raw,
             container=bool(d.get("container", False)),
         )
@@ -178,7 +188,7 @@ class MetaReader:
             return Addition()
         food = (d.get("food") or "unknown").strip().lower() or "unknown"
         source = d.get("source") if d.get("source") in ("speech", "image") else "none"
-        conf = min(1.0, max(0.0, float(d.get("confidence", 0) or 0)))
+        conf = min(1.0, max(0.0, number(d.get("confidence")) or 0.0))
         print(f"MODEL addition={food!r} source={source} conf={conf} said={said!r}", flush=True)
         return Addition(food=food, source=source, confidence=conf)
 
@@ -213,7 +223,7 @@ class MetaParser:
                 return Reply(
                     action=d["action"],
                     food=food.strip().lower() if isinstance(food, str) and food.strip() else None,
-                    grams=float(d["grams"]) if d.get("grams") is not None else None,
+                    grams=number(d.get("grams")),
                 )
         return Reply(action="none")
 

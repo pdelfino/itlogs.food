@@ -50,7 +50,7 @@ def difference(a: list[int], b: list[int]) -> float:
 
 
 @dataclass
-class Settle:
+class Stillness:
     """Tracks whether the scene is still, frame by frame.
 
     ``move`` is the mean pixel difference (0 to 255 at thumbnail size) above which the scene

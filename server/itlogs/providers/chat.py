@@ -3,9 +3,10 @@ reply parser. The same code reaches Muse Spark on the Meta Model API, Muse Spark
 Baseten or Modal, and Muse Glimmer on this Mac through llama-server: which one is three env
 values (config.py). Nothing outside providers/ knows an endpoint.
 
-Not every endpoint takes response_format (Baseten's docs: Muse Spark Open has no structured
-output mode) or reasoning_effort. The first 400 on either switches this client to plain mode:
-the schema goes into the system prompt, the JSON object is cut out of the text."""
+An endpoint that refuses response_format or reasoning_effort answers 400, and the first such 400
+switches this client to plain mode: the schema goes into the system prompt and the JSON object is
+cut out of the text. Baseten's docs say Muse Spark Open has no structured output mode, but it took
+the schema when measured on 2026-NOVEMBER-03, so this fallback has not fired on a live endpoint."""
 
 from __future__ import annotations
 

@@ -2,8 +2,9 @@
 
 Protocol on /ws/session: the phone sends a JSON ClientMessage; when kind == "frame" the next
 binary message is the JPEG, when kind == "audio" the next binary message is a PCM chunk.
-The server answers with JSON ServerMessages at any time, including after a transcribed
-utterance (speech is transcribed server-side by Muse Voice Transcribe).
+The server answers with JSON ServerMessages at any time. Speech arrives as text already
+recognized on the glasses (kind == "voice"); PCM audio is the fallback, transcribed here by Muse
+Voice Transcribe (asr.py).
 """
 
 from __future__ import annotations
@@ -22,7 +23,7 @@ from itlogs import telemetry
 from itlogs.asr import Transcriber, make_transcriber
 from itlogs.barcode import decode as decode_barcode
 from itlogs.config import settings
-from itlogs.models import ClientMessage, ServerMessage
+from itlogs.models import ClientMessage, EntryRead, ServerMessage
 from itlogs.providers import make_providers
 from itlogs.providers.openfoodfacts import lookup as lookup_product
 from itlogs.record import Recorder
@@ -74,8 +75,15 @@ async def ws_session(ws: WebSocket) -> None:
     recorder = Recorder(settings.record_dir) if settings.record_dir else None
     transcriber: Transcriber | None = None
     send_lock = asyncio.Lock()
-    last_frame: tuple[int, bytes] | None = None
     frames = 0
+
+    def read_made(jpeg: bytes, t_ms: int, read: EntryRead) -> None:
+        """The frame the reader was given, not the newest one when its answer came back."""
+        if recorder:
+            recorder.photo(jpeg, t_ms)
+            recorder.event("read", {"t_ms": t_ms, **read.model_dump()})
+
+    session.on_read = read_made
 
     async def send_all(msgs: list[ServerMessage]) -> None:
         async with send_lock:
@@ -93,7 +101,8 @@ async def ws_session(ws: WebSocket) -> None:
                 await ws.send_text(m.model_dump_json(exclude_none=True))
 
     def keep(msgs: list[ServerMessage]) -> None:
-        """Only the frames a read was made on are kept, plus every entry and question."""
+        """Telemetry for each entry; in the recording, every entry and question (the frames and
+        the reads are kept by read_made)."""
         for m in msgs:
             if m.kind == "entry" and m.entry is not None:
                 telemetry.event(
@@ -108,10 +117,7 @@ async def ws_session(ws: WebSocket) -> None:
                 )
             if recorder is None:
                 continue
-            if m.kind == "read" and last_frame is not None:
-                recorder.photo(last_frame[1], last_frame[0])
-                recorder.event("read", {"t_ms": last_frame[0], **m.read.model_dump()})  # type: ignore[union-attr]
-            elif m.kind in ("entry", "ask"):
+            if m.kind in ("entry", "ask"):
                 recorder.event(m.kind, m.model_dump(exclude_none=True))
 
     async def on_turn(text: str) -> None:
@@ -128,7 +134,8 @@ async def ws_session(ws: WebSocket) -> None:
 
     async def model_unreachable(e: Exception) -> None:
         # the Mac lost the model's endpoint (20:32, 2026-NOVEMBER-03: four ConnectTimeouts in a
-        # row while the frames kept arriving): say it once, so the wearer knows it is not the loop
+        # row while the frames kept arriving), or the endpoint refused the call (a 429 or a 5xx):
+        # say it once, so the wearer knows it is not the loop
         nonlocal unreachable_said
         print(f"MODEL unreachable: {type(e).__name__} {e}", flush=True)
         if unreachable_said:
@@ -145,7 +152,7 @@ async def ws_session(ws: WebSocket) -> None:
         t0 = time.perf_counter()
         try:
             out = await coro
-        except httpx.TransportError as e:
+        except httpx.HTTPError as e:
             await model_unreachable(e)
             return
         took_ms = int((time.perf_counter() - t0) * 1000)
@@ -175,7 +182,7 @@ async def ws_session(ws: WebSocket) -> None:
     def busy() -> int:
         return sum(1 for t in thinking if not t.done() and t.get_name() == "read")
 
-    async def settle_thinking(timeout: float = 8.0) -> None:
+    async def finish_thinking(timeout: float = 8.0) -> None:
         pending = [t for t in thinking if not t.done()]
         if pending:
             done, still = await asyncio.wait(pending, timeout=timeout)
@@ -198,8 +205,7 @@ async def ws_session(ws: WebSocket) -> None:
         return session.set_product(product, code, t_ms)
 
     async def on_frame(meta: Any, jpeg: bytes) -> list[ServerMessage]:
-        nonlocal last_frame, frames, last_code
-        last_frame = (meta.t_ms, jpeg)
+        nonlocal frames, last_code
         frames += 1
         if frames == 1 or frames % 100 == 0:
             print(f"FRAMES {frames} ({len(jpeg)} bytes, t={meta.t_ms} ms)", flush=True)
@@ -225,8 +231,8 @@ async def ws_session(ws: WebSocket) -> None:
                 "motion",
                 {
                     "t_ms": meta.t_ms,
-                    "diff": round(session.settle.last_diff, 1),
-                    "still": session.settle.still(meta.t_ms),
+                    "diff": round(session.stillness.last_diff, 1),
+                    "still": session.stillness.still(meta.t_ms),
                 },
             )
         return out
@@ -283,7 +289,7 @@ async def ws_session(ws: WebSocket) -> None:
                 )
                 out = []
             elif msg.kind == "capture" and msg.capture:
-                await settle_thinking()
+                await finish_thinking()
                 start_thinking(session.capture(msg.capture.t_ms), msg.capture.t_ms)
                 out = []
             elif msg.kind == "watch" and msg.watch:
@@ -294,11 +300,15 @@ async def ws_session(ws: WebSocket) -> None:
                 if transcriber is not None:
                     await transcriber.close()
                     transcriber = None
-                await settle_thinking()  # the reads in flight land first
+                await finish_thinking()  # the reads in flight land first
                 try:
                     out = await session.final_look()  # then whatever is on the scale now
-                except httpx.TransportError as e:
+                except httpx.HTTPError as e:
                     await model_unreachable(e)  # the final state still goes out below
+                    out = []
+                except Exception as e:  # nothing may cost the wearer the final state
+                    telemetry.exception(e, {"path": "final_look"})
+                    print(f"FINAL LOOK failed: {e!r}", flush=True)
                     out = []
                 keep(out)
                 await send_all(out)
@@ -313,5 +323,7 @@ async def ws_session(ws: WebSocket) -> None:
     except WebSocketDisconnect:
         if transcriber is not None:
             await transcriber.close()
-        await settle_thinking(0.0)
+        await finish_thinking(0.0)
+        if recorder:
+            recorder.close([e.model_dump() for e in session.entries])
         return

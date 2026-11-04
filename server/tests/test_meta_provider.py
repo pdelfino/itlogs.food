@@ -139,3 +139,16 @@ def test_json_object_is_cut_out_of_prose_or_a_fence():
     assert json_object('Sure.\n```json\n{"a": 1}\n```\nDone.') == {"a": 1}
     assert json_object("no json here") is None
     assert json_object("[1, 2]") is None
+
+
+async def test_a_display_value_that_is_not_a_number_is_an_unreadable_read():
+    def handler(request):
+        content = json.dumps(
+            {"food": "apple", "display_value": "112g", "unit": "g", "confidence": "high"}
+        )
+        return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
+
+    r = MetaReader("https://x.test/v1", "m", transport=httpx.MockTransport(handler))
+    read = await r.read_entry(b"jpeg")
+    assert (read.food, read.grams, read.confidence) == ("apple", None, 0.0)
+    assert not read.readable

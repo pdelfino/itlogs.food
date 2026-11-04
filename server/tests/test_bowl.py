@@ -7,7 +7,7 @@ import json
 import httpx
 
 from itlogs.config import settings
-from itlogs.models import Addition, EntryRead
+from itlogs.models import Addition, EntryRead, Reply
 from itlogs.providers.fake import FakeLLM, FakeVision
 from itlogs.providers.meta import MetaReader
 from itlogs.session import Session
@@ -83,6 +83,24 @@ async def test_speech_names_the_row_once():
     assert vision.addition_calls[1][1] == b"frame4000"
     assert s.entries[0].nutrients is not None and s.entries[0].nutrients.kcal > 200
     assert "speech" in (s.entries[0].reads[-1].raw or "")
+
+
+async def test_saying_the_food_and_the_grams_does_not_count_it_twice():
+    """ "Fifty grams of cashews" logged a spoken row and the rise logged another: 100 g for 50."""
+    vision = FakeVision()
+    vision.additions = [Addition(food="cashews", source="speech", confidence=0.9)]
+
+    class Said(FakeLLM):
+        async def parse_reply(self, text, context):
+            return Reply(action="correct", food="cashews", grams=50.0)
+
+    s = Session(vision, Said())
+    s.set_watching(True, 0)
+    await step(s, in_bowl(50.0), 1000)
+    await s.on_voice("fifty grams of cashews")
+    await step(s, in_bowl(50.0), 2000)
+    assert [(e.food, e.grams) for e in s.entries] == [("cashew nuts", 50.0)]
+    assert vision.addition_calls[0][2] == "fifty grams of cashews"
 
 
 async def test_no_name_uses_the_reader():

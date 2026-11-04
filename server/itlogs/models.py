@@ -99,11 +99,11 @@ class Nutrients(BaseModel):
 
 
 class Entry(BaseModel):
-    """One logged food. ``status`` is the label the eval loop produced for free:
-    agreed = both reads matched; confirmed = the wearer said yes to a read; corrected = the
-    wearer changed the food or the grams by voice; spoken = no camera read at all, the wearer
-    said the food and the grams (the hands-free fallback when the display cannot be read);
-    auto = two matching reads in quiet weighing mode, nobody asked, read back at the end."""
+    """One logged food. ``status`` says what produced it: agreed = both looks of "log it" matched;
+    confirmed = the wearer said yes to a read; corrected = the wearer changed the food or the
+    grams by voice; spoken = no camera read at all, the wearer said the food and the grams (the
+    hands-free fallback when the display cannot be read); auto = weighing mode, nobody asked: one
+    confident read of a still scene, two reads that agree, or one rise in a bowl."""
 
     index: int
     food: str

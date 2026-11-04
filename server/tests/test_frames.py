@@ -6,7 +6,7 @@ import io
 
 from PIL import Image, ImageDraw, ImageFilter
 
-from itlogs.frames import Settle, difference, sharpness, thumbnail
+from itlogs.frames import Stillness, difference, sharpness, thumbnail
 
 
 def _jpeg(shift: int = 0, blur: float = 0.0) -> bytes:
@@ -40,13 +40,13 @@ def test_motion_vs_stillness():
 def test_non_images_are_still_and_sharp():
     assert thumbnail(b"not a picture") is None
     assert sharpness(b"not a picture") == 1.0
-    s = Settle()
+    s = Stillness()
     s.observe(b"a", 0)
     assert s.still(0)
 
 
 def test_still_second_then_sharpest():
-    s = Settle(still_ms=800)
+    s = Stillness(still_ms=800)
     for i in range(4):
         s.observe(_jpeg(shift=i * 30), i * 150)  # a hand moving across
     assert not s.still(450)

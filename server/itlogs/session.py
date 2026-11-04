@@ -4,24 +4,28 @@ Two ways in:
 
 - **Log it** (the button, or "log it" by voice): read the latest frame, read the frame about
   ``second_read_after_ms`` later, log when the two agree, ask when they differ.
-- **Weighing mode** (on from Start, or "I'm weighing my food"): the server reads a frame every
-  ``watch_every_ms`` on its own. When the display settles on a new value (two reads in a row
-  with the same food and grams, different from what was last logged) the food is logged
-  quietly (status ``auto``; the phone ticks). Stop, or "done", reads the whole list back:
-  "cooked white rice, 87 grams. apple, 113 grams." With ``ask`` on, the ear instead asks
+- **Weighing mode** (on from Start, or "I'm weighing my food"; the path the app uses): the
+  server reads a frame every ``watch_every_ms`` on its own, once the scene is still. One read at
+  ``single_read_confidence`` or above on a still scene logs the food quietly (status ``auto``; the
+  phone ticks), and otherwise two reads in a row must agree. A later read of the same food with
+  no empty scale in between corrects that row instead of adding one. Stop, or "done", ends with
+  "Check the meal." and the phone shows the table. With ``ask`` on, the ear instead asks
   "113 grams of apple, right?" after each food and nothing is logged without the wearer's word.
 
-Every entry carries a label the loop produced for free (agreed, confirmed, corrected,
-spoken), which is what the evals and the open-weight recalibration (issue #4) feed on.
+A bowl (``_bowl_step``) is a third path inside weighing mode: once the reader sees a vessel, each
+rise on the scale is one ingredient, with the grams it added.
+
+Each entry carries the status that produced it (agreed, confirmed, corrected, spoken, auto).
 """
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from itlogs import nutrients
 from itlogs.config import settings
-from itlogs.frames import Settle, difference, thumbnail
+from itlogs.frames import Stillness, difference, thumbnail
 from itlogs.models import Addition, Entry, EntryRead, Question, Reply, ServerMessage
 from itlogs.providers.base import LLMProvider, VisionProvider
 from itlogs.providers.openfoodfacts import Product
@@ -59,7 +63,10 @@ class Session:
     # the recent frames, and whether the scene is still: the reader sees the sharpest frame of a
     # still second, not whatever arrived last (the first live read, 2026-NOVEMBER-02 18:15, was a
     # hand on the apple and a display at 0)
-    settle: Settle = field(default_factory=Settle)
+    stillness: Stillness = field(default_factory=Stillness)
+    # called with every frame the reader was given and what it said, so a recording keeps the
+    # frame that was read and not whichever frame arrived while the model was thinking
+    on_read: Callable[[bytes, int, EntryRead], None] | None = None
     _first: tuple[EntryRead, int] | None = None  # "log it": waiting for the second look
     _question: tuple[Question, list[EntryRead]] | None = None  # waiting for the wearer
     _last_watch_ms: int = -1_000_000
@@ -79,13 +86,13 @@ class Session:
     _last_read_still: bool = False
     _last_frame_ms: int | None = None
     _watch_started_ms: int = -1_000_000
-    # a scanned product (#13): names the next food and brings the label's nutrients; the reads
-    # then only have to agree on the grams. _last_product keeps the row for a quiet correction.
     # the reader names a food but cannot read the display (21:58: 64 reads named a food, 1 had
     # a weight, and the ear said nothing for four and a half minutes): say so
     _no_display_reads: int = 0
     _last_hint_ms: int = -1_000_000
     display_hint_every_ms: int = 30_000
+    # a scanned product (#13): names the next food and brings the label's nutrients; the reads
+    # then only have to agree on the grams. _last_product keeps the row for a quiet correction.
     _product: Product | None = None
     _product_ms: int = 0
     _last_product: Product | None = None
@@ -227,6 +234,13 @@ class Session:
 
     # frames
 
+    async def _read(self, jpeg: bytes, t_ms: int) -> EntryRead:
+        """Every look at the scale goes through here."""
+        read = await self.vision.read_entry(jpeg)
+        if self.on_read is not None:
+            self.on_read(jpeg, t_ms, read)
+        return read
+
     async def on_frame(self, jpeg: bytes, t_ms: int) -> list[ServerMessage]:
         """Observe the frame, then decide; one call, as the tests and evals drive it."""
         self.observe(jpeg, t_ms)
@@ -234,7 +248,7 @@ class Session:
 
     def observe(self, jpeg: bytes, t_ms: int) -> None:
         """Cheap, for every frame: keeps the recent frames and whether the scene is still."""
-        self.settle.observe(jpeg, t_ms)
+        self.stillness.observe(jpeg, t_ms)
         self._last_frame_ms = t_ms
 
     def ready(self) -> list[ServerMessage]:
@@ -253,29 +267,29 @@ class Session:
             if t_ms - first_ms < self.second_read_after_ms:
                 return []
             self._first = None
-            _, best = self.settle.sharpest(t_ms - 700, t_ms) or (t_ms, jpeg)
-            second = await self.vision.read_entry(best)
+            best_ms, best = self.stillness.sharpest(t_ms - 700, t_ms) or (t_ms, jpeg)
+            second = await self._read(best, best_ms)
             return [ServerMessage(kind="read", read=second), *self._resolve(first, second, t_ms)]
         if self.watching and self._question is None:
             if t_ms - self._last_watch_ms < self.watch_every_ms:
                 return []
             waited = t_ms - max(self._last_watch_ms, self._watch_started_ms)
-            if not self.settle.still(t_ms) and waited < self.max_wait_ms:
+            if not self.stillness.still(t_ms) and waited < self.max_wait_ms:
                 return []  # a hand, a moving plate: not worth a model call (but never wait forever)
-            since = max(self.settle.still_since() or t_ms, t_ms - 1000)
-            _, best = self.settle.sharpest(since, t_ms) or (t_ms, jpeg)
+            since = max(self.stillness.still_since() or t_ms, t_ms - 1000)
+            best_ms, best = self.stillness.sharpest(since, t_ms) or (t_ms, jpeg)
             thumb = thumbnail(best)
             if (
                 self._watch_logged is not None
                 and thumb is not None
                 and self._last_read_thumb is not None
-                and difference(self._last_read_thumb, thumb) <= self.settle.move
+                and difference(self._last_read_thumb, thumb) <= self.stillness.move
             ):
                 return []  # the same scene the logged value came from: no new model call
             self._last_watch_ms = t_ms
             self._last_read_thumb = thumb
-            self._last_read_still = self.settle.still(t_ms)
-            read = await self.vision.read_entry(best)
+            self._last_read_still = self.stillness.still(t_ms)
+            read = await self._read(best, best_ms)
             bowl = await self._bowl_step(read, best, t_ms)
             rest = self._watch(read, t_ms) if bowl is None else bowl
             return [ServerMessage(kind="read", read=read), *rest]
@@ -284,14 +298,16 @@ class Session:
     # the trigger
 
     async def capture(self, t_ms: int) -> list[ServerMessage]:
-        if self.settle.latest is None:
+        if self.stillness.latest is None:
             return [ServerMessage(kind="say", say="No picture yet.")]
         if self._question is not None:
             q, _ = self._question
             return [ServerMessage(kind="say", say=q.text)]
-        latest_ms = self.settle.latest[0]
-        frame_ms, jpeg = self.settle.sharpest(latest_ms - 1000, latest_ms) or self.settle.latest
-        read = await self.vision.read_entry(jpeg)
+        latest_ms = self.stillness.latest[0]
+        frame_ms, jpeg = (
+            self.stillness.sharpest(latest_ms - 1000, latest_ms) or self.stillness.latest
+        )
+        read = await self._read(jpeg, frame_ms)
         if not read.readable:
             return [
                 ServerMessage(kind="read", read=read),
@@ -447,6 +463,8 @@ class Session:
             if reply.action == "log":
                 return await self.capture(t_ms)
             if reply.action == "correct" and reply.food and reply.grams is not None:
+                if self._bowl_active:
+                    return []  # the scale already counts it; the words name the row (_heard)
                 # "113 grams of apple": the wearer logged it by voice, no camera read
                 self._first = None
                 return self._log(reply.food, reply.grams, "spoken", [], t_ms)
@@ -547,8 +565,8 @@ class Session:
         return out
 
     def summary(self) -> str:
-        """What the ear hears at the end: the count and the calories. The list itself is on the
-        phone (the review table); reading it out was too much (Pedro, 2026-NOVEMBER-02)."""
+        """What the ear hears at the end. The list itself is on the phone (the review table);
+        reading it out was too much (Pedro, 2026-NOVEMBER-02)."""
         if not self.entries:
             return "Done. Nothing logged."
         return "Check the meal."  # the table is on the phone; Pedro: "just say check the meal"
@@ -556,22 +574,24 @@ class Session:
     async def final_look(self, t_ms: int = 0) -> list[ServerMessage]:
         """At Stop: read whatever is on the scale now, so the last food is never lost to the
         reader's latency (19:18: the second food went on after the apple and Stop came first)."""
-        if not self.watching or self.settle.latest is None or self._question is not None:
+        if not self.watching or self.stillness.latest is None or self._question is not None:
             return []
-        latest_ms = self.settle.latest[0]
-        _, best = self.settle.sharpest(latest_ms - 2000, latest_ms) or self.settle.latest
+        latest_ms = self.stillness.latest[0]
+        best_ms, best = (
+            self.stillness.sharpest(latest_ms - 2000, latest_ms) or self.stillness.latest
+        )
         thumb = thumbnail(best)
         if (
             self._watch_logged is not None
             and thumb is not None
             and self._last_read_thumb is not None
-            and difference(self._last_read_thumb, thumb) <= self.settle.move
+            and difference(self._last_read_thumb, thumb) <= self.stillness.move
         ):
             return []  # the same scene the last logged value came from
         self._last_read_thumb = thumb
         self._last_read_still = True  # the wearer is done moving; one confident read is enough
         self._last_hint_ms = t_ms or latest_ms  # no instruction once the wearer pressed Stop
-        read = await self.vision.read_entry(best)
+        read = await self._read(best, best_ms)
         at = t_ms or latest_ms
         bowl = await self._bowl_step(read, best, at, final=True)
         rest = self._watch(read, at) if bowl is None else bowl
