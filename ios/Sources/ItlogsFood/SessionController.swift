@@ -34,6 +34,9 @@ final class SessionController {
     var lastHeard = ""
     var error: String?
     var running = false
+    /// Reads that named a food with no weight since the last number; two mean the display is lost.
+    var noDisplayReads = 0
+    var lostDisplay: Bool { noDisplayReads >= 2 }
     var watching = false
     /// Start was tapped and the glasses session and stream are coming up (about six seconds);
     /// a second tap meanwhile made the toolkit throw sessionAlreadyExists (19:33, three times).
@@ -121,6 +124,7 @@ final class SessionController {
         healthMessage = nil
         entries = []  // a run is one meal; the review and the Health write cover this run only
         lastRead = nil
+        noDisplayReads = 0
         question = nil
         Diag.send("start tapped; glasses=\(useGlasses) server=\(serverURL.absoluteString)")
         let glasses: GlassesSource? = useGlasses ? GlassesSource() : nil
@@ -229,6 +233,7 @@ final class SessionController {
         Diag.send("clear tapped; entries=\(entries.count)")
         entries = []
         lastRead = nil
+        noDisplayReads = 0
         question = nil
         lastHeard = ""
         lastSaid = ""
@@ -343,7 +348,11 @@ final class SessionController {
 
     func handle(_ msg: ServerMessage) {
         switch msg.kind {
-        case "read": lastRead = msg.read
+        case "read":
+            lastRead = msg.read
+            if let r = msg.read {
+                if r.grams != nil { noDisplayReads = 0 } else if r.food != "none" { noDisplayReads += 1 }
+            }
         case "entry":
             if let e = msg.entry {
                 if let i = entries.firstIndex(where: { $0.index == e.index }) {

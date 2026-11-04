@@ -25,6 +25,8 @@ from itlogs.models import Entry, EntryRead, Question, Reply, ServerMessage
 from itlogs.providers.base import LLMProvider, VisionProvider
 from itlogs.providers.openfoodfacts import Product
 
+DISPLAY_HINT = "I can see the food but not the display. Look down at the scale."
+
 
 def fmt_grams(g: float) -> str:
     return f"{g:g}"
@@ -78,6 +80,11 @@ class Session:
     _watch_started_ms: int = -1_000_000
     # a scanned product (#13): names the next food and brings the label's nutrients; the reads
     # then only have to agree on the grams. _last_product keeps the row for a quiet correction.
+    # the reader names a food but cannot read the display (21:58: 64 reads named a food, 1 had
+    # a weight, and the ear said nothing for four and a half minutes): say so
+    _no_display_reads: int = 0
+    _last_hint_ms: int = -1_000_000
+    display_hint_every_ms: int = 30_000
     _product: Product | None = None
     _product_ms: int = 0
     _last_product: Product | None = None
@@ -233,6 +240,10 @@ class Session:
 
     def _watch(self, read: EntryRead, t_ms: int) -> list[ServerMessage]:
         prev, self._watch_prev = self._watch_prev, read
+        if read.grams is not None:
+            self._no_display_reads = 0
+        elif read.food != "none":
+            self._no_display_reads += 1
         if not read.readable:
             # the scale is empty or tared: the next value, even the same one, is a new food.
             # Two empties in a row, though: one alone was a hand over the display (19:57, the
@@ -245,7 +256,7 @@ class Session:
                 self._said_negative = True
                 hint = "The scale shows a negative number. Lift everything off and tare it."
                 return [ServerMessage(kind="say", say=hint)]
-            return []
+            return self._display_hint(t_ms)
         self._empty_streak = 0
         if self._watch_logged is not None and self._agree(read, self._watch_logged):
             return []  # still showing what was already asked about
@@ -279,6 +290,14 @@ class Session:
             and abs(read.grams - last.grams) <= self.grams_tolerance_g
             and t_ms - last.t_ms < self.same_again_ms
         )
+
+    def _display_hint(self, t_ms: int) -> list[ServerMessage]:
+        """Two reads named a food with no weight since the last number: one sentence in the ear,
+        at most every half minute. One such read alone is a hand passing over the display."""
+        if self._no_display_reads < 2 or t_ms - self._last_hint_ms < self.display_hint_every_ms:
+            return []
+        self._last_hint_ms = t_ms
+        return [ServerMessage(kind="say", say=DISPLAY_HINT)]
 
     def _still_the_same(self, read: EntryRead) -> bool:
         """The last food never left the scale (no empty read since), so a new read is the same
@@ -459,6 +478,7 @@ class Session:
             return []  # the same scene the last logged value came from
         self._last_read_thumb = thumb
         self._last_read_still = True  # the wearer is done moving; one confident read is enough
+        self._last_hint_ms = t_ms or latest_ms  # no instruction once the wearer pressed Stop
         read = await self.vision.read_entry(best)
         return [ServerMessage(kind="read", read=read), *self._watch(read, t_ms or latest_ms)]
 

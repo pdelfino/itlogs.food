@@ -119,7 +119,11 @@ struct SessionView: View {
     }
 
     private var foodLine: String {
-        if let r = session.lastRead, r.food != "none" { return r.food }
+        // a name only with a weight: names alone looked logged (21:58, 64 of them, nothing logged)
+        if let r = session.lastRead {
+            if r.food != "none", let g = r.grams, g > 0 { return r.food }
+            if r.grams == nil { return " " }
+        }
         return session.running ? "nothing on the scale" : " "
     }
 
@@ -128,6 +132,7 @@ struct SessionView: View {
         if session.finishing { return "Finishing the last reading…" }
         if session.starting { return "Starting…" }
         if session.running && !session.cameraLive { return "The camera is starting. Wait for \"Ready\"." }
+        if session.running && session.lostDisplay { return "I can see the food but not the display. Look down at the scale." }
         if session.watching { return "Watching the scale. Weigh at your pace." }
         if session.running { return "Ready." }
         if !session.entries.isEmpty { return "Meal weighed. Check it below, or start again." }

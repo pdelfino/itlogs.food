@@ -271,3 +271,21 @@ async def test_same_grams_without_an_empty_read_is_the_same_item_under_any_name(
     entries = [m.entry for m in out if m.kind == "entry" and m.entry]
     assert [e.index for e in entries] == [1, 1]  # the second message replaces the first row
     assert len(s.entries) == 1 and s.entries[0].grams == 43.0
+
+
+def test_food_named_without_a_weight_is_said_once_per_half_minute():
+    """21:58: 64 reads named a food, 1 had a weight, the ear stayed silent. Two such reads bring
+    one sentence; a number resets the count; an empty read neither counts nor resets."""
+    s = Session(FakeVision(), FakeLLM())
+    s.set_watching(True, 0)
+    oats = EntryRead(food="rolled oats", grams=None, confidence=0.0)
+    empty = EntryRead(food="none", grams=None, confidence=0.0)
+    assert s._watch(oats, 1000) == []  # one alone: a hand over the display
+    assert s._watch(empty, 2000) == []
+    said = s._watch(oats, 3000)
+    hint = "I can see the food but not the display. Look down at the scale."
+    assert [m.say for m in said] == [hint]
+    assert s._watch(oats, 10_000) == []  # not again so soon
+    assert len(s._watch(oats, 34_000)) == 1  # half a minute later, still lost
+    s._watch(EntryRead(food="banana", grams=124.0, confidence=0.5), 35_000)
+    assert s._watch(oats, 70_000) == []  # the number reset the count
